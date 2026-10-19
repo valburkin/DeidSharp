@@ -1,0 +1,9 @@
+# Keep host build output out of image contexts (it carries Windows-specific NuGet
+# paths in obj/project.assets.json).
+**/bin/
+**/obj/
+**/.vs/
+**/TestResults/
+**/__pycache__/
+**/.venv/
+.git/

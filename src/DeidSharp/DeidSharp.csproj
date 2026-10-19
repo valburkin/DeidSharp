@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DeidSharp core: detection, free-text de-identification, structured transforms,
+    pseudonymization, the leak guard, re-identification risk and detector evaluation.
+    No package dependencies on purpose: the core is what every caller loads, and the
+    deterministic layers must run anywhere.
+  -->
+  <PropertyGroup>
+    <Description>De-identification of health data: HIPAA Safe Harbor transforms, pseudonymization, stackable PHI detectors for free text, a deterministic leak guard and re-identification risk metrics.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeidSharp.Tests" />
+  </ItemGroup>
+
+</Project>

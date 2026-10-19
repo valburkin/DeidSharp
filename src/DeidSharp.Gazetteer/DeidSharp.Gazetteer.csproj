@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Deterministic name and place lists from public-domain sources, a detector for free text. -->
+  <PropertyGroup>
+    <Description>Gazetteer detector for DeidSharp: finds names and places in free text from public-domain lists (US Census surnames, first names and places), with context rules for names that are also common words or clinical terms.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\*.txt" LogicalName="DeidSharp.Gazetteer.Data.%(Filename)%(Extension)" />
+    <None Include="Data\SOURCES.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeidSharp\DeidSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeidSharp.Tests" />
+  </ItemGroup>
+
+</Project>

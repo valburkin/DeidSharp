@@ -1,0 +1,7 @@
+# Tools for checking the sidecar's code and its lock; none of them runs in the image.
+# Kept in their own folder so Dependabot updates them here, apart from the image's lock.
+#   python -m pip install -r sidecar/tools/requirements.txt
+#   ruff check sidecar && python -m pytest sidecar/tests
+pip-audit==2.10.1
+pytest==9.1.1
+ruff==0.17.1

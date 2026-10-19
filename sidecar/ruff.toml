@@ -1,0 +1,12 @@
+# Lint rules for the clinical sidecar, pinned here so a new ruff release cannot change
+# what CI checks. Run: ruff check sidecar
+target-version = "py312"
+line-length = 120
+
+[lint]
+# pycodestyle errors, Pyflakes, import order, bugbear, pyupgrade, Pylint and ruff's own.
+select = ["E", "F", "W", "I", "B", "UP", "PL", "RUF"]
+
+[lint.per-file-ignores]
+# Tests compare against literal expected values.
+"tests/**" = ["PLR2004"]

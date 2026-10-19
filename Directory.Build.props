@@ -1,0 +1,43 @@
+<Project>
+
+  <!-- DeidSharp build conventions. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The .NET 10 analyzers' recommended rule set plus .editorconfig code style, enforced
+         at build time. Warnings fail the build. The rule set is named, not "latest", so a
+         newer SDK cannot fail an unchanged build; raise it on purpose. -->
+    <AnalysisLevel>10.0-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Lets the build flag unused usings (IDE0005). XML comments are written where they
+         explain something, not on every member, so CS1591 and CS1573 are off. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+    <!-- Restore audits every package, transitive ones included, against the known
+         vulnerabilities; with warnings as errors, one found fails the build. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Every project's resolved packages, transitive ones included, are recorded in its
+         packages.lock.json; CI and the image restore in locked mode, so a build never
+         picks up a package version nobody reviewed. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- De-identified text must not depend on the host's locale. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Package metadata for the libraries under src/. -->
+  <PropertyGroup>
+    <Authors>Valentin Burkin</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>phi;deidentification;de-identification;hipaa;safe-harbor;fhir;healthcare;privacy</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/valburkin/DeidSharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/valburkin/DeidSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+</Project>

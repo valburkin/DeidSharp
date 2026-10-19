@@ -1,0 +1,37 @@
+name: Missed identifier
+description: A detector stack left an identifier in place, or replaced something that is not one.
+labels: [detection]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        No detector finds everything (see the threat model), but every miss helps tune the patterns and tests. **If the identifier was one the record knew** (passed in `KnownIdentifiers`, or in the FHIR record's own fields), or a structured FHIR element survived, that is a vulnerability: report it [privately](https://github.com/valburkin/DeidSharp/security/advisories/new) instead. **Rewrite the example with made-up values in the same shape**: a fake name, a fake number with the same format. Never paste the real text.
+  - type: textarea
+    id: text
+    attributes:
+      label: A fictional text that shows it
+      description: Mark what should have been found, or what should have been kept.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [Missed (left in place), Over-redacted (clinical content replaced)]
+    validations:
+      required: true
+  - type: textarea
+    id: stack
+    attributes:
+      label: Detector stack and settings
+      description: Known identifiers passed, patterns, Presidio or the clinical sidecar, thresholds.
+    validations:
+      required: true
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Data
+      options:
+        - label: Everything in this issue is fictional; it holds no real patient data.
+          required: true

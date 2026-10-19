@@ -1,0 +1,73 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+charset = utf-8
+
+[*.{csproj,props,targets,json,yml,yaml,xml,config,slnx}]
+indent_size = 2
+
+[*.cs]
+# --- Code style, enforced at build (EnforceCodeStyleInBuild) --------------------
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:warning
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+# Unused usings (needs GenerateDocumentationFile, set in Directory.Build.props).
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0011.severity = warning
+dotnet_diagnostic.IDE0040.severity = warning
+dotnet_diagnostic.IDE0161.severity = warning
+# Namespaces follow folders (DeidSharp.Detection lives in Detection/).
+dotnet_diagnostic.IDE0130.severity = warning
+
+# Naming: private instance fields are _camelCase; constants and static readonly
+# fields are PascalCase.
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+
+dotnet_naming_rule.constants_pascal.symbols = constants
+dotnet_naming_rule.constants_pascal.style = pascal
+dotnet_naming_rule.constants_pascal.severity = warning
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+
+dotnet_naming_rule.static_readonly_pascal.symbols = static_readonly_fields
+dotnet_naming_rule.static_readonly_pascal.style = pascal
+dotnet_naming_rule.static_readonly_pascal.severity = warning
+dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
+
+dotnet_naming_style.pascal.capitalization = pascal_case
+
+dotnet_diagnostic.IDE1006.severity = warning
+
+# Library code awaits with ConfigureAwait(false): a caller that blocks on a task from a
+# UI or legacy ASP.NET thread must not deadlock.
+dotnet_diagnostic.CA2007.severity = warning
+
+# --- ReSharper and Rider, matched to the conventions above -----------------------
+# Multiline lists end with a trailing comma, so adding an item changes one line.
+resharper_trailing_comma_in_multiline_lists = true
+
+# --- Analyzer rules that don't fit this codebase ---------------------------------
+# Names that are keywords in other .NET languages: the codebase is C#-only.
+dotnet_diagnostic.CA1716.severity = none
+
+[tests/**.cs]
+# Tests run under xUnit, which has no synchronization context to deadlock on.
+dotnet_diagnostic.CA2007.severity = none
+# Test names are sentences: Snake_case_reads_as_what_is_being_proven.
+dotnet_diagnostic.CA1707.severity = none
+# A performance rule; tests deliberately use interface types.
+dotnet_diagnostic.CA1859.severity = none
+
+[tools/**.cs]
+# Tools are console hosts, not libraries: there is no synchronization context to deadlock on.
+dotnet_diagnostic.CA2007.severity = none

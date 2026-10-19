@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests against real detector sidecars in Docker (Testcontainers). Skipped unless
+    DEIDSHARP_INTEGRATION=1: they pull or build multi-GB images. See docs/testing.md.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeidSharp\DeidSharp.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Presidio\DeidSharp.Presidio.csproj" />
+    <!-- The evaluation tool's corpus readers and scorer, for the ASQ-PHI recall floors. -->
+    <ProjectReference Include="..\..\tools\DeidSharp.Evaluation.Cli\DeidSharp.Evaluation.Cli.csproj" />
+  </ItemGroup>
+
+</Project>

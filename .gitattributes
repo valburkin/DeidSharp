@@ -1,0 +1,9 @@
+# Normalize line endings in the repository; check out with the platform's native endings.
+* text=auto
+
+# Scripts that must keep LF even on Windows checkouts.
+*.sh text eol=lf
+Makefile text eol=lf
+
+# Third-party corpora are kept byte for byte as published, so their checksums match the source.
+tools/DeidSharp.Evaluation.Cli/data/** -text

@@ -1,0 +1,602 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-1",
+  "type": "transaction",
+  "timestamp": "2024-03-09T15:20:00Z",
+  "meta": {
+    "lastUpdated": "2024-03-09T15:20:00Z",
+    "source": "http://ehr.st-brendan.example/fhir"
+  },
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://ehr.st-brendan.example/fhir/Patient?identifier=4471-882-19"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Rosa María Álvarez-Núñez</div>"
+        },
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+            "extension": [
+              {
+                "url": "ombCategory",
+                "valueCoding": {
+                  "system": "urn:oid:2.16.840.1.113883.6.238",
+                  "code": "2106-3",
+                  "display": "White"
+                }
+              },
+              {
+                "url": "text",
+                "valueString": "White"
+              }
+            ]
+          },
+          {
+            "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex",
+            "valueCode": "F"
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
+            "valueString": "Lucia Ferreira"
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/patient-birthPlace",
+            "valueAddress": {
+              "city": "Ponce",
+              "state": "PR",
+              "country": "US"
+            }
+          },
+          {
+            "url": "http://synthetichealth.github.io/synthea/disability-adjusted-life-years",
+            "valueDecimal": 1.25
+          }
+        ],
+        "identifier": [
+          {
+            "system": "https://github.com/synthetichealth/synthea",
+            "value": "5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+          },
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MR"
+                }
+              ]
+            },
+            "system": "http://hospital.smarthealthit.org",
+            "value": "4471-882-19"
+          },
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "SS"
+                }
+              ]
+            },
+            "system": "http://hl7.org/fhir/sid/us-ssn",
+            "value": "123-45-6789"
+          },
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "DL"
+                }
+              ]
+            },
+            "system": "urn:oid:2.16.840.1.113883.4.3.25",
+            "value": "S99923841"
+          }
+        ],
+        "name": [
+          {
+            "use": "official",
+            "family": "Álvarez-Núñez",
+            "given": [
+              "Rosa",
+              "María"
+            ],
+            "prefix": [
+              "Mrs."
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "617-555-0198",
+            "use": "home"
+          },
+          {
+            "system": "email",
+            "value": "rosa.alvarez@mailbox.example"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1931-03-04",
+        "address": [
+          {
+            "line": [
+              "48 Willow Creek Rd",
+              "Apt 3"
+            ],
+            "city": "Springfield",
+            "state": "MA",
+            "postalCode": "01103",
+            "country": "US",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+                "extension": [
+                  {
+                    "url": "latitude",
+                    "valueDecimal": 42.1
+                  },
+                  {
+                    "url": "longitude",
+                    "valueDecimal": -72.5
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "maritalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
+              "code": "W"
+            }
+          ],
+          "text": "Widowed"
+        },
+        "contact": [
+          {
+            "relationship": [
+              {
+                "text": "daughter"
+              }
+            ],
+            "name": {
+              "family": "Alvarez",
+              "given": [
+                "Carmen"
+              ]
+            },
+            "telecom": [
+              {
+                "system": "phone",
+                "value": "617-555-0142"
+              }
+            ]
+          }
+        ],
+        "communication": [
+          {
+            "language": {
+              "coding": [
+                {
+                  "system": "urn:ietf:bcp:47",
+                  "code": "es"
+                }
+              ],
+              "text": "Spanish"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Patient"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000001",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "7c1e2d3f-0000-4000-8000-000000000001",
+        "status": "finished",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "IMP"
+        },
+        "subject": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f",
+          "display": "Mrs. Rosa María Álvarez-Núñez"
+        },
+        "participant": [
+          {
+            "individual": {
+              "reference": "Practitioner?identifier=http://hl7.org/fhir/sid/us-npi|9999912345",
+              "display": "Dr. Amelia Hart"
+            }
+          }
+        ],
+        "period": {
+          "start": "2024-03-02T08:15:00-05:00",
+          "end": "2024-03-09T11:00:00-05:00"
+        },
+        "serviceProvider": {
+          "reference": "Organization?identifier=https://github.com/synthetichealth/synthea|org-77",
+          "display": "St. Brendan Hospital"
+        },
+        "location": [
+          {
+            "location": {
+              "reference": "Location/loc-1"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Encounter"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000002",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "7c1e2d3f-0000-4000-8000-000000000002",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "433144002",
+              "display": "Chronic kidney disease stage 3 (disorder)"
+            }
+          ],
+          "text": "Chronic kidney disease stage 3"
+        },
+        "subject": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+        },
+        "encounter": {
+          "reference": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000001"
+        },
+        "onsetAge": {
+          "value": 91,
+          "unit": "years",
+          "system": "http://unitsofmeasure.org",
+          "code": "a"
+        },
+        "recordedDate": "2022-06-14",
+        "note": [
+          {
+            "authorString": "Amelia Hart",
+            "time": "2022-06-14T10:00:00Z",
+            "text": "Rosa reports fatigue; daughter Carmen helps with meds."
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Condition"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000003",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "7c1e2d3f-0000-4000-8000-000000000003",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2160-0",
+              "display": "Creatinine [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+        },
+        "effectiveDateTime": "2024-03-03T07:30:00-05:00",
+        "issued": "2024-03-03T09:00:00.000-05:00",
+        "valueQuantity": {
+          "value": 2.1,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        },
+        "note": [
+          {
+            "text": "Drawn by RN at 48 Willow Creek Rd home visit; call 617-555-0198 with results."
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000004",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "7c1e2d3f-0000-4000-8000-000000000004",
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18842-5",
+              "display": "Discharge summary"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+        },
+        "date": "2024-03-09T15:00:00Z",
+        "author": [
+          {
+            "reference": "Practitioner?identifier=http://hl7.org/fhir/sid/us-npi|9999912345",
+            "display": "Dr. Amelia Hart"
+          }
+        ],
+        "description": "Discharge summary, Rosa Alvarez",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain; charset=utf-8",
+              "data": "RGlzY2hhcmdlIHN1bW1hcnkgZm9yIFJvc2EgTWFyaWEgQWx2YXJlei1OdW5leiAoTVJOOiA0NDcxLTg4Mi0xOSksIERPQiAwMy8wNC8xOTMxLgpNcnMuIEFsdmFyZXotTnVuZXogaXMgYSA5My15ZWFyLW9sZCB3b21hbiBhZG1pdHRlZCB0byBTdC4gQnJlbmRhbiBIb3NwaXRhbCBvbiBNYXJjaCAyLCAyMDI0LgpIZXIgZGF1Z2h0ZXIgQ2FybWVuIGNhbGxlZCBmcm9tICg2MTcpIDU1NS0wMTQyOyBlbWFpbCByb3NhLmFsdmFyZXpAbWFpbGJveC5leGFtcGxlLgpIb21lOiA0OCBXaWxsb3cgQ3JlZWsgUm9hZCwgU3ByaW5nZmllbGQsIE1BIDAxMTAzLiBTU04gMTIzLTQ1LTY3ODkuClNlZW4gYnkgRHIuIEFtZWxpYSBIYXJ0LiBGb2xsb3cgdXAgd2l0aCBEciBIYXJ0IGluIDIgd2Vla3Mu",
+              "title": "Discharge summary - Alvarez-Nunez",
+              "hash": "2jmj7l5rSw0yVb/vlWAYkK/YBwk=",
+              "creation": "2024-03-09"
+            }
+          },
+          {
+            "attachment": {
+              "contentType": "application/pdf",
+              "url": "http://ehr.st-brendan.example/docs/4471-882-19.pdf"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "DocumentReference"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000005",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "7c1e2d3f-0000-4000-8000-000000000005",
+        "identifier": [
+          {
+            "system": "http://hl7.org/fhir/sid/us-npi",
+            "value": "9999912345"
+          }
+        ],
+        "name": [
+          {
+            "family": "Hart",
+            "given": [
+              "Amelia"
+            ],
+            "prefix": [
+              "Dr."
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "email",
+            "value": "amelia.hart@st-brendan.example"
+          }
+        ],
+        "address": [
+          {
+            "line": [
+              "1 Hospital Way"
+            ],
+            "city": "Springfield",
+            "state": "MA",
+            "postalCode": "01199"
+          }
+        ],
+        "gender": "female"
+      },
+      "request": {
+        "method": "POST",
+        "url": "Practitioner",
+        "ifNoneExist": "identifier=http://hl7.org/fhir/sid/us-npi|9999912345"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000006",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "7c1e2d3f-0000-4000-8000-000000000006",
+        "identifier": [
+          {
+            "system": "https://github.com/synthetichealth/synthea",
+            "value": "org-77"
+          }
+        ],
+        "name": "St. Brendan Hospital",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "413-555-0100"
+          }
+        ],
+        "address": [
+          {
+            "line": [
+              "1 Hospital Way"
+            ],
+            "city": "Springfield",
+            "state": "MA",
+            "postalCode": "01199"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Organization",
+        "ifNoneExist": "identifier=https://github.com/synthetichealth/synthea|org-77"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000007",
+      "resource": {
+        "resourceType": "Location",
+        "id": "loc-1",
+        "status": "active",
+        "name": "St. Brendan Hospital - Ward 4B",
+        "position": {
+          "longitude": -72.59,
+          "latitude": 42.1
+        },
+        "address": {
+          "line": [
+            "1 Hospital Way"
+          ],
+          "city": "Springfield",
+          "state": "MA",
+          "postalCode": "01199"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Location"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000008",
+      "resource": {
+        "resourceType": "Device",
+        "id": "7c1e2d3f-0000-4000-8000-000000000008",
+        "udiCarrier": [
+          {
+            "deviceIdentifier": "00844588003288",
+            "carrierHRF": "(01)00844588003288(17)141120(10)7654321D(21)10987654d321"
+          }
+        ],
+        "serialNumber": "10987654d321",
+        "lotNumber": "7654321D",
+        "type": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "72506001",
+              "display": "Implantable defibrillator"
+            }
+          ]
+        },
+        "patient": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Device"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-000000000009",
+      "resource": {
+        "resourceType": "Coverage",
+        "id": "7c1e2d3f-0000-4000-8000-000000000009",
+        "status": "active",
+        "subscriberId": "MBR-55512-ZX",
+        "beneficiary": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+        },
+        "payor": [
+          {
+            "display": "Medicare"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Coverage"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7c1e2d3f-0000-4000-8000-00000000000a",
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "7c1e2d3f-0000-4000-8000-00000000000a",
+        "status": "active",
+        "intent": "order",
+        "contained": [
+          {
+            "resourceType": "Medication",
+            "id": "med1",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                  "code": "314076",
+                  "display": "lisinopril 10 MG Oral Tablet"
+                }
+              ]
+            }
+          }
+        ],
+        "medicationReference": {
+          "reference": "#med1"
+        },
+        "subject": {
+          "reference": "urn:uuid:5b2f1a52-6a9c-4b8e-9b1e-2a3f4c5d6e7f"
+        },
+        "authoredOn": "2024-03-09",
+        "dosageInstruction": [
+          {
+            "text": "Take 1 tablet by mouth daily",
+            "timing": {
+              "event": [
+                "2024-03-10T08:00:00-05:00"
+              ]
+            }
+          }
+        ],
+        "modifierExtension": [
+          {
+            "url": "http://example.org/fhir/StructureDefinition/do-not-dispense-until",
+            "valueDateTime": "2024-03-10"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "MedicationRequest"
+      }
+    }
+  ]
+}

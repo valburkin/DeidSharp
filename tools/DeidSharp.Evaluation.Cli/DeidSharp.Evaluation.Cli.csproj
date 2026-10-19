@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Measures detector stacks on annotated corpora (PhysioNet's nursing notes, ASQ-PHI)
+    and publishes the numbers to docs/evaluation. A tool for maintainers, not a package.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="data\asq-phi\synthetic_clinical_queries.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OllamaSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeidSharp\DeidSharp.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Gazetteer\DeidSharp.Gazetteer.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Llm\DeidSharp.Llm.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Presidio\DeidSharp.Presidio.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeidSharp.Evaluation.Cli.Tests" />
+    <InternalsVisibleTo Include="DeidSharp.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

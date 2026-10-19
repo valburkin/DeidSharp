@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DeidSharp/DeidSharp.csproj" />
+    <Project Path="src/DeidSharp.Fhir/DeidSharp.Fhir.csproj" />
+    <Project Path="src/DeidSharp.Gazetteer/DeidSharp.Gazetteer.csproj" />
+    <Project Path="src/DeidSharp.Llm/DeidSharp.Llm.csproj" />
+    <Project Path="src/DeidSharp.Presidio/DeidSharp.Presidio.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/DeidSharp.Evaluation.Cli/DeidSharp.Evaluation.Cli.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DeidSharp.Tests/DeidSharp.Tests.csproj" />
+    <Project Path="tests/DeidSharp.Evaluation.Cli.Tests/DeidSharp.Evaluation.Cli.Tests.csproj" />
+    <Project Path="tests/DeidSharp.IntegrationTests/DeidSharp.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,3 @@
+# The sidecar's lint rules, for the Python Philter runs on (its regexes need 3.10).
+extend = "../../../sidecar/ruff.toml"
+target-version = "py310"

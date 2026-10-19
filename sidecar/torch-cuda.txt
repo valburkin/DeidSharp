@@ -1,0 +1,3 @@
+# Overrides requirements.in's torch for the GPU image: the CUDA 13.0 build, which runs on
+# NVIDIA's Blackwell cards (RTX 50xx) and older ones back to Turing. See README.md, "GPU".
+torch==2.14.1+cu130

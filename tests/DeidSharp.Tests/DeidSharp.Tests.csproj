@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- xUnit v3 test projects are executables. -->
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- `dotnet test` runs on Microsoft.Testing.Platform (global.json); the Test SDK and
+       VSTest adapter stay so IDE test explorers that still use VSTest can discover tests. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <!-- Property-based tests: generated inputs prove invariants ("no known identifier
+       survives") over thousands of cases instead of a handful of examples. -->
+  <ItemGroup>
+    <PackageReference Include="CsCheck" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <!-- FHIR has a resource named Task; in tests "Task" means the .NET one. -->
+    <Using Include="System.Threading.Tasks.Task" Alias="Task" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Fhir\Fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Evaluation\Corpus\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeidSharp\DeidSharp.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Fhir\DeidSharp.Fhir.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Gazetteer\DeidSharp.Gazetteer.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Llm\DeidSharp.Llm.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Presidio\DeidSharp.Presidio.csproj" />
+  </ItemGroup>
+
+</Project>

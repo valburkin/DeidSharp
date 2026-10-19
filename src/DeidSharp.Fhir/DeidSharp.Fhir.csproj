@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- De-identifies FHIR R4 resources and bundles with the DeidSharp core. -->
+  <PropertyGroup>
+    <Description>FHIR R4 de-identification for DeidSharp: Safe Harbor or pseudonymized resources and bundles, with consistent reference rewriting and a residual-PHI check.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hl7.Fhir.R4" />
+  </ItemGroup>
+
+  <!-- FHIR has a resource named Task; in this project "Task" means the .NET one. -->
+  <ItemGroup>
+    <Using Include="System.Threading.Tasks.Task" Alias="Task" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeidSharp\DeidSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeidSharp.Tests" />
+  </ItemGroup>
+
+</Project>

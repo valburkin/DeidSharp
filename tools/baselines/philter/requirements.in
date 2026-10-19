@@ -1,0 +1,4 @@
+philter-ucsf==1.0.3
+nltk
+chardet
+numpy

@@ -1,0 +1,11 @@
+# Presidio NLP engine for the DeidSharp clinical analyzer.
+#
+# spaCy (small model) tokenizes and supplies the context words Presidio's pattern
+# recognizers use. Its general-purpose NER is not reported: app.py leaves out
+# Presidio's SpacyRecognizer (LEFT_OUT_RECOGNIZERS). The clinical transformer is
+# not configured here: it runs as a separate recognizer (clinical_recognizer.py), which
+# groups its BILOU tags correctly where Presidio's transformers engine does not.
+nlp_engine_name: spacy
+models:
+  - lang_code: en
+    model_name: en_core_web_sm

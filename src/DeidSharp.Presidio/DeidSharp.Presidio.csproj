@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- A DeidSharp detector backed by a Presidio analyzer service (a sidecar). -->
+  <PropertyGroup>
+    <Description>Presidio analyzer detector for DeidSharp: NER-based PHI detection in free text through a Presidio REST sidecar, including clinical transformer models.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeidSharp\DeidSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeidSharp.Tests" />
+  </ItemGroup>
+
+</Project>

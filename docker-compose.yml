@@ -1,0 +1,61 @@
+# DeidSharp's detector sidecars.
+#
+#   docker compose up -d presidio           # stock Presidio (spaCy NER + patterns), 127.0.0.1:5002
+#   docker compose up -d --build clinical    # Presidio + clinical transformer (i2b2), 127.0.0.1:5003
+#   docker compose --profile gpu up -d --build clinical-gpu   # the same on an NVIDIA GPU, 127.0.0.1:5005
+#
+# Neither sidecar is needed for the deterministic layers (structured transforms, known
+# identifiers, patterns); add one to the detector stack for NER on names and places
+# that the record does not list. Both speak the same REST contract: point
+# PresidioOptions.Endpoint at either.
+#
+# Every port is published on this machine only (127.0.0.1): each service receives raw
+# patient text. Images built here are named localhost/…, so a missing one is never pulled
+# from a public registry under the same name. Containers reach each other on the compose network by name
+# (http://clinical:3000/), which needs no published port at all.
+
+services:
+  # Microsoft's image. Pinned by digest so a new release can't change detection silently;
+  # the integration tests run the same image (a test keeps the two in step).
+  presidio:
+    image: mcr.microsoft.com/presidio-analyzer:2.2.362@sha256:286e3fa7f3a7426e775e8564fe1870f1ba8f999d3ab8bbb8cc46a44355d9d6e9
+    ports:
+      - "127.0.0.1:5002:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # Built from ./sidecar. First build downloads torch and the model (a few GB).
+  clinical:
+    build: ./sidecar
+    # The lock holds x86_64 wheels; elsewhere (Apple Silicon) Docker emulates.
+    platform: linux/amd64
+    image: localhost/deidsharp/clinical-analyzer:local
+    ports:
+      - "127.0.0.1:5003:3000"
+
+  # The clinical analyzer on an NVIDIA GPU: the same code and model with CUDA PyTorch, many
+  # times faster on long notes. Needs the NVIDIA driver and Docker's GPU support (Docker
+  # Desktop on WSL2, or the NVIDIA Container Toolkit on Linux). The image refuses to start
+  # if it sees no GPU, rather than fall back to the CPU unnoticed. First build downloads
+  # CUDA's libraries too (several GB more). See sidecar/README.md, "GPU".
+  #   docker compose --profile gpu up -d --build clinical-gpu
+  clinical-gpu:
+    profiles: [gpu]
+    build:
+      context: ./sidecar
+      args:
+        DEVICE: cuda
+    platform: linux/amd64
+    image: localhost/deidsharp/clinical-analyzer:cuda
+    ports:
+      - "127.0.0.1:5005:3000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

@@ -1,0 +1,145 @@
+# Build, test and check every change. The deterministic layers need nothing but the
+# .NET SDK; the integration job also runs the stock Presidio image in Docker. Every
+# action is pinned to a commit, with its version in a comment (Dependabot updates both).
+name: CI
+
+on:
+  push:
+    branches: [main]
+    # A release tag also checks that docs/evaluation holds that version's measurements.
+    tags: ["v*"]
+  pull_request:
+  # Weekly, so a vulnerability published against a pinned package fails the build
+  # even when nothing in the repository changed.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to a pull request replaces its run; runs on main always finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  # Every restore, implicit ones included, installs exactly what the lock files list.
+  RestoreLockedMode: "true"
+
+jobs:
+  dotnet:
+    name: .NET on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      # Restore installs exactly the lock files' packages and audits every one of them,
+      # transitive ones included; a known vulnerability is an error (Directory.Build.props).
+      - run: dotnet restore DeidSharp.slnx --locked-mode
+      # Analyzers and code style are errors too.
+      - run: dotnet build DeidSharp.slnx --configuration Release --no-restore
+      # Microsoft.Testing.Platform: no -nologo, which would be passed to the test app.
+      - run: dotnet test DeidSharp.slnx --configuration Release --no-build
+
+  # The PhysioNet notes may not leave a credentialed maintainer's machine, so CI cannot
+  # measure on them. A maintainer runs DeidSharp.Evaluation.Cli before tagging
+  # (docs/evaluation/README.md); this job refuses a tag whose published results came from
+  # another version.
+  evaluation-results:
+    name: Evaluation results match the release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check docs/evaluation/results.json
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          results=docs/evaluation/results.json
+          # PhysioNet's headline is the held-out half (split "report"); ASQ-PHI has no tuning half, so it is measured whole.
+          for want in "physionet-deid report" "asq-phi all"; do
+            set -- $want
+            if ! jq --exit-status --arg c "$1" --arg s "$2" '[.corpora[] | select(.corpus == $c and .scope == "safe-harbor" and .split == $s)] | length == 1' "$results" > /dev/null; then
+              echo "$results has no safe-harbor measurement on $1, split $2." >&2
+              exit 1
+            fi
+          done
+          stale=$(jq --raw-output --arg v "$version" '[.corpora[] | select(.version != $v) | "\(.corpus)/\(.scope)/\(.split) (\(.version))"] | join(", ")' "$results")
+          if [ -n "$stale" ]; then
+            echo "Measured with another version than $version: $stale. Rerun DeidSharp.Evaluation.Cli with --publish (docs/evaluation/README.md)." >&2
+            exit 1
+          fi
+
+  integration:
+    name: Integration with stock Presidio
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      # The clinical sidecar's image is several GB; its tests stay opt-in (DEIDSHARP_CLINICAL).
+      - run: dotnet test --project tests/DeidSharp.IntegrationTests --configuration Release
+        env:
+          DEIDSHARP_INTEGRATION: "1"
+
+  sidecar:
+    name: Clinical sidecar code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The Python of sidecar/Dockerfile and sidecar/ruff.toml.
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: sidecar/tools/requirements.txt
+      - run: python -m pip install --requirement sidecar/tools/requirements.txt
+      # The image's lock resolves: every package downloads for its Linux target and
+      # matches its hash, without building anything from source.
+      - name: Image lock
+        run: >-
+          python -m pip download --no-deps --require-hashes --only-binary=:all:
+          --platform manylinux_2_28_x86_64 --platform manylinux_2_17_x86_64 --platform linux_x86_64
+          --python-version 3.12 --implementation cp --abi cp312
+          --requirement sidecar/requirements.txt --dest "$RUNNER_TEMP/wheels"
+      # Known vulnerabilities in the image's lock. torch's CPU build is not on PyPI, where
+      # the advisories are, so it is checked by its plain version; the spaCy model, a URL
+      # requirement, is not a published package.
+      - name: Image lock vulnerabilities
+        run: |
+          pip-audit --requirement sidecar/requirements.txt --require-hashes --disable-pip --progress-spinner off
+          sed -n 's/^torch==\([0-9.]*\).*/torch==\1/p' sidecar/requirements.txt > "$RUNNER_TEMP/torch.txt"
+          pip-audit --requirement "$RUNNER_TEMP/torch.txt" --no-deps --disable-pip --progress-spinner off
+      # The GPU image's lock, audited the same way (its torch is the release checked above).
+      # Its wheels are not downloaded here, CUDA's libraries being several GB; the sidecar's
+      # tests prove it pins every other package at the CPU lock's version.
+      - name: GPU image lock vulnerabilities
+        run: pip-audit --requirement sidecar/requirements-cuda.txt --require-hashes --disable-pip --progress-spinner off
+      - run: ruff check sidecar tools/baselines
+      - run: ruff format --check sidecar tools/baselines
+      - run: python -m pytest sidecar/tests

@@ -1,0 +1,977 @@
+{
+  "corpora": [
+    {
+      "corpus": "asq-phi",
+      "title": "ASQ-PHI (synthetic clinical queries)",
+      "scope": "safe-harbor",
+      "version": "0.1.0",
+      "commit": "491fbe34aaa77e672802220bbc8952db7d26f642",
+      "date": "2026-10-18",
+      "documents": 1051,
+      "goldSpans": 2976,
+      "stacks": [
+        {
+          "stack": "deterministic",
+          "recall": 0.4758,
+          "characterRecall": 0.4507,
+          "precision": 0.9971,
+          "missed": 1560,
+          "labels": [
+            {
+              "label": "GEOGRAPHIC_LOCATION",
+              "goldSpans": 829,
+              "recall": 0.0494
+            },
+            {
+              "label": "NAME",
+              "goldSpans": 814,
+              "recall": 0.1486
+            },
+            {
+              "label": "DATE",
+              "goldSpans": 806,
+              "recall": 0.9851
+            },
+            {
+              "label": "MEDICAL_RECORD_NUMBER",
+              "goldSpans": 305,
+              "recall": 0.9049
+            },
+            {
+              "label": "HEALTH_PLAN_BENEFICIARY_NUMBER",
+              "goldSpans": 91,
+              "recall": 0.6593
+            },
+            {
+              "label": "PHONE_NUMBER",
+              "goldSpans": 45,
+              "recall": 1
+            },
+            {
+              "label": "SOCIAL_SECURITY_NUMBER",
+              "goldSpans": 33,
+              "recall": 1
+            },
+            {
+              "label": "EMAIL_ADDRESS",
+              "goldSpans": 31,
+              "recall": 0.9677
+            },
+            {
+              "label": "UNIQUE_IDENTIFIER",
+              "goldSpans": 14,
+              "recall": 0.5714
+            },
+            {
+              "label": "ACCOUNT_NUMBER",
+              "goldSpans": 4,
+              "recall": 1
+            },
+            {
+              "label": "FAX_NUMBER",
+              "goldSpans": 2,
+              "recall": 1
+            },
+            {
+              "label": "CERTIFICATE_LICENSE_NUMBER",
+              "goldSpans": 1,
+              "recall": 1
+            },
+            {
+              "label": "IP_ADDRESS",
+              "goldSpans": 1,
+              "recall": 1
+            }
+          ],
+          "words": {
+            "recall": 0.4905,
+            "precision": 0.9962,
+            "f1": 0.6573
+          },
+          "nonPhiRemoved": 0.0005,
+          "intervals": {
+            "recall": {
+              "low": 0.4661,
+              "high": 0.4855
+            },
+            "characterRecall": {
+              "low": 0.4422,
+              "high": 0.46
+            },
+            "precision": {
+              "low": 0.9943,
+              "high": 0.9994
+            },
+            "wordF1": {
+              "low": 0.6496,
+              "high": 0.6654
+            },
+            "nonPhiRemoved": {
+              "low": 0.0001,
+              "high": 0.0009
+            }
+          }
+        },
+        {
+          "stack": "deterministic + presidio",
+          "recall": 0.803,
+          "characterRecall": 0.6931,
+          "precision": 0.716,
+          "missed": 586,
+          "labels": [
+            {
+              "label": "GEOGRAPHIC_LOCATION",
+              "goldSpans": 829,
+              "recall": 0.3606
+            },
+            {
+              "label": "NAME",
+              "goldSpans": 814,
+              "recall": 0.9987
+            },
+            {
+              "label": "DATE",
+              "goldSpans": 806,
+              "recall": 0.9987
+            },
+            {
+              "label": "MEDICAL_RECORD_NUMBER",
+              "goldSpans": 305,
+              "recall": 0.9213
+            },
+            {
+              "label": "HEALTH_PLAN_BENEFICIARY_NUMBER",
+              "goldSpans": 91,
+              "recall": 0.7362
+            },
+            {
+              "label": "PHONE_NUMBER",
+              "goldSpans": 45,
+              "recall": 1
+            },
+            {
+              "label": "SOCIAL_SECURITY_NUMBER",
+              "goldSpans": 33,
+              "recall": 1
+            },
+            {
+              "label": "EMAIL_ADDRESS",
+              "goldSpans": 31,
+              "recall": 0.9677
+            },
+            {
+              "label": "UNIQUE_IDENTIFIER",
+              "goldSpans": 14,
+              "recall": 0.6428
+            },
+            {
+              "label": "ACCOUNT_NUMBER",
+              "goldSpans": 4,
+              "recall": 1
+            },
+            {
+              "label": "FAX_NUMBER",
+              "goldSpans": 2,
+              "recall": 1
+            },
+            {
+              "label": "CERTIFICATE_LICENSE_NUMBER",
+              "goldSpans": 1,
+              "recall": 1
+            },
+            {
+              "label": "IP_ADDRESS",
+              "goldSpans": 1,
+              "recall": 1
+            }
+          ],
+          "words": {
+            "recall": 0.7537,
+            "precision": 0.6882,
+            "f1": 0.7195
+          },
+          "nonPhiRemoved": 0.0972,
+          "intervals": {
+            "recall": {
+              "low": 0.7925,
+              "high": 0.8128
+            },
+            "characterRecall": {
+              "low": 0.6814,
+              "high": 0.7061
+            },
+            "precision": {
+              "low": 0.7024,
+              "high": 0.7296
+            },
+            "wordF1": {
+              "low": 0.71,
+              "high": 0.7291
+            },
+            "nonPhiRemoved": {
+              "low": 0.0935,
+              "high": 0.1008
+            }
+          }
+        },
+        {
+          "stack": "deterministic + clinical",
+          "recall": 0.9973,
+          "characterRecall": 0.9595,
+          "precision": 0.7634,
+          "missed": 8,
+          "labels": [
+            {
+              "label": "GEOGRAPHIC_LOCATION",
+              "goldSpans": 829,
+              "recall": 1
+            },
+            {
+              "label": "NAME",
+              "goldSpans": 814,
+              "recall": 1
+            },
+            {
+              "label": "DATE",
+              "goldSpans": 806,
+              "recall": 0.9913
+            },
+            {
+              "label": "MEDICAL_RECORD_NUMBER",
+              "goldSpans": 305,
+              "recall": 1
+            },
+            {
+              "label": "HEALTH_PLAN_BENEFICIARY_NUMBER",
+              "goldSpans": 91,
+              "recall": 1
+            },
+            {
+              "label": "PHONE_NUMBER",
+              "goldSpans": 45,
+              "recall": 1
+            },
+            {
+              "label": "SOCIAL_SECURITY_NUMBER",
+              "goldSpans": 33,
+              "recall": 1
+            },
+            {
+              "label": "EMAIL_ADDRESS",
+              "goldSpans": 31,
+              "recall": 0.9677
+            },
+            {
+              "label": "UNIQUE_IDENTIFIER",
+              "goldSpans": 14,
+              "recall": 1
+            },
+            {
+              "label": "ACCOUNT_NUMBER",
+              "goldSpans": 4,
+              "recall": 1
+            },
+            {
+              "label": "FAX_NUMBER",
+              "goldSpans": 2,
+              "recall": 1
+            },
+            {
+              "label": "CERTIFICATE_LICENSE_NUMBER",
+              "goldSpans": 1,
+              "recall": 1
+            },
+            {
+              "label": "IP_ADDRESS",
+              "goldSpans": 1,
+              "recall": 1
+            }
+          ],
+          "words": {
+            "recall": 0.9778,
+            "precision": 0.8793,
+            "f1": 0.9259
+          },
+          "nonPhiRemoved": 0.0256,
+          "intervals": {
+            "recall": {
+              "low": 0.9953,
+              "high": 0.9991
+            },
+            "characterRecall": {
+              "low": 0.956,
+              "high": 0.9632
+            },
+            "precision": {
+              "low": 0.7542,
+              "high": 0.773
+            },
+            "wordF1": {
+              "low": 0.9224,
+              "high": 0.9299
+            },
+            "nonPhiRemoved": {
+              "low": 0.0243,
+              "high": 0.0269
+            }
+          }
+        },
+        {
+          "stack": "deterministic + presidio + clinical",
+          "recall": 0.9996,
+          "characterRecall": 0.9631,
+          "precision": 0.7396,
+          "missed": 1,
+          "labels": [
+            {
+              "label": "GEOGRAPHIC_LOCATION",
+              "goldSpans": 829,
+              "recall": 1
+            },
+            {
+              "label": "NAME",
+              "goldSpans": 814,
+              "recall": 1
+            },
+            {
+              "label": "DATE",
+              "goldSpans": 806,
+              "recall": 1
+            },
+            {
+              "label": "MEDICAL_RECORD_NUMBER",
+              "goldSpans": 305,
+              "recall": 1
+            },
+            {
+              "label": "HEALTH_PLAN_BENEFICIARY_NUMBER",
+              "goldSpans": 91,
+              "recall": 1
+            },
+            {
+              "label": "PHONE_NUMBER",
+              "goldSpans": 45,
+              "recall": 1
+            },
+            {
+              "label": "SOCIAL_SECURITY_NUMBER",
+              "goldSpans": 33,
+              "recall": 1
+            },
+            {
+              "label": "EMAIL_ADDRESS",
+              "goldSpans": 31,
+              "recall": 0.9677
+            },
+            {
+              "label": "UNIQUE_IDENTIFIER",
+              "goldSpans": 14,
+              "recall": 1
+            },
+            {
+              "label": "ACCOUNT_NUMBER",
+              "goldSpans": 4,
+              "recall": 1
+            },
+            {
+              "label": "FAX_NUMBER",
+              "goldSpans": 2,
+              "recall": 1
+            },
+            {
+              "label": "CERTIFICATE_LICENSE_NUMBER",
+              "goldSpans": 1,
+              "recall": 1
+            },
+            {
+              "label": "IP_ADDRESS",
+              "goldSpans": 1,
+              "recall": 1
+            }
+          ],
+          "words": {
+            "recall": 0.9805,
+            "precision": 0.7304,
+            "f1": 0.8371
+          },
+          "nonPhiRemoved": 0.1035,
+          "intervals": {
+            "recall": {
+              "low": 0.9989,
+              "high": 1
+            },
+            "characterRecall": {
+              "low": 0.96,
+              "high": 0.9664
+            },
+            "precision": {
+              "low": 0.7287,
+              "high": 0.7514
+            },
+            "wordF1": {
+              "low": 0.8301,
+              "high": 0.8446
+            },
+            "nonPhiRemoved": {
+              "low": 0.0998,
+              "high": 0.1068
+            }
+          }
+        }
+      ],
+      "split": "all",
+      "note": "clinical sidecar on CUDA (RTX 5080) without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
+    },
+    {
+      "corpus": "physionet-deid",
+      "title": "PhysioNet Deidentified Medical Text 1.0",
+      "scope": "safe-harbor",
+      "version": "0.1.0",
+      "commit": "f57068ef032ea978c56a7f5851b14e9958ebcf12",
+      "date": "2026-10-17",
+      "documents": 2434,
+      "goldSpans": 1733,
+      "stacks": [
+        {
+          "stack": "deterministic",
+          "recall": 0.2504,
+          "characterRecall": 0.2924,
+          "precision": 0.8371,
+          "missed": 1299,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 593,
+              "recall": 0.4249
+            },
+            {
+              "label": "Date",
+              "goldSpans": 482,
+              "recall": 0.1265
+            },
+            {
+              "label": "Location",
+              "goldSpans": 367,
+              "recall": 0.0136
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 175,
+              "recall": 0.28
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 54,
+              "recall": 0.6296
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 53,
+              "recall": 0.5471
+            },
+            {
+              "label": "Age",
+              "goldSpans": 4,
+              "recall": 0.75
+            },
+            {
+              "label": "Other",
+              "goldSpans": 3,
+              "recall": 0.3333
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 2,
+              "recall": 0
+            }
+          ]
+        },
+        {
+          "stack": "deterministic + presidio",
+          "recall": 0.626,
+          "characterRecall": 0.6509,
+          "precision": 0.0633,
+          "missed": 648,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 593,
+              "recall": 0.8431
+            },
+            {
+              "label": "Date",
+              "goldSpans": 482,
+              "recall": 0.4668
+            },
+            {
+              "label": "Location",
+              "goldSpans": 367,
+              "recall": 0.3215
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 175,
+              "recall": 0.8342
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 54,
+              "recall": 0.9444
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 53,
+              "recall": 0.7735
+            },
+            {
+              "label": "Age",
+              "goldSpans": 4,
+              "recall": 0.75
+            },
+            {
+              "label": "Other",
+              "goldSpans": 3,
+              "recall": 0.3333
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 2,
+              "recall": 0
+            }
+          ]
+        },
+        {
+          "stack": "deterministic + clinical",
+          "recall": 0.8961,
+          "characterRecall": 0.8714,
+          "precision": 0.0467,
+          "missed": 180,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 593,
+              "recall": 0.919
+            },
+            {
+              "label": "Date",
+              "goldSpans": 482,
+              "recall": 0.9273
+            },
+            {
+              "label": "Location",
+              "goldSpans": 367,
+              "recall": 0.7874
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 175,
+              "recall": 0.9142
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 54,
+              "recall": 0.9629
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 53,
+              "recall": 1
+            },
+            {
+              "label": "Age",
+              "goldSpans": 4,
+              "recall": 0.75
+            },
+            {
+              "label": "Other",
+              "goldSpans": 3,
+              "recall": 1
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 2,
+              "recall": 0.5
+            }
+          ]
+        },
+        {
+          "stack": "deterministic + presidio + clinical",
+          "recall": 0.9145,
+          "characterRecall": 0.8876,
+          "precision": 0.0408,
+          "missed": 148,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 593,
+              "recall": 0.9595
+            },
+            {
+              "label": "Date",
+              "goldSpans": 482,
+              "recall": 0.9315
+            },
+            {
+              "label": "Location",
+              "goldSpans": 367,
+              "recall": 0.7956
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 175,
+              "recall": 0.9257
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 54,
+              "recall": 0.9814
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 53,
+              "recall": 1
+            },
+            {
+              "label": "Age",
+              "goldSpans": 4,
+              "recall": 0.75
+            },
+            {
+              "label": "Other",
+              "goldSpans": 3,
+              "recall": 1
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 2,
+              "recall": 0.5
+            }
+          ]
+        }
+      ],
+      "split": "all"
+    },
+    {
+      "corpus": "physionet-deid",
+      "title": "PhysioNet Deidentified Medical Text 1.0",
+      "scope": "safe-harbor",
+      "version": "0.1.0",
+      "commit": "491fbe34aaa77e672802220bbc8952db7d26f642",
+      "date": "2026-10-18",
+      "documents": 1307,
+      "goldSpans": 889,
+      "stacks": [
+        {
+          "stack": "deterministic",
+          "recall": 0.244,
+          "characterRecall": 0.2996,
+          "precision": 0.8048,
+          "missed": 672,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 292,
+              "recall": 0.4143
+            },
+            {
+              "label": "Date",
+              "goldSpans": 254,
+              "recall": 0.1259
+            },
+            {
+              "label": "Location",
+              "goldSpans": 177,
+              "recall": 0.0169
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 92,
+              "recall": 0.1739
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 37,
+              "recall": 0.6486
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 35,
+              "recall": 0.6
+            },
+            {
+              "label": "Other",
+              "goldSpans": 1,
+              "recall": 0
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 1,
+              "recall": 0
+            }
+          ],
+          "words": {
+            "recall": 0.2495,
+            "precision": 0.6787,
+            "f1": 0.3649
+          },
+          "nonPhiRemoved": 0.0007,
+          "intervals": {
+            "recall": {
+              "low": 0.2053,
+              "high": 0.2839
+            },
+            "characterRecall": {
+              "low": 0.2479,
+              "high": 0.3461
+            },
+            "precision": {
+              "low": 0.7397,
+              "high": 0.8625
+            },
+            "wordF1": {
+              "low": 0.3112,
+              "high": 0.415
+            },
+            "nonPhiRemoved": {
+              "low": 0.0004,
+              "high": 0.0009
+            }
+          }
+        },
+        {
+          "stack": "deterministic + presidio",
+          "recall": 0.6175,
+          "characterRecall": 0.6499,
+          "precision": 0.0602,
+          "missed": 340,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 292,
+              "recall": 0.8219
+            },
+            {
+              "label": "Date",
+              "goldSpans": 254,
+              "recall": 0.4527
+            },
+            {
+              "label": "Location",
+              "goldSpans": 177,
+              "recall": 0.3446
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 92,
+              "recall": 0.75
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 37,
+              "recall": 0.9729
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 35,
+              "recall": 0.8
+            },
+            {
+              "label": "Other",
+              "goldSpans": 1,
+              "recall": 0
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 1,
+              "recall": 0
+            }
+          ],
+          "words": {
+            "recall": 0.6039,
+            "precision": 0.0587,
+            "f1": 0.1071
+          },
+          "nonPhiRemoved": 0.0523,
+          "intervals": {
+            "recall": {
+              "low": 0.5628,
+              "high": 0.6644
+            },
+            "characterRecall": {
+              "low": 0.5906,
+              "high": 0.6961
+            },
+            "precision": {
+              "low": 0.0513,
+              "high": 0.0701
+            },
+            "wordF1": {
+              "low": 0.0923,
+              "high": 0.1236
+            },
+            "nonPhiRemoved": {
+              "low": 0.049,
+              "high": 0.0554
+            }
+          }
+        },
+        {
+          "stack": "deterministic + clinical",
+          "recall": 0.8616,
+          "characterRecall": 0.8419,
+          "precision": 0.5247,
+          "missed": 123,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 292,
+              "recall": 0.8595
+            },
+            {
+              "label": "Date",
+              "goldSpans": 254,
+              "recall": 0.9173
+            },
+            {
+              "label": "Location",
+              "goldSpans": 177,
+              "recall": 0.7457
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 92,
+              "recall": 0.8369
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 37,
+              "recall": 1
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 35,
+              "recall": 1
+            },
+            {
+              "label": "Other",
+              "goldSpans": 1,
+              "recall": 1
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 1,
+              "recall": 0
+            }
+          ],
+          "words": {
+            "recall": 0.8718,
+            "precision": 0.4476,
+            "f1": 0.5915
+          },
+          "nonPhiRemoved": 0.0053,
+          "intervals": {
+            "recall": {
+              "low": 0.8243,
+              "high": 0.8906
+            },
+            "characterRecall": {
+              "low": 0.7957,
+              "high": 0.8772
+            },
+            "precision": {
+              "low": 0.4753,
+              "high": 0.5731
+            },
+            "wordF1": {
+              "low": 0.536,
+              "high": 0.6409
+            },
+            "nonPhiRemoved": {
+              "low": 0.0044,
+              "high": 0.0062
+            }
+          }
+        },
+        {
+          "stack": "deterministic + presidio + clinical",
+          "recall": 0.8931,
+          "characterRecall": 0.8698,
+          "precision": 0.0829,
+          "missed": 95,
+          "labels": [
+            {
+              "label": "HCPName",
+              "goldSpans": 292,
+              "recall": 0.9212
+            },
+            {
+              "label": "Date",
+              "goldSpans": 254,
+              "recall": 0.9251
+            },
+            {
+              "label": "Location",
+              "goldSpans": 177,
+              "recall": 0.7627
+            },
+            {
+              "label": "RelativeProxyName",
+              "goldSpans": 92,
+              "recall": 0.8913
+            },
+            {
+              "label": "PTName",
+              "goldSpans": 37,
+              "recall": 1
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 35,
+              "recall": 1
+            },
+            {
+              "label": "Other",
+              "goldSpans": 1,
+              "recall": 1
+            },
+            {
+              "label": "PTNameInitial",
+              "goldSpans": 1,
+              "recall": 0
+            }
+          ],
+          "words": {
+            "recall": 0.8993,
+            "precision": 0.0823,
+            "f1": 0.1508
+          },
+          "nonPhiRemoved": 0.0542,
+          "intervals": {
+            "recall": {
+              "low": 0.8608,
+              "high": 0.9179
+            },
+            "characterRecall": {
+              "low": 0.8289,
+              "high": 0.9023
+            },
+            "precision": {
+              "low": 0.0714,
+              "high": 0.0952
+            },
+            "wordF1": {
+              "low": 0.1311,
+              "high": 0.1712
+            },
+            "nonPhiRemoved": {
+              "low": 0.0507,
+              "high": 0.0575
+            }
+          }
+        }
+      ],
+      "split": "report",
+      "note": "clinical sidecar on CUDA (RTX 5080) without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
+    }
+  ]
+}

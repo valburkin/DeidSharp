@@ -1,0 +1,12 @@
+# The sidecar's runtime packages. Edit this file, then regenerate the lock (see
+# README.md, "Dependencies"); the image installs exactly the locked set.
+fastapi==0.142.4
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+presidio-analyzer==2.2.362
+transformers==5.19.0
+spacy==3.8.13
+# spaCy's small English model, the version spaCy 3.8 is built for.
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+# CPU-only PyTorch, from PyTorch's own index: the image stays a few GB instead of pulling CUDA.
+torch==2.14.1+cpu

@@ -1,0 +1,42 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never paste real patient data, real identifiers or production logs.** Reproduce the problem with made-up values. A security problem (a known identifier left in output, leaked input in an error, a failure that reads as "nothing found") goes through [private reporting](https://github.com/valburkin/DeidSharp/security/advisories/new) instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce it, with fictional data
+      description: The smallest code, request or FHIR resource that shows it.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: DeidSharp version or commit
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part
+      options: [Library, FHIR, Presidio detector, LLM detector, Clinical sidecar, Evaluation tool, Documentation]
+    validations:
+      required: true
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Data
+      options:
+        - label: Everything in this issue is fictional; it holds no real patient data.
+          required: true

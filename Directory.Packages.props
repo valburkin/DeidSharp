@@ -1,0 +1,31 @@
+<Project>
+
+  <!-- Central package management: every version lives here; project files reference
+       packages without versions, so projects cannot drift apart. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!-- DeidSharp.Fhir -->
+  <ItemGroup>
+    <PackageVersion Include="Hl7.Fhir.R4" Version="6.6.0" />
+  </ItemGroup>
+
+  <!-- DeidSharp.Presidio -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.1" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.13" />
+    <PackageVersion Include="OllamaSharp" Version="5.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.13" />
+  </ItemGroup>
+
+  <!-- Tests -->
+  <ItemGroup>
+    <PackageVersion Include="CsCheck" Version="4.9.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="Testcontainers" Version="4.16.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+  </ItemGroup>
+
+</Project>

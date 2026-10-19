@@ -1,0 +1,66 @@
+# Weekly updates for every pinned dependency, each at least five days old, so a release
+# pulled soon after publishing never arrives. Minor and patch releases of the build and
+# test tools arrive as one pull request; anything that can change detection arrives on
+# its own, to be read and tested first (docs/testing.md, "Continuous integration").
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    groups:
+      nuget-minor-and-patch:
+        update-types: [minor, patch]
+
+  # The SDK in global.json.
+  - package-ecosystem: dotnet-sdk
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    groups:
+      actions-minor-and-patch:
+        update-types: [minor, patch]
+
+  # The sidecar's check tools. Its runtime lock is compiled with uv across two indexes,
+  # which Dependabot cannot regenerate: it is updated by hand (sidecar/README.md,
+  # "Dependencies"), and CI audits it for known vulnerabilities on every run and weekly.
+  - package-ecosystem: pip
+    directory: /sidecar/tools
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    groups:
+      sidecar-check-tools:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directories:
+      - /sidecar
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    ignore:
+      # The sidecar's Python moves with its CI job and ruff.toml, by hand.
+      - dependency-name: python
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  # The stock Presidio image, pinned by digest so detection never changes unseen.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
