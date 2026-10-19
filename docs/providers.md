@@ -7,7 +7,7 @@ A detector finds PHI in text and returns spans. Detectors are stackable: `Compos
 | `KnownIdentifierDetector` | The record's own identifiers: names (in full or by any part), dates in any common format, phones and record numbers with any punctuation, addresses, places, organizations | Deterministic; certain (score 1.0); finds unusual names and unlabeled numbers that generic models miss | Only finds what the record lists; identifiers shorter than 4 characters are skipped | Nothing |
 | `PatternPhiDetector` | Shaped identifiers: SSNs, phones, emails, URLs, IPs, MACs, payment cards (Luhn), VINs (check digit), labeled MRNs and other ids, dates, ages over 89, street addresses, ZIPs, names after titles and labels | Deterministic; high precision on formatted identifiers | Cannot find names or places in plain prose | Nothing |
 | `GazetteerDetector` (`DeidSharp.Gazetteer`) | Names and places by public-domain lists: US Census surnames, first names and places. A name or place that is also a common word or clinical term ("Will", "Foley") counts only with context ("Dr. Will", "daughter Hope", "Mark Brown", "in Hope") | Deterministic; finds names in capitals and names a model misses | Costs precision: clinical words that are also names; US lists only; never lowercase words by default | Nothing |
-| `LlmPhiDetector` (`DeidSharp.Llm`) | Whatever the model lists: it is asked for every kind of PHI, and each piece it copies from the text is located there (anything it made up is dropped) | Context: names and places no list or pattern knows | Not deterministic; slow without a GPU (about 0.4 s per note for a 26B model on a 16 GB GPU); the text goes to the model, so keep it local | An `IChatClient` (for example OllamaSharp's `OllamaApiClient`) |
+| `LlmPhiDetector` (`DeidSharp.Llm`) | Whatever the model lists: it is asked for every kind of PHI, and each piece it copies from the text is located there (anything it made up is dropped) | Context: names and places no list or pattern knows | Not deterministic; slow without a GPU (about 0.4 s per note for a 26B model on a 16 GB GPU, once loaded); the text goes to the model, so keep it local | An `IChatClient` (for example OllamaSharp's `OllamaApiClient`) |
 | `PresidioDetector` → stock image | Presidio's recognizers plus spaCy NER (persons, places, organizations, dates) | General-purpose NER | Not trained on clinical notes | Docker (`mcr.microsoft.com/presidio-analyzer`) |
 | `PresidioDetector` → clinical sidecar | Presidio's pattern recognizers (without spaCy's general NER, URLs and US driver's licenses, which flagged far more clinical text than PHI) and `obi/deid_roberta_i2b2`, a RoBERTa model trained on the i2b2 2014 de-identification corpus (patients, staff, hospitals, places, ages, dates, ids) | Clinical-text NER, runs offline | Large image (about 5 GB); slow on CPU, so a GPU build is available (`sidecar/README.md`, "GPU") | Docker, built from `sidecar/` |
 
@@ -19,7 +19,7 @@ var stack = new CompositePhiDetector([clinical, new GazetteerDetector(), new Kno
 
 ### With a local language model
 
-Four stacks with an LLM layer were measured on held-out nursing notes ([findings](evaluation/findings.md), F30 and F35). Each uses `gemma4:26b-a4b` with `LlmPrompt.WithPoolExamples`, no gazetteer, and `SafeHarborAgeFilter`. Pick by what costs you more, a missed identifier or a removed word:
+Four stacks with an LLM layer were measured on held-out nursing notes, at the release and three times over with the same results ([findings](evaluation/findings.md), F37 and F38). Each uses `gemma4:26b-a4b` with `LlmPrompt.WithPoolExamples`, no gazetteer, and `SafeHarborAgeFilter`. Pick by what costs you more, a missed identifier or a removed word:
 
 | Stack | Recall | Precision | Text that isn't PHI removed | Needs |
 |---|---:|---:|---:|---|
@@ -28,7 +28,7 @@ Four stacks with an LLM layer were measured on held-out nursing notes ([findings
 | Balanced, one model call: the clinical sidecar's places only (`CategoryFilter`), known identifiers, patterns, LLM | 97.4% | 72.2% | 0.24% | The same |
 | Precision first: known identifiers, patterns, LLM | 96.4% | 83.3% | 0.15% | A GPU for the model |
 
-For scale, PhysioNet's deid, with the lists built for this corpus, scored 97.3% recall at 72.6% precision on the same notes. The model alone scored 96.4% at 88.9%: on these notes the patterns added nothing next to it, but they stay in every stack, since they don't vary between runs or model versions and they find the record's own identifiers, which these notes don't supply (F32).
+For scale, PhysioNet's deid, with the lists built for this corpus, scored 97.3% recall at 72.6% precision on the same notes, and Philter 91.5% at 6.7%. Paired, no stack finds significantly more than deid with those lists; the balanced stacks match its precision, and the precision-first stack has 10.7 points more at the same recall (F37). The model alone scored 96.4% at 88.9%: on these notes the patterns added nothing next to it, but they stay in every stack, since they don't vary between runs or model versions and they find the record's own identifiers, which these notes don't supply (F32).
 
 ```csharp
 // chat: an IChatClient for a model on this machine, for example OllamaSharp's OllamaApiClient.

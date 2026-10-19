@@ -4,28 +4,28 @@
       "corpus": "asq-phi",
       "title": "ASQ-PHI (synthetic clinical queries)",
       "scope": "safe-harbor",
-      "version": "0.1.0",
-      "commit": "491fbe34aaa77e672802220bbc8952db7d26f642",
-      "date": "2026-10-18",
+      "version": "1.0.0",
+      "commit": "ee4f226115b2a685eb407415c16675713ac5bf4a",
+      "date": "2026-10-19",
       "documents": 1051,
       "goldSpans": 2976,
       "stacks": [
         {
           "stack": "deterministic",
-          "recall": 0.4758,
-          "characterRecall": 0.4507,
-          "precision": 0.9971,
-          "missed": 1560,
+          "recall": 0.8662,
+          "characterRecall": 0.7069,
+          "precision": 0.9768,
+          "missed": 398,
           "labels": [
             {
               "label": "GEOGRAPHIC_LOCATION",
               "goldSpans": 829,
-              "recall": 0.0494
+              "recall": 0.7346
             },
             {
               "label": "NAME",
               "goldSpans": 814,
-              "recall": 0.1486
+              "recall": 0.8783
             },
             {
               "label": "DATE",
@@ -84,50 +84,50 @@
             }
           ],
           "words": {
-            "recall": 0.4905,
-            "precision": 0.9962,
-            "f1": 0.6573
+            "recall": 0.7197,
+            "precision": 0.9861,
+            "f1": 0.832
           },
-          "nonPhiRemoved": 0.0005,
+          "nonPhiRemoved": 0.0041,
           "intervals": {
             "recall": {
-              "low": 0.4661,
-              "high": 0.4855
+              "low": 0.8546,
+              "high": 0.8779
             },
             "characterRecall": {
-              "low": 0.4422,
-              "high": 0.46
+              "low": 0.697,
+              "high": 0.7176
             },
             "precision": {
-              "low": 0.9943,
-              "high": 0.9994
+              "low": 0.9709,
+              "high": 0.9822
             },
             "wordF1": {
-              "low": 0.6496,
-              "high": 0.6654
+              "low": 0.8256,
+              "high": 0.8387
             },
             "nonPhiRemoved": {
-              "low": 0.0001,
-              "high": 0.0009
+              "low": 0.003,
+              "high": 0.0052
             }
           }
         },
         {
           "stack": "deterministic + presidio",
-          "recall": 0.803,
-          "characterRecall": 0.6931,
-          "precision": 0.716,
-          "missed": 586,
+          "recall": 0.9227,
+          "characterRecall": 0.78,
+          "precision": 0.7345,
+          "missed": 230,
           "labels": [
             {
               "label": "GEOGRAPHIC_LOCATION",
               "goldSpans": 829,
-              "recall": 0.3606
+              "recall": 0.7889
             },
             {
               "label": "NAME",
               "goldSpans": 814,
-              "recall": 0.9987
+              "recall": 1
             },
             {
               "label": "DATE",
@@ -186,39 +186,39 @@
             }
           ],
           "words": {
-            "recall": 0.7537,
-            "precision": 0.6882,
-            "f1": 0.7195
+            "recall": 0.8286,
+            "precision": 0.7039,
+            "f1": 0.7612
           },
-          "nonPhiRemoved": 0.0972,
+          "nonPhiRemoved": 0.1002,
           "intervals": {
             "recall": {
-              "low": 0.7925,
-              "high": 0.8128
+              "low": 0.9137,
+              "high": 0.9318
             },
             "characterRecall": {
-              "low": 0.6814,
-              "high": 0.7061
+              "low": 0.7698,
+              "high": 0.7899
             },
             "precision": {
-              "low": 0.7024,
-              "high": 0.7296
+              "low": 0.7212,
+              "high": 0.7476
             },
             "wordF1": {
-              "low": 0.71,
-              "high": 0.7291
+              "low": 0.7521,
+              "high": 0.7703
             },
             "nonPhiRemoved": {
-              "low": 0.0935,
-              "high": 0.1008
+              "low": 0.0965,
+              "high": 0.104
             }
           }
         },
         {
           "stack": "deterministic + clinical",
           "recall": 0.9973,
-          "characterRecall": 0.9595,
-          "precision": 0.7634,
+          "characterRecall": 0.9638,
+          "precision": 0.9529,
           "missed": 8,
           "labels": [
             {
@@ -289,38 +289,38 @@
           ],
           "words": {
             "recall": 0.9778,
-            "precision": 0.8793,
-            "f1": 0.9259
+            "precision": 0.976,
+            "f1": 0.9769
           },
-          "nonPhiRemoved": 0.0256,
+          "nonPhiRemoved": 0.0087,
           "intervals": {
             "recall": {
               "low": 0.9953,
               "high": 0.9991
             },
             "characterRecall": {
-              "low": 0.956,
-              "high": 0.9632
+              "low": 0.9605,
+              "high": 0.9673
             },
             "precision": {
-              "low": 0.7542,
-              "high": 0.773
+              "low": 0.9444,
+              "high": 0.9609
             },
             "wordF1": {
-              "low": 0.9224,
-              "high": 0.9299
+              "low": 0.974,
+              "high": 0.9799
             },
             "nonPhiRemoved": {
-              "low": 0.0243,
-              "high": 0.0269
+              "low": 0.0071,
+              "high": 0.0101
             }
           }
         },
         {
           "stack": "deterministic + presidio + clinical",
           "recall": 0.9996,
-          "characterRecall": 0.9631,
-          "precision": 0.7396,
+          "characterRecall": 0.9671,
+          "precision": 0.9177,
           "missed": 1,
           "labels": [
             {
@@ -391,287 +391,58 @@
           ],
           "words": {
             "recall": 0.9805,
-            "precision": 0.7304,
-            "f1": 0.8371
+            "precision": 0.9503,
+            "f1": 0.9651
           },
-          "nonPhiRemoved": 0.1035,
+          "nonPhiRemoved": 0.0184,
           "intervals": {
             "recall": {
               "low": 0.9989,
               "high": 1
             },
             "characterRecall": {
-              "low": 0.96,
-              "high": 0.9664
+              "low": 0.9639,
+              "high": 0.9703
             },
             "precision": {
-              "low": 0.7287,
-              "high": 0.7514
+              "low": 0.9066,
+              "high": 0.9285
             },
             "wordF1": {
-              "low": 0.8301,
-              "high": 0.8446
+              "low": 0.9612,
+              "high": 0.9692
             },
             "nonPhiRemoved": {
-              "low": 0.0998,
-              "high": 0.1068
+              "low": 0.016,
+              "high": 0.0208
             }
           }
         }
       ],
       "split": "all",
-      "note": "clinical sidecar on CUDA (RTX 5080) without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
+      "note": "clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
     },
     {
       "corpus": "physionet-deid",
       "title": "PhysioNet Deidentified Medical Text 1.0",
       "scope": "safe-harbor",
-      "version": "0.1.0",
-      "commit": "f57068ef032ea978c56a7f5851b14e9958ebcf12",
-      "date": "2026-10-17",
-      "documents": 2434,
-      "goldSpans": 1733,
-      "stacks": [
-        {
-          "stack": "deterministic",
-          "recall": 0.2504,
-          "characterRecall": 0.2924,
-          "precision": 0.8371,
-          "missed": 1299,
-          "labels": [
-            {
-              "label": "HCPName",
-              "goldSpans": 593,
-              "recall": 0.4249
-            },
-            {
-              "label": "Date",
-              "goldSpans": 482,
-              "recall": 0.1265
-            },
-            {
-              "label": "Location",
-              "goldSpans": 367,
-              "recall": 0.0136
-            },
-            {
-              "label": "RelativeProxyName",
-              "goldSpans": 175,
-              "recall": 0.28
-            },
-            {
-              "label": "PTName",
-              "goldSpans": 54,
-              "recall": 0.6296
-            },
-            {
-              "label": "Phone",
-              "goldSpans": 53,
-              "recall": 0.5471
-            },
-            {
-              "label": "Age",
-              "goldSpans": 4,
-              "recall": 0.75
-            },
-            {
-              "label": "Other",
-              "goldSpans": 3,
-              "recall": 0.3333
-            },
-            {
-              "label": "PTNameInitial",
-              "goldSpans": 2,
-              "recall": 0
-            }
-          ]
-        },
-        {
-          "stack": "deterministic + presidio",
-          "recall": 0.626,
-          "characterRecall": 0.6509,
-          "precision": 0.0633,
-          "missed": 648,
-          "labels": [
-            {
-              "label": "HCPName",
-              "goldSpans": 593,
-              "recall": 0.8431
-            },
-            {
-              "label": "Date",
-              "goldSpans": 482,
-              "recall": 0.4668
-            },
-            {
-              "label": "Location",
-              "goldSpans": 367,
-              "recall": 0.3215
-            },
-            {
-              "label": "RelativeProxyName",
-              "goldSpans": 175,
-              "recall": 0.8342
-            },
-            {
-              "label": "PTName",
-              "goldSpans": 54,
-              "recall": 0.9444
-            },
-            {
-              "label": "Phone",
-              "goldSpans": 53,
-              "recall": 0.7735
-            },
-            {
-              "label": "Age",
-              "goldSpans": 4,
-              "recall": 0.75
-            },
-            {
-              "label": "Other",
-              "goldSpans": 3,
-              "recall": 0.3333
-            },
-            {
-              "label": "PTNameInitial",
-              "goldSpans": 2,
-              "recall": 0
-            }
-          ]
-        },
-        {
-          "stack": "deterministic + clinical",
-          "recall": 0.8961,
-          "characterRecall": 0.8714,
-          "precision": 0.0467,
-          "missed": 180,
-          "labels": [
-            {
-              "label": "HCPName",
-              "goldSpans": 593,
-              "recall": 0.919
-            },
-            {
-              "label": "Date",
-              "goldSpans": 482,
-              "recall": 0.9273
-            },
-            {
-              "label": "Location",
-              "goldSpans": 367,
-              "recall": 0.7874
-            },
-            {
-              "label": "RelativeProxyName",
-              "goldSpans": 175,
-              "recall": 0.9142
-            },
-            {
-              "label": "PTName",
-              "goldSpans": 54,
-              "recall": 0.9629
-            },
-            {
-              "label": "Phone",
-              "goldSpans": 53,
-              "recall": 1
-            },
-            {
-              "label": "Age",
-              "goldSpans": 4,
-              "recall": 0.75
-            },
-            {
-              "label": "Other",
-              "goldSpans": 3,
-              "recall": 1
-            },
-            {
-              "label": "PTNameInitial",
-              "goldSpans": 2,
-              "recall": 0.5
-            }
-          ]
-        },
-        {
-          "stack": "deterministic + presidio + clinical",
-          "recall": 0.9145,
-          "characterRecall": 0.8876,
-          "precision": 0.0408,
-          "missed": 148,
-          "labels": [
-            {
-              "label": "HCPName",
-              "goldSpans": 593,
-              "recall": 0.9595
-            },
-            {
-              "label": "Date",
-              "goldSpans": 482,
-              "recall": 0.9315
-            },
-            {
-              "label": "Location",
-              "goldSpans": 367,
-              "recall": 0.7956
-            },
-            {
-              "label": "RelativeProxyName",
-              "goldSpans": 175,
-              "recall": 0.9257
-            },
-            {
-              "label": "PTName",
-              "goldSpans": 54,
-              "recall": 0.9814
-            },
-            {
-              "label": "Phone",
-              "goldSpans": 53,
-              "recall": 1
-            },
-            {
-              "label": "Age",
-              "goldSpans": 4,
-              "recall": 0.75
-            },
-            {
-              "label": "Other",
-              "goldSpans": 3,
-              "recall": 1
-            },
-            {
-              "label": "PTNameInitial",
-              "goldSpans": 2,
-              "recall": 0.5
-            }
-          ]
-        }
-      ],
-      "split": "all"
-    },
-    {
-      "corpus": "physionet-deid",
-      "title": "PhysioNet Deidentified Medical Text 1.0",
-      "scope": "safe-harbor",
-      "version": "0.1.0",
-      "commit": "491fbe34aaa77e672802220bbc8952db7d26f642",
-      "date": "2026-10-18",
+      "version": "1.0.0",
+      "commit": "ee4f226115b2a685eb407415c16675713ac5bf4a",
+      "date": "2026-10-19",
       "documents": 1307,
       "goldSpans": 889,
       "stacks": [
         {
           "stack": "deterministic",
-          "recall": 0.244,
-          "characterRecall": 0.2996,
-          "precision": 0.8048,
-          "missed": 672,
+          "recall": 0.4206,
+          "characterRecall": 0.484,
+          "precision": 0.4377,
+          "missed": 515,
           "labels": [
             {
               "label": "HCPName",
               "goldSpans": 292,
-              "recall": 0.4143
+              "recall": 0.6061
             },
             {
               "label": "Date",
@@ -681,17 +452,17 @@
             {
               "label": "Location",
               "goldSpans": 177,
-              "recall": 0.0169
+              "recall": 0.3672
             },
             {
               "label": "RelativeProxyName",
               "goldSpans": 92,
-              "recall": 0.1739
+              "recall": 0.5434
             },
             {
               "label": "PTName",
               "goldSpans": 37,
-              "recall": 0.6486
+              "recall": 0.7837
             },
             {
               "label": "Phone",
@@ -710,45 +481,45 @@
             }
           ],
           "words": {
-            "recall": 0.2495,
-            "precision": 0.6787,
-            "f1": 0.3649
+            "recall": 0.3818,
+            "precision": 0.3585,
+            "f1": 0.3698
           },
-          "nonPhiRemoved": 0.0007,
+          "nonPhiRemoved": 0.0041,
           "intervals": {
             "recall": {
-              "low": 0.2053,
-              "high": 0.2839
+              "low": 0.3723,
+              "high": 0.4629
             },
             "characterRecall": {
-              "low": 0.2479,
-              "high": 0.3461
+              "low": 0.4374,
+              "high": 0.5268
             },
             "precision": {
-              "low": 0.7397,
-              "high": 0.8625
+              "low": 0.3695,
+              "high": 0.5035
             },
             "wordF1": {
-              "low": 0.3112,
-              "high": 0.415
+              "low": 0.3167,
+              "high": 0.4196
             },
             "nonPhiRemoved": {
-              "low": 0.0004,
-              "high": 0.0009
+              "low": 0.003,
+              "high": 0.0052
             }
           }
         },
         {
           "stack": "deterministic + presidio",
-          "recall": 0.6175,
-          "characterRecall": 0.6499,
-          "precision": 0.0602,
-          "missed": 340,
+          "recall": 0.6636,
+          "characterRecall": 0.6968,
+          "precision": 0.0616,
+          "missed": 299,
           "labels": [
             {
               "label": "HCPName",
               "goldSpans": 292,
-              "recall": 0.8219
+              "recall": 0.863
             },
             {
               "label": "Date",
@@ -758,17 +529,17 @@
             {
               "label": "Location",
               "goldSpans": 177,
-              "recall": 0.3446
+              "recall": 0.4745
             },
             {
               "label": "RelativeProxyName",
               "goldSpans": 92,
-              "recall": 0.75
+              "recall": 0.8043
             },
             {
               "label": "PTName",
               "goldSpans": 37,
-              "recall": 0.9729
+              "recall": 1
             },
             {
               "label": "Phone",
@@ -787,45 +558,45 @@
             }
           ],
           "words": {
-            "recall": 0.6039,
-            "precision": 0.0587,
-            "f1": 0.1071
+            "recall": 0.6381,
+            "precision": 0.0589,
+            "f1": 0.1079
           },
-          "nonPhiRemoved": 0.0523,
+          "nonPhiRemoved": 0.0554,
           "intervals": {
             "recall": {
-              "low": 0.5628,
-              "high": 0.6644
+              "low": 0.6099,
+              "high": 0.7111
             },
             "characterRecall": {
-              "low": 0.5906,
-              "high": 0.6961
+              "low": 0.6381,
+              "high": 0.7462
             },
             "precision": {
-              "low": 0.0513,
-              "high": 0.0701
+              "low": 0.0523,
+              "high": 0.0723
             },
             "wordF1": {
-              "low": 0.0923,
-              "high": 0.1236
+              "low": 0.0927,
+              "high": 0.1249
             },
             "nonPhiRemoved": {
-              "low": 0.049,
-              "high": 0.0554
+              "low": 0.0523,
+              "high": 0.0583
             }
           }
         },
         {
           "stack": "deterministic + clinical",
-          "recall": 0.8616,
-          "characterRecall": 0.8419,
-          "precision": 0.5247,
-          "missed": 123,
+          "recall": 0.883,
+          "characterRecall": 0.8637,
+          "precision": 0.4296,
+          "missed": 104,
           "labels": [
             {
               "label": "HCPName",
               "goldSpans": 292,
-              "recall": 0.8595
+              "recall": 0.8904
             },
             {
               "label": "Date",
@@ -835,12 +606,12 @@
             {
               "label": "Location",
               "goldSpans": 177,
-              "recall": 0.7457
+              "recall": 0.7683
             },
             {
               "label": "RelativeProxyName",
               "goldSpans": 92,
-              "recall": 0.8369
+              "recall": 0.9021
             },
             {
               "label": "PTName",
@@ -864,45 +635,45 @@
             }
           ],
           "words": {
-            "recall": 0.8718,
-            "precision": 0.4476,
-            "f1": 0.5915
+            "recall": 0.8876,
+            "precision": 0.3592,
+            "f1": 0.5115
           },
-          "nonPhiRemoved": 0.0053,
+          "nonPhiRemoved": 0.0085,
           "intervals": {
             "recall": {
-              "low": 0.8243,
-              "high": 0.8906
+              "low": 0.847,
+              "high": 0.9112
             },
             "characterRecall": {
-              "low": 0.7957,
-              "high": 0.8772
+              "low": 0.8168,
+              "high": 0.9011
             },
             "precision": {
-              "low": 0.4753,
-              "high": 0.5731
+              "low": 0.3846,
+              "high": 0.4764
             },
             "wordF1": {
-              "low": 0.536,
-              "high": 0.6409
+              "low": 0.4604,
+              "high": 0.5598
             },
             "nonPhiRemoved": {
-              "low": 0.0044,
-              "high": 0.0062
+              "low": 0.0071,
+              "high": 0.01
             }
           }
         },
         {
           "stack": "deterministic + presidio + clinical",
-          "recall": 0.8931,
-          "characterRecall": 0.8698,
-          "precision": 0.0829,
-          "missed": 95,
+          "recall": 0.9032,
+          "characterRecall": 0.8802,
+          "precision": 0.0811,
+          "missed": 86,
           "labels": [
             {
               "label": "HCPName",
               "goldSpans": 292,
-              "recall": 0.9212
+              "recall": 0.9349
             },
             {
               "label": "Date",
@@ -912,12 +683,12 @@
             {
               "label": "Location",
               "goldSpans": 177,
-              "recall": 0.7627
+              "recall": 0.7796
             },
             {
               "label": "RelativeProxyName",
               "goldSpans": 92,
-              "recall": 0.8913
+              "recall": 0.913
             },
             {
               "label": "PTName",
@@ -941,37 +712,37 @@
             }
           ],
           "words": {
-            "recall": 0.8993,
-            "precision": 0.0823,
-            "f1": 0.1508
+            "recall": 0.9068,
+            "precision": 0.0797,
+            "f1": 0.1466
           },
-          "nonPhiRemoved": 0.0542,
+          "nonPhiRemoved": 0.057,
           "intervals": {
             "recall": {
-              "low": 0.8608,
-              "high": 0.9179
+              "low": 0.8709,
+              "high": 0.93
             },
             "characterRecall": {
-              "low": 0.8289,
-              "high": 0.9023
+              "low": 0.836,
+              "high": 0.9146
             },
             "precision": {
-              "low": 0.0714,
-              "high": 0.0952
+              "low": 0.0701,
+              "high": 0.0932
             },
             "wordF1": {
-              "low": 0.1311,
-              "high": 0.1712
+              "low": 0.1278,
+              "high": 0.1656
             },
             "nonPhiRemoved": {
-              "low": 0.0507,
-              "high": 0.0575
+              "low": 0.0538,
+              "high": 0.0601
             }
           }
         }
       ],
       "split": "report",
-      "note": "clinical sidecar on CUDA (RTX 5080) without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
+      "note": "clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
     }
   ]
 }

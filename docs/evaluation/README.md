@@ -31,21 +31,21 @@ The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2
 
 ### ASQ-PHI (synthetic clinical queries)
 
-1,051 documents · 2,976 gold spans · scope `safe-harbor` · split `all` · DeidSharp 0.1.0 (`491fbe3`) · 2026-10-18 · clinical sidecar on CUDA (RTX 5080) without spaCy NER, URL and license recognizers; stock Presidio 2.2.362
+1,051 documents · 2,976 gold spans · scope `safe-harbor` · split `all` · DeidSharp 1.0.0 (`ee4f226`) · 2026-10-19 · clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362
 
 | Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
 |---|---:|---:|---:|---:|---:|---:|
-| deterministic | 47.58% (46.61–48.55) | 45.07% | 99.71% | 65.73% | 0.05% | 1,560 |
-| deterministic + presidio | 80.30% (79.25–81.28) | 69.31% | 71.60% | 71.95% | 9.72% | 586 |
-| deterministic + clinical | 99.73% (99.53–99.91) | 95.95% | 76.34% | 92.59% | 2.56% | 8 |
-| deterministic + presidio + clinical | 99.96% (99.89–100.00) | 96.31% | 73.96% | 83.71% | 10.35% | 1 |
+| deterministic | 86.62% (85.46–87.79) | 70.69% | 97.68% | 83.20% | 0.41% | 398 |
+| deterministic + presidio | 92.27% (91.37–93.18) | 78.00% | 73.45% | 76.12% | 10.02% | 230 |
+| deterministic + clinical | 99.73% (99.53–99.91) | 96.38% | 95.29% | 97.69% | 0.87% | 8 |
+| deterministic + presidio + clinical | 99.96% (99.89–100.00) | 96.71% | 91.77% | 96.51% | 1.84% | 1 |
 
 <details><summary>Recall by corpus label</summary>
 
 | Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
 |---|---:|---:|---:|---:|---:|
-| GEOGRAPHIC_LOCATION | 829 | 4.94% | 36.06% | 100.00% | 100.00% |
-| NAME | 814 | 14.86% | 99.87% | 100.00% | 100.00% |
+| GEOGRAPHIC_LOCATION | 829 | 73.46% | 78.89% | 100.00% | 100.00% |
+| NAME | 814 | 87.83% | 100.00% | 100.00% | 100.00% |
 | DATE | 806 | 98.51% | 99.87% | 99.13% | 100.00% |
 | MEDICAL_RECORD_NUMBER | 305 | 90.49% | 92.13% | 100.00% | 100.00% |
 | HEALTH_PLAN_BENEFICIARY_NUMBER | 91 | 65.93% | 73.62% | 100.00% | 100.00% |
@@ -62,51 +62,24 @@ The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2
 
 ### PhysioNet Deidentified Medical Text 1.0
 
-2,434 documents · 1,733 gold spans · scope `safe-harbor` · split `all` · DeidSharp 0.1.0 (`f57068e`) · 2026-10-17
+1,307 documents · 889 gold spans · scope `safe-harbor` · split `report` · DeidSharp 1.0.0 (`ee4f226`) · 2026-10-19 · clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362
 
 | Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
 |---|---:|---:|---:|---:|---:|---:|
-| deterministic | 25.04% | 29.24% | 83.71% | – | – | 1,299 |
-| deterministic + presidio | 62.60% | 65.09% | 6.33% | – | – | 648 |
-| deterministic + clinical | 89.61% | 87.14% | 4.67% | – | – | 180 |
-| deterministic + presidio + clinical | 91.45% | 88.76% | 4.08% | – | – | 148 |
+| deterministic | 42.06% (37.23–46.29) | 48.40% | 43.77% | 36.98% | 0.41% | 515 |
+| deterministic + presidio | 66.36% (60.99–71.11) | 69.68% | 6.16% | 10.79% | 5.54% | 299 |
+| deterministic + clinical | 88.30% (84.70–91.12) | 86.37% | 42.96% | 51.15% | 0.85% | 104 |
+| deterministic + presidio + clinical | 90.32% (87.09–93.00) | 88.02% | 8.11% | 14.66% | 5.70% | 86 |
 
 <details><summary>Recall by corpus label</summary>
 
 | Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
 |---|---:|---:|---:|---:|---:|
-| HCPName | 593 | 42.49% | 84.31% | 91.90% | 95.95% |
-| Date | 482 | 12.65% | 46.68% | 92.73% | 93.15% |
-| Location | 367 | 1.36% | 32.15% | 78.74% | 79.56% |
-| RelativeProxyName | 175 | 28.00% | 83.42% | 91.42% | 92.57% |
-| PTName | 54 | 62.96% | 94.44% | 96.29% | 98.14% |
-| Phone | 53 | 54.71% | 77.35% | 100.00% | 100.00% |
-| Age | 4 | 75.00% | 75.00% | 75.00% | 75.00% |
-| Other | 3 | 33.33% | 33.33% | 100.00% | 100.00% |
-| PTNameInitial | 2 | 0.00% | 0.00% | 50.00% | 50.00% |
-
-</details>
-
-### PhysioNet Deidentified Medical Text 1.0
-
-1,307 documents · 889 gold spans · scope `safe-harbor` · split `report` · DeidSharp 0.1.0 (`491fbe3`) · 2026-10-18 · clinical sidecar on CUDA (RTX 5080) without spaCy NER, URL and license recognizers; stock Presidio 2.2.362
-
-| Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
-|---|---:|---:|---:|---:|---:|---:|
-| deterministic | 24.40% (20.53–28.39) | 29.96% | 80.48% | 36.49% | 0.07% | 672 |
-| deterministic + presidio | 61.75% (56.28–66.44) | 64.99% | 6.02% | 10.71% | 5.23% | 340 |
-| deterministic + clinical | 86.16% (82.43–89.06) | 84.19% | 52.47% | 59.15% | 0.53% | 123 |
-| deterministic + presidio + clinical | 89.31% (86.08–91.79) | 86.98% | 8.29% | 15.08% | 5.42% | 95 |
-
-<details><summary>Recall by corpus label</summary>
-
-| Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
-|---|---:|---:|---:|---:|---:|
-| HCPName | 292 | 41.43% | 82.19% | 85.95% | 92.12% |
+| HCPName | 292 | 60.61% | 86.30% | 89.04% | 93.49% |
 | Date | 254 | 12.59% | 45.27% | 91.73% | 92.51% |
-| Location | 177 | 1.69% | 34.46% | 74.57% | 76.27% |
-| RelativeProxyName | 92 | 17.39% | 75.00% | 83.69% | 89.13% |
-| PTName | 37 | 64.86% | 97.29% | 100.00% | 100.00% |
+| Location | 177 | 36.72% | 47.45% | 76.83% | 77.96% |
+| RelativeProxyName | 92 | 54.34% | 80.43% | 90.21% | 91.30% |
+| PTName | 37 | 78.37% | 100.00% | 100.00% | 100.00% |
 | Phone | 35 | 60.00% | 80.00% | 100.00% | 100.00% |
 | Other | 1 | 0.00% | 0.00% | 100.00% | 100.00% |
 | PTNameInitial | 1 | 0.00% | 0.00% | 0.00% | 0.00% |

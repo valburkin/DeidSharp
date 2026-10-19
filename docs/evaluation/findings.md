@@ -514,6 +514,89 @@ The tuning half's results hold:
 
 The patterns and the clinical model are worth their precision only for what this corpus doesn't measure (F32) or for recall above the model's own.
 
+## F36. The baselines, scored by this tool, reproduce what was published about them
+
+*2026-10-19, commit `ee4f226` (v1.0.0), ASQ-PHI and PhysioNet's reporting half, CPU clinical sidecar. deid 1.1 and Philter (philter-ucsf 1.0.3) in their default configurations, run as [the evaluation README](README.md#comparing-with-deid) describes (`--export`, `tools/baselines`).*
+
+| Check | Measured here | Published or earlier |
+|---|---:|---:|
+| deid on PhysioNet's reporting half, default configuration: recall, precision | 97.30%, 72.57% | 97.30%, 72.57% (F23) |
+| deid on ASQ-PHI, read from an `--export`: recall, character recall, precision | 85.85%, 68.45%, 94.69% | 85.85%, 68.45%, 94.69% (F5, converted outside this repository) |
+| Philter on ASQ-PHI: character recall (95% CI) | 70.68% (69.86–71.61) | 70.89% (MedDeID, Hellemans et al.) |
+
+Philter handles each note on its own: run in 12 batches, its output on ASQ-PHI is identical, file for file, to one run over all the queries, so PhysioNet's notes were run in batches (one run over all of them still hadn't finished after an hour). On PhysioNet's reporting half it finds 91.45% of the PHI (88.99–93.71) at 6.71% precision and removes 7.81% of the text that isn't PHI: it removes every word its whitelists don't keep. On ASQ-PHI's short queries it finds 96.74% at 93.55%.
+
+**Meaning:** both baselines are measured as their authors run them, and the conversions that put their spans on this tool's offsets are checked against published or independent numbers. Philter is the recall-first baseline (6.75 points more recall than deid with none of the lists built for this corpus, paired 95% CI +3.37 to +10.36, at a tenth of its precision on the nursing notes), deid the precision-first one.
+
+## F37. The results of record on PhysioNet's reporting half
+
+*2026-10-19, **PhysioNet reporting half** (1,307 notes, 889 gold spans), commit `ee4f226` (v1.0.0), the last look at that half. CPU clinical sidecar; gemma4:26b-a4b with all forty examples (8,192-token window); no gazetteer next to the model (D3); the age rule on every stack; deid 1.1 and Philter as in F36. Each language-model stack ran three times with identical results (F38). The commands are in [REPRODUCING.md](../../REPRODUCING.md#every-stack-and-tool-paired).*
+
+| Stack | Recall (95% CI) | Missed | Character recall | Precision (95% CI) | Word F1 | Non-PHI text removed |
+|---|---:|---:|---:|---:|---:|---:|
+| Recall first: deterministic + clinical + LLM | 98.88% (97.91–99.58) | 10 | 99.00% | 54.31% (49.32–59.68) | 62.72% | 0.57% |
+| Balanced: the same + second opinion | 98.20% (96.86–99.24) | 16 | 98.84% | 70.80% (67.17–74.88) | 80.53% | 0.26% |
+| Balanced, one call: deterministic + clinical places + LLM | 97.41% (95.79–98.64) | 23 | 98.21% | 72.15% (68.34–76.07) | 81.33% | 0.24% |
+| Precision first: deterministic + LLM | 96.40% (94.83–97.84) | 32 | 97.51% | 83.26% (79.51–86.54) | 85.53% | 0.15% |
+| The LLM alone | 96.40% (94.83–97.84) | 32 | 97.51% | 88.91% (85.51–91.59) | 89.77% | 0.09% |
+| Without an LLM: deterministic (with gazetteer) + clinical | 88.30% (84.71–91.11) | 104 | 86.38% | 42.97% (38.46–47.64) | 51.15% | 0.85% |
+| deid, default configuration (all corpus aids) | 97.30% (95.73–98.61) | 24 | 97.73% | 72.57% (67.77–76.77) | 82.27% | 0.18% |
+| deid without its corpus aids | 96.06% (94.16–97.57) | 35 | 96.41% | 72.39% (67.40–76.72) | 82.74% | 0.17% |
+| deid without those and its hospital list | 84.70% (80.11–88.87) | 136 | 83.17% | 70.37% (65.07–75.06) | 78.34% | 0.17% |
+| Philter, default configuration | 91.45% (88.99–93.71) | 76 | 88.00% | 6.71% (5.77–7.63) | 12.51% | 7.81% |
+
+Each DeidSharp stack against deid, paired (the change in points, with its 95% interval; `--compare-with`):
+
+| Stack | vs deid default: recall | precision | vs deid without corpus aids: recall | precision |
+|---|---:|---:|---:|---:|
+| Recall first | +1.57 (0.00 to +3.27) | −18.26 (−23.52 to −12.55) | +2.81 (+1.04 to +4.80) | −18.08 (−23.43 to −12.26) |
+| Balanced | +0.90 (−0.67 to +2.54) | −1.77 (−6.05 to +2.96) | +2.14 (+0.33 to +4.04) | −1.59 (−5.95 to +3.30) |
+| Balanced, one call | +0.11 (−1.77 to +2.00) | −0.43 (−4.44 to +4.11) | +1.35 (−0.39 to +3.40) | −0.24 (−4.38 to +4.41) |
+| Precision first | −0.90 (−2.93 to +1.16) | +10.68 (+7.02 to +14.82) | +0.34 (−1.62 to +2.50) | +10.87 (+7.23 to +15.15) |
+| The LLM alone | −0.90 (−2.93 to +1.16) | +16.34 (+12.32 to +20.90) | +0.34 (−1.62 to +2.50) | +16.52 (+12.46 to +21.21) |
+| Without an LLM | −9.00 (−12.80 to −5.90) | −29.61 (−34.39 to −24.21) | −7.76 (−11.38 to −4.74) | −29.42 (−34.35 to −23.90) |
+
+Every stack with the LLM finds more than Philter (+4.95 to +7.42 points of recall, every interval above zero) at many times its precision. The F30 and F35 numbers repeat exactly at the release commit.
+
+**Meaning:** on held-out notes from deid's home corpus, with no list built for the corpus:
+
+- **No configuration finds significantly more PHI than deid with every list built for this corpus.** The recall-first stack's lead (+1.57, 10 spans missed against 24) has a paired interval that starts at zero; the others tie.
+- **Against deid without its corpus aids** (it keeps its hospital list, F10), the recall-first and balanced stacks find more (+2.81 and +2.14, both intervals above zero), and the balanced stack ties its precision.
+- **The precision-first stack and the LLM alone tie deid's recall** at 10.7 and 16.3 points more precision, paired, and remove less of the other text (0.15% and 0.09% against deid's 0.18%).
+- **Without a language model**, the recommended stack trails deid by 9 points of recall and ties deid without any of its corpus lists (+3.60, −2.31 to +9.47).
+- Character recall tells the same story: 97.5% to 99.0% for the stacks with the LLM, 97.7% for deid, so the counting by overlap doesn't flatter them.
+
+What these numbers don't cover: they come from one corpus, one hospital's ICU nursing notes from about 2007, with surrogate PHI; the prompt's fictional examples were written after reading the tuning half's misses (F12, F16), so they fit this kind of note; and the gold standard has errors of its own, so some "false positives" may be PHI it missed (Palacios et al.).
+
+## F38. The language model's answers repeat exactly from run to run
+
+*2026-10-19, commit `ee4f226`, the F37 and F39 runs, each made three times in a row.*
+
+All three runs on each corpus gave the same spans for every stack, the same counts and the same intervals, and the same as F30, F32 and F35 at their earlier commits. The two-span variation of M8 (gemma4:12b, 2026-10-18) did not recur with gemma4:26b-a4b at temperature 0.
+
+The model took 0.37 to 0.39 s per note on PhysioNet's notes in each run, the second opinion 0.11 s and the CPU clinical sidecar 0.29 to 0.50 s; on ASQ-PHI's queries the model took 0.51 s per query. The 17.9 GB model doesn't fit the 16 GB card, so Ollama keeps a fifth of it on the CPU; in a trial run before these, made while less GPU memory was free, it took 1.01 s per note, with the same answers.
+
+**Meaning:** in this setup a rerun repeats the results of record; a different model upload, Ollama version or GPU may not, so record them with any rerun (REPRODUCING.md). The speed depends on how much of the model fits on the GPU.
+
+## F39. The results of record on ASQ-PHI
+
+*2026-10-19, ASQ-PHI (1,051 queries, 2,976 gold spans), commit `ee4f226` (v1.0.0), the same configurations as F37, three identical runs. ASQ-PHI has no held-out half and was consulted throughout the work, so these are a second check, not a held-out result.*
+
+| Stack | Recall (95% CI) | Missed | Character recall | Precision | Word F1 | Non-PHI text removed |
+|---|---:|---:|---:|---:|---:|---:|
+| Recall first: deterministic + clinical + LLM | 99.73% (99.53–99.90) | 8 | 97.87% | 96.65% | 98.08% | 0.57% |
+| Balanced: the same + second opinion | 99.66% (99.46–99.86) | 10 | 97.84% | 99.12% | 98.58% | 0.24% |
+| Balanced, one call: deterministic + clinical places + LLM | 99.66% (99.46–99.86) | 10 | 97.80% | 99.12% | 98.61% | 0.22% |
+| Precision first: deterministic + LLM | 99.63% (99.40–99.83) | 11 | 97.68% | 99.57% | 98.67% | 0.14% |
+| The LLM alone | 99.63% (99.40–99.83) | 11 | 97.65% | 99.57% | 98.70% | 0.13% |
+| Without an LLM: deterministic (with gazetteer) + clinical | 99.73% (99.53–99.90) | 8 | 96.38% | 95.30% | 97.69% | 0.86% |
+| deid, default configuration | 85.85% (84.82–86.98) | 421 | 68.45% | 94.69% | 80.59% | 1.52% |
+| Philter, default configuration | 96.74% (96.13–97.34) | 97 | 70.68% | 93.55% | 89.19% | 2.18% |
+
+Paired, the LLM alone finds 13.78 points more than deid (+12.65 to +14.80) and 2.89 more than Philter (+2.28 to +3.47), at 4.89 and 6.02 points more precision.
+
+**Meaning:** every DeidSharp stack with the clinical model or the LLM is at the ceiling on these short queries: 8 to 11 of 2,976 spans missed, one of them a labeling error (the word "email" tagged as an address). Character recall, the measure MedDeID publishes, is 97.7% to 97.9% with the LLM, below MedDeID's 98.9% and above GLiNER's 96.3% (M3). Two cautions: ASQ-PHI's queries were written by GPT-4o and the corpus is public, so a language model may have seen it or its style; and the age rule matters here, since ASQ-PHI, like Safe Harbor, doesn't tag ages under 90.
+
 ## Methodological notes
 
 - **M1. deid's input format.** deid ignores text on the line that carries `||||END_OF_RECORD`; the marker needs a line of its own. A first run on ASQ-PHI with the marker after the text found nothing at all.
@@ -548,13 +631,13 @@ The patterns and the clinical model are worth their precision only for what this
 
 ## References
 
-The works these findings rely on or compare with. Zhou et al. is the closest prior work.
+The works these findings rely on or compare with. Zhou et al. is the closest prior work. The citations PhysioNet asks for, for its dataset, the deid software and PhysioNet itself, are in the [evaluation README](README.md#corpora).
 
-- Zhou, Zhang, Jiao, Baird, Cetintemel. Improving Clinical Note De-identification via Post-NER Verification and Candidate Expansion. IEEE/ACM CHASE 2026, pp. 422-427. https://doi.org/10.1109/CHASE69719.2026.00072
-- Palacios, et al. arXiv:2608.17051. 2026.
+- Zhou Z, Zhang R, Jiao Z, Baird G, Cetintemel U. Improving Clinical Note De-identification via Post-NER Verification and Candidate Expansion. IEEE/ACM CHASE 2026, pp. 422-427. https://doi.org/10.1109/CHASE69719.2026.00072
+- Palacios D, Neeley MB, Otto AA, Dhamodharan S, Woodhouse JP, Lin C, Zobeck M, Liu Z, Jeong HH. Institution-Specific LLM Prompting Recovers PHI That De-identification Systems and Their Gold Standards Both Miss. arXiv:2608.17051. 2026.
 - Wiest IC, et al. Deidentifying Medical Documents with Local, Privacy-Preserving Large Language Models: The LLM-Anonymizer. NEJM AI. 2025;2(4):AIdbp2400537.
 - Neamatullah I, et al. Automated de-identification of free-text medical records. BMC Med Inform Decis Mak. 2008;8:32. https://doi.org/10.1186/1472-6947-8-32
-- Norgeot B, et al. Protected Health Information filter (Philter). npj Digit Med. 2020. https://doi.org/10.1038/s41746-020-0258-y
-- Moore C, et al. Pyclipse, a library for deidentification of free-text clinical notes. arXiv:2311.02748.
-- Hellemans S, et al. MedDeID enables locally governed clinical-text de-identification from real or synthetic training data. arXiv:2609.10049.
-- Weatherhead J, Golovko G, McCaffrey P. ASQ-PHI. https://github.com/JamesWeatherhead/asq-phi
+- Norgeot B, et al. Protected Health Information filter (Philter): accurately and securely de-identifying free-text clinical notes. npj Digit Med. 2020;3:57. https://doi.org/10.1038/s41746-020-0258-y (the software: philter-ucsf 1.0.3, https://github.com/BCHSI/philter-ucsf)
+- Moore C, Ranisau J, Nelson W, Petch J, Johnson A. Pyclipse, a library for deidentification of free-text clinical notes. arXiv:2311.02748. 2023.
+- Hellemans S, Stroobants T, Scheurwegs E, Meysman P, Jorens PG, Laukens K. MedDeID enables locally governed clinical-text de-identification from real or synthetic training data. arXiv:2609.10049. 2026.
+- Weatherhead J, Golovko G, McCaffrey P. ASQ-PHI: An adversarial synthetic data benchmark for clinical de-identification and search utility. Data in Brief. 2026. https://doi.org/10.1016/j.dib.2026.112586 (the data: https://github.com/JamesWeatherhead/asq-phi)

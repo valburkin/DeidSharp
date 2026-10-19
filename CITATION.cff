@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use DeidSharp or its measurements, please cite it as below."
+title: "DeidSharp: de-identification of health data for .NET"
+type: software
+authors:
+  - family-names: Burkin
+    given-names: Valentin
+version: 1.0.0
+date-released: 2026-10-19
+license: MIT
+repository-code: "https://github.com/valburkin/DeidSharp"
+keywords:
+  - de-identification
+  - protected health information
+  - HIPAA Safe Harbor
+  - clinical text
+  - FHIR
+  - large language models

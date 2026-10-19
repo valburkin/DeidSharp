@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "label": "PHI recall (PhysioNet notes)",
-  "message": "86.1% · deterministic + clinical · v0.1.0",
+  "message": "88.3% · deterministic + clinical · v1.0.0",
   "color": "blue"
 }
