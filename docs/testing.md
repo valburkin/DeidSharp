@@ -41,6 +41,7 @@ DEIDSHARP_INTEGRATION=1 DEIDSHARP_CLINICAL=1 dotnet test tests/DeidSharp.Integra
 | Integration with stock Presidio | The integration tests against the pinned stock Presidio image, the same one `docker-compose.yml` pins (a test keeps the two in step); the clinical sidecar's tests stay opt-in, its image being several GB |
 | Clinical sidecar code | The image's lock downloads with every hash matching and holds no package with a known vulnerability (`pip-audit`); `ruff check`, `ruff format --check` (with `tools/baselines`) and the sidecar's tests |
 | Evaluation results (release tags only) | `docs/evaluation/results.json` holds safe-harbor measurements on PhysioNet's notes and ASQ-PHI, all made with the tagged version ([evaluation](evaluation/README.md#before-a-release)) |
+| Publish (release tags only) | After every other job passes, packs the five libraries and their symbols and pushes them to nuget.org by Trusted Publishing; the tag must name the packages' version |
 
 `.github/workflows/codeql.yml` scans the C#, the Python and the workflows with CodeQL, once the repository is public (a private one would need GitHub Advanced Security). The weekly runs catch a vulnerability published against a pinned package when nothing changed.
 

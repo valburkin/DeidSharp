@@ -52,6 +52,8 @@ jobs:
       - run: dotnet build DeidSharp.slnx --configuration Release --no-restore
       # Microsoft.Testing.Platform: no -nologo, which would be passed to the test app.
       - run: dotnet test DeidSharp.slnx --configuration Release --no-build
+      # The five packages and their symbols, as a release ships them.
+      - run: dotnet pack DeidSharp.slnx --configuration Release --no-build --output artifacts
 
   # The PhysioNet notes may not leave a credentialed maintainer's machine, so CI cannot
   # measure on them. A maintainer runs DeidSharp.Evaluation.Cli before tagging
@@ -143,3 +145,44 @@ jobs:
       - run: ruff check sidecar tools/baselines
       - run: ruff format --check sidecar tools/baselines
       - run: python -m pytest sidecar/tests
+
+  # A release tag that passed every job above is packed here and pushed to nuget.org with
+  # Trusted Publishing: GitHub's OIDC token is exchanged for a key that lives an hour, so
+  # no API key is stored anywhere. nuget.org can't delete a version, so the "nuget"
+  # environment can hold the push for a person's approval (repository settings).
+  publish:
+    name: Publish to nuget.org
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [dotnet, evaluation-results, integration, sidecar]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - run: dotnet restore DeidSharp.slnx --locked-mode
+      # On GitHub Actions the build is a ContinuousIntegrationBuild (Directory.Build.props).
+      - run: dotnet pack DeidSharp.slnx --configuration Release --no-restore --output artifacts
+      # A tag must push the version it names, never another one.
+      - name: Check the packages' version
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test -f "artifacts/DeidSharp.${TAG#v}.nupkg" || { echo "The packages aren't version ${TAG#v}; set it in Directory.Build.props." >&2; exit 1; }
+      - name: Log in to nuget.org
+        id: nuget
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+      # Each .nupkg is pushed with its .snupkg.
+      - name: Push the packages
+        run: dotnet nuget push "artifacts/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}" --skip-duplicate

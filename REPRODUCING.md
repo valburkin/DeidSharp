@@ -102,7 +102,7 @@ For an earlier finding, start from these commands and set the flags its settings
 
 ## Commits
 
-F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs, and F36 onward reran the configurations that matter at `v1.0.0`. The published table names the commit it was measured at, which is in this repository.
+F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers.
 
 ## What to expect
 

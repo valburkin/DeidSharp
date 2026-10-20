@@ -12,6 +12,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Data\example-pool.json" LogicalName="DeidSharp.Llm.Data.example-pool.json" />
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\assets\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
