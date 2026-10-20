@@ -43,6 +43,7 @@ ReSharper-clean is part of done. Check with `jb inspectcode DeidSharp.slnx --sev
 - `sidecar/`: the clinical analyzer (Presidio with a transformer NER model, run offline).
 - `tools/DeidSharp.Evaluation.Cli/`: measures detector stacks on annotated corpora (PhysioNet's nursing notes, the bundled ASQ-PHI copy) and publishes the numbers to `docs/evaluation`. Not a package. It also holds the experiments that didn't earn a place in the libraries (`RepeatedNameDetector`, `TfIdfExampleRetriever`, the self-check second opinion), so every finding stays reproducible.
 - `tools/baselines/`: what runs the other tools the evaluation compares with (Philter's image, a converter of their output to the tool's TSV). Neither tool is vendored.
+- `samples/`: console programs that use the libraries as an application would, built by CI.
 - `tests/`: `DeidSharp.Tests` (unit, property and corpus tests, mirroring `src/`), `DeidSharp.Evaluation.Cli.Tests` (the evaluation tool, mirroring `tools/`) and `DeidSharp.IntegrationTests` (real sidecars, opt-in). Read the tests as the specification.
 
 ## Code conventions
@@ -66,7 +67,7 @@ ReSharper-clean is part of done. Check with `jb inspectcode DeidSharp.slnx --sev
   - If a name suggests a pattern the code doesn't implement, say so.
 - **Public API.** The packages' public types are a contract for every caller: extend them, don't break them, and list a breaking change in the CHANGELOG.
 - **Options** validate their own values. A bad value throws; it never falls back to a default silently.
-- **Docs travel with code.** The README examples are run as tests (`ReadmeExamplesTests`), so keep them in step. [docs/safe-harbor.md](docs/safe-harbor.md) lists, element by element, how each of the 18 identifiers is handled.
+- **Docs travel with code.** The README and guide examples are run as tests (`ReadmeExamplesTests`, `GuideExamplesTests`), so keep them in step. [docs/guide.md](docs/guide.md) is for users of the packages: what to do and what to expect, never the research behind it, which lives in `docs/evaluation`. [docs/safe-harbor.md](docs/safe-harbor.md) lists, element by element, how each of the 18 identifiers is handled.
 - **Language and comments.** American English everywhere: code, comments, docs and commit messages. Comments explain why, in the density and voice of the surrounding code.
 
 ## Data

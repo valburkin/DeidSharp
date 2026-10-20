@@ -43,7 +43,10 @@ public class ReadmeExamplesTests
     {
         using var summary = JsonDocument.Parse("""{"conditions":["CKD, SSN 123-45-6789"]}""");
 
-        var report = LeakScanner.CreateDefault().ScanJson(summary.RootElement, KnownIdentifiers.Empty, cancellationToken: TestContext.Current.CancellationToken);
+        var report = LeakScanner.CreateDefault().ScanJson(summary.RootElement, KnownIdentifiers.Empty, new LeakScanOptions
+        {
+            PathPropertyNames = new HashSet<string>(["conditions", "plan"]),
+        }, TestContext.Current.CancellationToken);
 
         Assert.False(report.IsClean);
         Assert.Equal("$.conditions[0]: possible Ssn at [9, 20) (pattern:ssn+pattern:ssn-labeled)", Assert.Single(report.Describe()));

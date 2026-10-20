@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The smallest useful program: de-identifies a note with the deterministic detectors (no
+    model, no network), with tags and then with surrogates, and checks text produced
+    elsewhere. In your own project, reference the package instead: dotnet add package DeidSharp
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeidSharp\DeidSharp.csproj" />
+  </ItemGroup>
+
+</Project>

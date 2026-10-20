@@ -2,7 +2,34 @@
 
 How well DeidSharp's detector stacks find PHI in annotated text, measured with `tools/DeidSharp.Evaluation.Cli`. What the measurements taught us, and the decisions they led to, are in [findings](findings.md). The numbers below are generated from [results.json](results.json); the README's badge comes from [badge.json](badge.json). [REPRODUCING.md](../../REPRODUCING.md) gives the environment and the commands to rerun any of them.
 
-The badge shows the recall of the deterministic detectors with the clinical sidecar (the stack [providers](../providers.md) recommends) on the held-out half of PhysioNet's notes, rounded down.
+The badge shows the recall of the deterministic detectors with the clinical sidecar, the recommended stack without a language model, on the held-out half of PhysioNet's notes, rounded down.
+
+## Results at a glance
+
+PhysioNet's reporting half: 1,307 ICU nursing notes, 889 PHI spans, that no choice was tuned on. Measured at `v1.0.0`; each stack with a language model ran three times with identical results ([findings](findings.md), F37 and F38).
+
+| Stack | Recall (95% CI) | Missed | Character recall | Precision | Other text removed |
+|---|---:|---:|---:|---:|---:|
+| Recall first: deterministic + clinical + LLM | 98.88% (97.91–99.58) | 10 | 99.00% | 54.31% | 0.57% |
+| Balanced: the same + second opinion | 98.20% (96.86–99.24) | 16 | 98.84% | 70.80% | 0.26% |
+| Balanced, one call: deterministic + clinical places + LLM | 97.41% (95.79–98.64) | 23 | 98.21% | 72.15% | 0.24% |
+| Precision first: deterministic + LLM | 96.40% (94.83–97.84) | 32 | 97.51% | 83.26% | 0.15% |
+| The LLM alone | 96.40% (94.83–97.84) | 32 | 97.51% | 88.91% | 0.09% |
+| No LLM: deterministic + clinical | 88.30% (84.71–91.11) | 104 | 86.38% | 42.97% | 0.85% |
+| deid, with the lists built for this corpus | 97.30% (95.73–98.61) | 24 | 97.73% | 72.57% | 0.18% |
+| deid without its corpus aids | 96.06% (94.16–97.57) | 35 | 96.41% | 72.39% | 0.17% |
+| Philter | 91.45% (88.99–93.71) | 76 | 88.00% | 6.71% | 7.81% |
+
+The LLM is `gemma4:26b-a4b` through Ollama, with `LlmPrompt.WithPoolExamples`. "Deterministic" is known identifiers and patterns, plus the gazetteer in the stack without an LLM only (D3). Paired with deid on the same resamples:
+
+- **No configuration finds significantly more PHI than deid with every list built for this corpus.** The recall-first stack misses 10 spans against deid's 24, but its paired interval (+1.57 points, 0.00 to +3.27) starts at zero.
+- **Against deid without its corpus aids**, the recall-first and balanced stacks find more (+2.81 and +2.14 points, both intervals above zero), and the balanced stack ties its precision.
+- **The precision-first stack and the LLM alone tie deid's recall** at 10.7 and 16.3 points more precision.
+- **Without a language model**, DeidSharp trails deid by 9 points of recall.
+
+On ASQ-PHI (1,051 synthetic clinical queries, a second check with no held-out half), every stack with the clinical model or the LLM removes 99.6% to 99.7% of the PHI, at 95% to 99.6% precision (F39).
+
+The generated tables under [Results](#results) hold only the stacks without a language model: those are the ones the tool publishes, because a local model can't be pinned the way the sidecars are. The language-model numbers are the console output logged in the findings.
 
 ## Tuning and reporting halves
 
@@ -102,6 +129,16 @@ The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2
 - **Overlap counts as found.** This is lenient next to the strict span matching some papers report, so compare published numbers with care.
 
 Known issue in ASQ-PHI: one tag marks the word "email" as an email address (query 815). Every stack misses it.
+
+## Why .NET
+
+Most de-identification research is written in Python; DeidSharp is not, for three reasons.
+
+- **It began as a library for .NET systems**, which Python tools don't serve in-process, and it is still used that way: the measured stacks are the ones an application runs.
+- **The models run on their usual stack.** The clinical model is Python (Presidio and transformers) in its sidecar, and the language model runs in Ollama. C# does the orchestration, the rules, the filters and the scoring, so the language doesn't change what a model finds.
+- **Other tools are scored by the same code.** The evaluation tool reads any tool's spans from a file (`--predictions`), so a tool in another language is measured on the same notes, split and scorer; PhysioNet's deid (Perl) and Philter (Python) are scored that way.
+
+Reproducing the results needs the .NET SDK and Docker, not knowledge of C#.
 
 ## Running it
 

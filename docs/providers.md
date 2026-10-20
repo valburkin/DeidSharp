@@ -11,7 +11,7 @@ A detector finds PHI in text and returns spans. Detectors are stackable: `Compos
 | `PresidioDetector` → stock image | Presidio's recognizers plus spaCy NER (persons, places, organizations, dates) | General-purpose NER | Not trained on clinical notes | Docker (`mcr.microsoft.com/presidio-analyzer`) |
 | `PresidioDetector` → clinical sidecar | Presidio's pattern recognizers (without spaCy's general NER, URLs and US driver's licenses, which flagged far more clinical text than PHI) and `obi/deid_roberta_i2b2`, a RoBERTa model trained on the i2b2 2014 de-identification corpus (patients, staff, hospitals, places, ages, dates, ids) | Clinical-text NER, runs offline | Large image (about 5 GB); slow on CPU, so a GPU build is available (`sidecar/README.md`, "GPU") | Docker, built from `sidecar/` |
 
-The recommended stack for real clinical text is all four kinds: clinical NER, known identifiers, patterns and the gazetteer. The gazetteer trades some text for recall: on PhysioNet's nursing notes it raised recall from 87.7% to 90.5% and lowered precision from 55% to 42% ([findings](evaluation/findings.md), F9). Leave it out where keeping every word matters more. With an LLM layer (`LlmPhiDetector`), leave the gazetteer out: the model finds the names and places it was added for, and the gazetteer then costs 10 to 20 points of precision for 2 or 3 spans in 844 ([findings](evaluation/findings.md), F24, decision D3).
+Without a language model, the recommended stack for real clinical text is clinical NER, known identifiers, patterns and the gazetteer; [the guide](guide.md#choosing-a-detector-stack) compares it with the stacks that add a local language model. The gazetteer trades some text for recall: on clinical notes it raised recall by about 3 points and lowered precision by about 13. Leave it out where keeping every word matters more. With an LLM layer (`LlmPhiDetector`), leave the gazetteer out: the model finds the names and places it was added for, and the gazetteer then costs 10 to 20 points of precision for almost no recall.
 
 ```csharp
 var stack = new CompositePhiDetector([clinical, new GazetteerDetector(), new KnownIdentifierDetector(), new PatternPhiDetector()]);
@@ -19,7 +19,7 @@ var stack = new CompositePhiDetector([clinical, new GazetteerDetector(), new Kno
 
 ### With a local language model
 
-Four stacks with an LLM layer were measured on held-out nursing notes, at the release and three times over with the same results ([findings](evaluation/findings.md), F37 and F38). Each uses `gemma4:26b-a4b` with `LlmPrompt.WithPoolExamples`, no gazetteer, and `SafeHarborAgeFilter`. Pick by what costs you more, a missed identifier or a removed word:
+Four stacks with an LLM layer were measured on clinical notes none of them was tuned on ([how](evaluation/README.md)). Each uses `gemma4:26b-a4b` with `LlmPrompt.WithPoolExamples`, no gazetteer, and `SafeHarborAgeFilter`. Pick by what costs you more, a missed identifier or a removed word:
 
 | Stack | Recall | Precision | Text that isn't PHI removed | Needs |
 |---|---:|---:|---:|---|
@@ -28,25 +28,9 @@ Four stacks with an LLM layer were measured on held-out nursing notes, at the re
 | Balanced, one model call: the clinical sidecar's places only (`CategoryFilter`), known identifiers, patterns, LLM | 97.4% | 72.2% | 0.24% | The same |
 | Precision first: known identifiers, patterns, LLM | 96.4% | 83.3% | 0.15% | A GPU for the model |
 
-For scale, PhysioNet's deid, with the lists built for this corpus, scored 97.3% recall at 72.6% precision on the same notes, and Philter 91.5% at 6.7%. Paired, no stack finds significantly more than deid with those lists; the balanced stacks match its precision, and the precision-first stack has 10.7 points more at the same recall (F37). The model alone scored 96.4% at 88.9%: on these notes the patterns added nothing next to it, but they stay in every stack, since they don't vary between runs or model versions and they find the record's own identifiers, which these notes don't supply (F32).
+Keep the patterns and the known-identifier detector in every stack, even next to a model: they don't vary between runs or model versions, and they find the record's own identifiers.
 
-```csharp
-// chat: an IChatClient for a model on this machine, for example OllamaSharp's OllamaApiClient.
-var llm = new LlmPhiDetector(chat, new LlmDetectorOptions { Prompt = LlmPrompt.WithPoolExamples });
-var known = new KnownIdentifierDetector();
-var patterns = new PatternPhiDetector();
-
-var recallFirst = new SafeHarborAgeFilter(new CompositePhiDetector([clinical, llm, known, patterns]));
-var balanced = new SafeHarborAgeFilter(new LlmSecondOpinion(new CompositePhiDetector([clinical, llm, known, patterns]), chat));
-var places = new CategoryFilter(clinical, [PhiCategory.Location, PhiCategory.Organization]);
-var balancedOneCall = new SafeHarborAgeFilter(new CompositePhiDetector([places, llm, known, patterns]));
-var precisionFirst = new SafeHarborAgeFilter(new CompositePhiDetector([llm, known, patterns]));
-```
-
-- **Context window.** `WithPoolExamples` is about 5,000 tokens. Ollama's default window of 4,096 cuts a longer prompt from the start, instructions included, without an error. Set `num_ctx` to at least 8,192 through `ConfigureRequest`.
-- **Why organizations.** The clinical model labels hospitals as organizations, so keeping its locations alone would lose them.
-- **Thinking.** Turn a reasoning model's thinking off through `ConfigureRequest`: with it on, a note takes about a minute instead of a second.
-- **What the second opinion may veto.** It may drop only the spans the clinical model found, never a known identifier's, a pattern's or the LLM's (by their source names, so keep the LLM detector's name starting with `llm`). It also never drops a location or an organization: the model rejected real hospitals (F26). It cost 6 of 889 spans on held-out notes.
+The code for each stack, with the Ollama settings that matter (the context window, thinking off, and the same settings for the second opinion), is in [the guide](guide.md#the-recommended-stacks), with what the second opinion may veto. In short: the clinical model labels hospitals as organizations, which is why the one-call stack keeps its locations and organizations.
 
 ## Stacking rules
 
@@ -74,7 +58,7 @@ Register one with dependency injection as a typed HTTP client:
 
 ```csharp
 services.AddPresidioDetector(o => o.Endpoint = new Uri("http://clinical:3000/"))
-        .AddStandardResilienceHandler();   // optional, from Microsoft.Extensions.Http.Resilience
+        .AddStandardResilienceHandler();   // optional, Microsoft.Extensions.Http.Resilience; raise its 10 s attempt timeout for a CPU sidecar
 
 var presidio = serviceProvider.GetRequiredService<PresidioDetector>();
 ```

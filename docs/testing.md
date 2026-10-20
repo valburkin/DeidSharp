@@ -53,7 +53,7 @@ The tests here use fictional data. Before using DeidSharp on real records, measu
 
 1. **Sample** notes from the source you will de-identify, under your data governance. Include every note type (discharge, progress, radiology, messages).
 2. **Annotate** every identifier with its category. Two annotators and an adjudication step give a reliable gold standard. The i2b2/n2c2 2014 de-identification guidelines are a good reference for what counts.
-3. **Build** an `AnnotatedText` per note, plus the record's `KnownIdentifiers`.
+3. **Build** an `AnnotatedText` per note. `DetectionEvaluator` gives detectors the text only, so the known-identifier detector finds nothing: the result is a floor for use with the record's identifiers.
 4. **Run** your detector stack through `DetectionEvaluator`. Report recall, character recall and precision, and recall per category. `tools/DeidSharp.Evaluation.Cli` does this for the corpora it can read ([evaluation](evaluation/README.md)); a reader for your own format is one class.
 5. **Read the misses.** A missed name is a leak; look at each one and decide whether a detector, a pattern, the known identifiers or the stack needs to change.
 6. **Repeat** whenever the source system, the note types, the detectors or DeidSharp change.

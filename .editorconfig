@@ -71,3 +71,7 @@ dotnet_diagnostic.CA1859.severity = none
 [tools/**.cs]
 # Tools are console hosts, not libraries: there is no synchronization context to deadlock on.
 dotnet_diagnostic.CA2007.severity = none
+
+[samples/**.cs]
+# Samples are console hosts, not libraries: there is no synchronization context to deadlock on.
+dotnet_diagnostic.CA2007.severity = none

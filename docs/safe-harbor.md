@@ -48,3 +48,4 @@ Safe Harbor allows a code that lets the covered entity re-identify the data (45 
 - Text attachments are kept only as UTF-8 or US-ASCII without control characters; text in any other charset is removed rather than read, since it cannot be checked.
 - Modifier extensions that are not allow-listed are removed, which can change what a resource means. Each removal is counted in `FhirDeidentificationStatistics.ModifierExtensionsRemoved` for review.
 - Numeric dates without a year ("3/5") are not treated as dates in text, because that is how pain scores and blood pressures are written. NER detectors may still catch them.
+- In free text, a date is cut to its year without knowing whose date it is, so the birth year of someone aged 90 or over is kept, as is any year that reveals such an age. In FHIR, the record's birth date is removed for them. Where it matters, use tags, or remove such dates before de-identifying.

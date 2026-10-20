@@ -38,7 +38,7 @@ These hold by construction and are covered by tests:
 
 ## Using it safely
 
-1. **Stack detectors.** For real notes, use NER (the clinical sidecar) together with the known-identifier and pattern detectors. Do not use NER alone.
+1. **Stack detectors.** For real notes, use NER (the clinical sidecar), a local language model, or both, together with the known-identifier and pattern detectors. Do not use a model alone. [The guide](guide.md#choosing-a-detector-stack) compares the stacks.
 2. **Pass what the record knows.** Give `TextDeidentifier` the subject's `KnownIdentifiers`. `FhirDeidentifier` extracts them itself.
 3. **Keep verification on.** Treat a `ResidualPhiException` as a stop: inspect the record (by position, not by logging the value) and fix the rules or detectors.
 4. **Measure recall before use.** Annotate a sample of your own notes and run `DetectionEvaluator`. Look at missed spans by category, not just the overall number.

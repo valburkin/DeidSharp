@@ -9,6 +9,11 @@
   <Folder Name="/tools/">
     <Project Path="tools/DeidSharp.Evaluation.Cli/DeidSharp.Evaluation.Cli.csproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/QuickStart/QuickStart.csproj" />
+    <Project Path="samples/FhirBundle/FhirBundle.csproj" />
+    <Project Path="samples/LocalLlm/LocalLlm.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DeidSharp.Tests/DeidSharp.Tests.csproj" />
     <Project Path="tests/DeidSharp.Evaluation.Cli.Tests/DeidSharp.Evaluation.Cli.Tests.csproj" />

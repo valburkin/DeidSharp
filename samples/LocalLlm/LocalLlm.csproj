@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    De-identifies a note with a local language model through Ollama, in the precision-first
+    stack of docs/guide.md. Needs Ollama on this machine.
+    In your own project: dotnet add package DeidSharp.Llm and dotnet add package OllamaSharp
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OllamaSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeidSharp\DeidSharp.csproj" />
+    <ProjectReference Include="..\..\src\DeidSharp.Llm\DeidSharp.Llm.csproj" />
+  </ItemGroup>
+
+</Project>

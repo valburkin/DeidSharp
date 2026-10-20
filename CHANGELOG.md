@@ -4,6 +4,16 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+### Added
+
+- **Guide** ([docs/guide.md](docs/guide.md)): how to install, choose a detector stack, de-identify free text and FHIR, add the clinical sidecar or a local language model, pseudonymize, check output, handle errors, run DeidSharp in a service, read its telemetry and measure it on your own data, with a reference of every option. Its examples run as tests (`GuideExamplesTests`).
+- **Samples** ([samples](samples)): three console programs (free text, a FHIR bundle, a local language model), built by CI.
+
+### Changed
+
+- The README starts from what a user needs (install, quick start, which stack), and the evaluation README opens with the results at a glance, language-model stacks included.
+- [safe-harbor.md](docs/safe-harbor.md) lists a gap that was undocumented: in free text, the birth year of someone aged 90 or over is kept, since a date is cut to its year without knowing whose it is (FHIR removes the record's birth date).
+
 ## [1.0.0] - 2026-10-19
 
 The first public release.
