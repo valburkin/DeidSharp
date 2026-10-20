@@ -7,8 +7,9 @@ namespace DeidSharp.IntegrationTests;
 // Design pattern: Test Fixture (shared).
 // The pattern: expensive setup is done once and shared by the tests that need it,
 // instead of once per test.
-// Here: one analyzer container per test class. Starting one takes seconds (stock
-// Presidio) to a minute (the clinical model), so every test in the class reuses it.
+// Here: one analyzer container per image for the whole test run (an xUnit assembly
+// fixture, AssemblyFixtures.cs). Starting one takes seconds (stock Presidio) to a minute
+// (the clinical model), so every test class that needs it shares the one container.
 
 // Design pattern: Template Method.
 // The pattern: a base class fixes the steps of an algorithm and lets subclasses fill
@@ -17,13 +18,16 @@ namespace DeidSharp.IntegrationTests;
 // for /health; each subclass only supplies its Image and, optionally, an ExtraSwitch.
 
 /// <summary>
-/// Starts a Presidio-compatible analyzer container for a test class, when integration
+/// Starts a Presidio-compatible analyzer container for the test run, when integration
 /// tests are switched on (<c>DEIDSHARP_INTEGRATION=1</c>) and the image's own switch,
 /// if any, is on too.
 /// </summary>
 public abstract class AnalyzerContainer : IAsyncLifetime
 {
-    private const int Port = 3000;
+    private const ushort Port = 3000;
+
+    // The clinical model takes up to a minute to load on a CPU, longer on a busy CI runner.
+    private static readonly TimeSpan StartTimeout = TimeSpan.FromMinutes(5);
 
     private IContainer? _container;
 
@@ -52,7 +56,7 @@ public abstract class AnalyzerContainer : IAsyncLifetime
 
         _container = new ContainerBuilder(Image)
             .WithPortBinding(Port, assignRandomHostPort: true)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(Port).ForPath("/health")))
+            .WithWaitStrategy(Wait.ForUnixContainer().AddCustomWaitStrategy(new AnalyzerHealthProbe(Port), o => o.WithTimeout(StartTimeout)))
             .Build();
         await _container.StartAsync();
         Endpoint = new UriBuilder("http", _container.Hostname, _container.GetMappedPublicPort(Port)).Uri;

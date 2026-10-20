@@ -5,7 +5,7 @@ using DeidSharp.Text;
 
 namespace DeidSharp.IntegrationTests;
 
-public sealed class ClinicalAnalyzerTests(ClinicalAnalyzerContainer analyzer) : IClassFixture<ClinicalAnalyzerContainer>
+public sealed class ClinicalAnalyzerTests(ClinicalAnalyzerContainer analyzer)
 {
     private static readonly CancellationToken Ct = TestContext.Current.CancellationToken;
 

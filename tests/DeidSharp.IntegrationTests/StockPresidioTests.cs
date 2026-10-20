@@ -5,7 +5,7 @@ using DeidSharp.Text;
 
 namespace DeidSharp.IntegrationTests;
 
-public sealed class StockPresidioTests(StockPresidioContainer analyzer) : IClassFixture<StockPresidioContainer>
+public sealed class StockPresidioTests(StockPresidioContainer analyzer)
 {
     private static readonly CancellationToken Ct = TestContext.Current.CancellationToken;
 

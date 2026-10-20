@@ -22,7 +22,7 @@ internal static class AsqPhiRecallFloor
     }
 }
 
-public sealed class StockPresidioAsqPhiTests(StockPresidioContainer analyzer) : IClassFixture<StockPresidioContainer>
+public sealed class StockPresidioAsqPhiTests(StockPresidioContainer analyzer)
 {
     [Fact]
     public async Task Stacked_with_the_deterministic_detectors_it_keeps_its_recall()
@@ -34,7 +34,7 @@ public sealed class StockPresidioAsqPhiTests(StockPresidioContainer analyzer) : 
     }
 }
 
-public sealed class ClinicalAsqPhiTests(ClinicalAnalyzerContainer analyzer) : IClassFixture<ClinicalAnalyzerContainer>
+public sealed class ClinicalAsqPhiTests(ClinicalAnalyzerContainer analyzer)
 {
     [Fact]
     public async Task Stacked_with_the_deterministic_detectors_it_keeps_its_recall()
