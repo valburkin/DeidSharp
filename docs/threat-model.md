@@ -31,6 +31,7 @@ These hold by construction and are covered by tests:
 ## What DeidSharp does not guarantee
 
 - **Perfect free-text recall.** No detector stack finds every identifier. Names the record does not list rely on NER, which misses some. Recall varies with the text, so measure it on your own data.
+- **Detecting a prompt the model server cut.** Ollama cuts a prompt longer than its context window from the start, instructions included, without an error, and the answer can still be valid JSON. The detector may then miss PHI, and the second opinion may veto spans that are PHI, leaving them in the text. Set the window to fit the prompt, and for the second opinion the whole note ([guide](guide.md#the-recommended-stacks)).
 - **Protection from quasi-identifiers.** Safe Harbor output can still single out a person when rare values combine. Measure the risk; generalize or suppress further where needed.
 - **Images, audio and other binary content.** These are removed, never inspected. Faces in a photo or a voice in a recording are not detected.
 - **Correct handling of identifiers written in unusual places,** such as names in `Coding.display`. See the known gaps in [safe-harbor.md](safe-harbor.md#known-gaps).

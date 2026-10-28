@@ -1,6 +1,6 @@
 # Reproducing the evaluation
 
-How to rerun the measurements of record, [findings](docs/evaluation/findings.md) F36 onward and the [results table](docs/evaluation/README.md#results), from the `v1.0.0` tag on your own machine. Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
+How to rerun the measurements of record, [findings](docs/evaluation/findings.md) F36 onward and the [results table](docs/evaluation/README.md#results), from the `v1.0.0` tag on your own machine; MIMIC-IV-Note's findings, F40 onward, need later code (see [Commits](#commits)). Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
 
 The published table (`results.json`) holds the stacks without a language model; the tool publishes nothing else. The numbers for stacks with a language model, for the other tools, and for every earlier experiment are the console output logged in the findings.
 
@@ -21,8 +21,9 @@ The published table (`results.json`) holds the stacks without a language model; 
 
 - **ASQ-PHI** ships in `tools/DeidSharp.Evaluation.Cli/data/asq-phi` (MIT) and needs no flags beyond `--corpus asq-phi`.
 - **PhysioNet's Deidentified Medical Text 1.0** needs a credentialed PhysioNet account and its data use agreement. Download `id.text` from the dataset and `id-phi.phrase` from the deid package, and keep both outside any Git working tree. Never commit them, share them, or paste their text into an online service or AI assistant.
+- **MIMIC-IV-Note 2.2** needs the same account and the dataset's own data use agreement. Download `note/discharge.csv.gz` and keep it as it is: the tool checks its SHA-256 against the release's, then builds the corpus from it on each run (`--corpus mimic-iv-note --notes <discharge.csv.gz>`).
 
-The notes split by patient into a tuning half (`--split tune`) and a reporting half (`--split report`), by the first bit of SHA-256 of `deidsharp-split:` followed by the patient's number. Confidence intervals are a percentile bootstrap over patients (documents in ASQ-PHI), 1,000 resamples from the fixed seed in `Scoring/Bootstrap.cs`, so a rerun repeats them exactly.
+The notes split by patient into a tuning half (`--split tune`) and a reporting half (`--split report`), by the lowest bit of the first byte of the SHA-256 of `deidsharp-split:patient ` followed by the patient's number (`deidsharp-split:patient 10`), 0 for tuning. Confidence intervals are a percentile bootstrap over patients (documents in ASQ-PHI), 1,000 resamples from the fixed seed in `Scoring/Bootstrap.cs`, so a rerun repeats them exactly.
 
 ## Commands
 
@@ -98,11 +99,52 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physi
 
 ASQ-PHI takes the same flags without `--text`, `--gold` and `--split`, with `--predictions deid=<work>/deid-asq.tsv,philter=<work>/philter-asq.tsv --compare-with deid,philter`.
 
+### MIMIC-IV-Note
+
+D4's run (F41), with `<notes>` your unmodified `note/discharge.csv.gz`. The other tools read an export of the reporting half; deid reads its `deid.text` once per configuration:
+
+```bash
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic-iv-note --notes <notes> \
+  --split report --export <work>/mimic
+
+for c in default generic nohosp; do mkdir -p <work>/mimic-deid-$c && cp <work>/mimic/deid.text <work>/mimic-deid-$c/; done
+perl deid.pl <work>/mimic-deid-default/deid deid-output.config          # from deid's folder
+perl deid.pl <work>/mimic-deid-generic/deid deid-generic.config
+perl deid.pl <work>/mimic-deid-nohosp/deid deid-generic-nohosp.config
+for c in default generic nohosp; do
+  dotnet run tools/baselines/to-predictions.cs -- deid <work>/mimic <work>/mimic-deid-$c/deid.phi <work>/mimic-deid-$c.tsv
+done
+
+docker run --rm --network none -v <work>/mimic/text:/data/in:ro -v <work>/philter-mimic:/data/out deidsharp/philter:1.0.3
+dotnet run tools/baselines/to-predictions.cs -- philter <work>/mimic <work>/philter-mimic <work>/philter-mimic.tsv
+```
+
+Then the published table's stacks (add `--publish docs/evaluation` to publish them), the same with the baselines, and the language-model stacks with them:
+
+```bash
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic-iv-note --notes <notes> \
+  --split report --presidio http://127.0.0.1:5002/ --clinical http://127.0.0.1:5003/
+
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic-iv-note --notes <notes> \
+  --split report --presidio http://127.0.0.1:5002/ --clinical http://127.0.0.1:5003/ --gazetteer with,without \
+  --predictions deid=<work>/mimic-deid-default.tsv,deid-generic=<work>/mimic-deid-generic.tsv,deid-nohosp=<work>/mimic-deid-nohosp.tsv,philter=<work>/philter-mimic.tsv \
+  --compare-with deid,deid-generic,deid-nohosp,philter
+
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic-iv-note --notes <notes> \
+  --split report --clinical http://127.0.0.1:5003/ \
+  --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer without \
+  --llm-second-opinion on --clinical-places on --ablation on \
+  --predictions deid=<work>/mimic-deid-default.tsv,deid-generic=<work>/mimic-deid-generic.tsv,deid-nohosp=<work>/mimic-deid-nohosp.tsv,philter=<work>/philter-mimic.tsv \
+  --compare-with deid,deid-generic,deid-nohosp,philter
+```
+
+F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options.
+
 For an earlier finding, start from these commands and set the flags its settings line names: `--split tune` for the tuning half, `--llm` with the models it compares, `--llm-prompts` with its prompts, `--variants repeated-names` for F7, `--llm-second-opinion self` for F31. The console prints counts and rates only, never note text.
 
 ## Commits
 
-F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers.
+F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on MIMIC-IV-Note, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code.
 
 ## What to expect
 

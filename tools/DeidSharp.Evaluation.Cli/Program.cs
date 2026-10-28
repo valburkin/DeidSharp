@@ -4,8 +4,9 @@ using DeidSharp.Evaluation.Cli.Corpora;
 using DeidSharp.Evaluation.Cli.Reporting;
 
 // Measures DeidSharp's detector stacks on an annotated corpus (docs/evaluation/README.md).
-// Everything it prints is counts and rates. Corpus text goes only to the --misses and
-// --false-positives files, which are refused inside a Git working tree.
+// Everything it prints is counts and rates. Corpus text goes only to the files a person or
+// another tool reads (--misses, --false-positives, --export, --gold-review), which are
+// refused inside a Git working tree.
 
 if (args.Length == 0 || args is ["--help"] or ["-h"])
 {

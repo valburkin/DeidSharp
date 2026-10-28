@@ -62,7 +62,13 @@ def label_type(label: str) -> str:
 
 
 def group_tokens(text: str, tokens: list[Token]) -> list[Token]:
-    """Merges same-type tokens that overlap, touch or are separated only by whitespace, then widens to whole words."""
+    """
+    Merges same-type tokens that overlap, touch or are separated only by whitespace, then
+    widens to whole words. A group that covers only whitespace is dropped: the tokenizer
+    trims spaces from its offsets, so a token of spaces alone has an empty span, and the
+    model sometimes tags one in a run of spaces. It hides nothing, and an empty span would
+    make the caller fail closed.
+    """
     groups: list[Token] = []
     for token in sorted(tokens, key=lambda t: (t.start, t.end)):
         last = groups[-1] if groups else None
@@ -77,7 +83,7 @@ def group_tokens(text: str, tokens: list[Token]) -> list[Token]:
             groups.append(Token(token.entity, token.start, token.end, token.score))
     for group in groups:
         _widen(text, group)
-    return groups
+    return [group for group in groups if text[group.start : group.end].strip()]
 
 
 def _widen(text: str, group: Token) -> None:

@@ -1,5 +1,6 @@
 """Tests for bilou.py. No model or Presidio needed: python -m pytest sidecar/tests."""
 
+import random
 import re
 import sys
 from itertools import pairwise
@@ -80,6 +81,36 @@ def test_order_of_tokens_does_not_matter() -> None:
     text = "Ngozi Okafor"
     forward = [Token("PERSON", 0, 5, 1), Token("PERSON", 6, 12, 1)]
     assert spans(text, list(reversed(forward))) == spans(text, forward) == ["Ngozi Okafor"]
+
+
+def test_a_token_of_spaces_alone_is_dropped_and_hides_nothing() -> None:
+    text = "Name:  Okafor       Unit No:\n\n\nSex:   F"
+    # A token of spaces has its offsets trimmed to nothing; a token of line breaks keeps its own.
+    assert spans(text, [Token("PERSON", 15, 15, 0.6)]) == []
+    assert spans(text, [Token("LOCATION", 28, 30, 0.6)]) == []
+    assert spans(text, [Token("ID", 36, 36, 0.6)]) == []
+    # Next to a word, it merges as it always did, and the word is still hidden.
+    assert [s.strip() for s in spans(text, [Token("PERSON", 7, 13, 1.0), Token("PERSON", 15, 15, 0.6)])] == ["Okafor"]
+
+
+def test_an_empty_token_at_the_start_of_a_word_is_widened_to_it() -> None:
+    assert spans("J  Smith", [Token("PERSON", 3, 3, 0.6)]) == ["Smith"]
+
+
+def test_every_group_covers_text_and_no_letter_or_digit_a_token_covered_is_lost() -> None:
+    rng = random.Random(20261028)
+    alphabet = "ab9 \n\t.,@-\u00a0"
+    for _ in range(5_000):
+        text = "".join(rng.choice(alphabet) for _ in range(rng.randint(1, 30)))
+        tokens = []
+        for _ in range(rng.randint(1, 4)):
+            start = rng.randint(0, len(text))
+            end = rng.randint(start, min(len(text), start + 5))
+            tokens.append(Token(rng.choice(["PERSON", "ID", "LOCATION"]), start, end, 1.0))
+        groups = group_tokens(text, tokens)
+        assert all(text[g.start : g.end].strip() for g in groups)
+        covered = {i for g in groups for i in range(g.start, g.end)}
+        assert all(i in covered for t in tokens for i in range(t.start, t.end) if text[i].isalnum())
 
 
 def test_no_tokens_no_entities() -> None:

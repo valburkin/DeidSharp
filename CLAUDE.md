@@ -41,7 +41,7 @@ ReSharper-clean is part of done. Check with `jb inspectcode DeidSharp.slnx --sev
 - `src/DeidSharp.Llm/`: a detector that asks a language model through Microsoft.Extensions.AI's `IChatClient` (meant for a local model); never part of the leak guard.
 - `src/DeidSharp.Presidio/`: a detector backed by a Presidio analyzer over HTTP.
 - `sidecar/`: the clinical analyzer (Presidio with a transformer NER model, run offline).
-- `tools/DeidSharp.Evaluation.Cli/`: measures detector stacks on annotated corpora (PhysioNet's nursing notes, the bundled ASQ-PHI copy) and publishes the numbers to `docs/evaluation`. Not a package. It also holds the experiments that didn't earn a place in the libraries (`RepeatedNameDetector`, `TfIdfExampleRetriever`, the self-check second opinion), so every finding stays reproducible.
+- `tools/DeidSharp.Evaluation.Cli/`: measures detector stacks on annotated corpora (PhysioNet's nursing notes, MIMIC-IV-Note's discharge summaries with surrogate PHI, the bundled ASQ-PHI copy) and publishes the numbers to `docs/evaluation`. Not a package. It also holds the experiments that didn't earn a place in the libraries (`RepeatedNameDetector`, `TfIdfExampleRetriever`, the self-check second opinion), so every finding stays reproducible.
 - `tools/baselines/`: what runs the other tools the evaluation compares with (Philter's image, a converter of their output to the tool's TSV). Neither tool is vendored.
 - `samples/`: console programs that use the libraries as an application would, built by CI.
 - `tests/`: `DeidSharp.Tests` (unit, property and corpus tests, mirroring `src/`), `DeidSharp.Evaluation.Cli.Tests` (the evaluation tool, mirroring `tools/`) and `DeidSharp.IntegrationTests` (real sidecars, opt-in). Read the tests as the specification.
@@ -73,7 +73,7 @@ ReSharper-clean is part of done. Check with `jb inspectcode DeidSharp.slnx --sev
 ## Data
 
 - Fixtures and test corpora are fictional. Never add real patient data, and never commit sidecar model downloads or generated output.
-- Credentialed corpora (PhysioNet) stay on the maintainer's machine under their data use agreement: never commit them or the evaluation tool's `--misses` and `--false-positives` files, and never read them into an AI assistant. Only `docs/evaluation`'s counts and rates are published.
+- Credentialed corpora (PhysioNet, MIMIC-IV-Note) stay on the maintainer's machine under their data use agreement: never commit them or the evaluation tool's `--misses`, `--false-positives`, `--export` and `--gold-review` files, and never read them into an AI assistant. Only `docs/evaluation`'s counts and rates are published.
 - Log every measurement as the next finding in [docs/evaluation/findings.md](docs/evaluation/findings.md), in the same commit, with its date, corpus and half, and the command's settings, so [REPRODUCING.md](REPRODUCING.md) can rerun it.
 - Tune on the tuning half only. The reporting half is for numbers that get published; a new choice needs the tuning half or new data.
 - No claims of HIPAA compliance or certification. DeidSharp removes what its rules and detectors find; the README and the threat model say what it does not guarantee.

@@ -1,5 +1,4 @@
 using DeidSharp.Evaluation.Cli.Corpora;
-using DeidSharp.Evaluation.Cli.Predictions;
 using DeidSharp.Evaluation.Cli.Reporting;
 
 namespace DeidSharp.Evaluation.Cli;
@@ -29,7 +28,7 @@ namespace DeidSharp.Evaluation.Cli;
 /// <param name="Ablation">Also measure each service and model without the deterministic layer.</param>
 /// <param name="SecondOpinions">The second opinions (<see cref="SecondOpinions"/>) each LLM stack is also measured with.</param>
 /// <param name="CompareWith">Prediction files every stack is also compared with, paired: the names given to <paramref name="Predictions"/>.</param>
-/// <param name="ExportDirectory">Where to write the corpus for other tools to read (<see cref="CorpusExport"/>), instead of measuring anything.</param>
+/// <param name="Output">Where to write the corpus instead of measuring anything (<see cref="CorpusOutputs"/>), if anywhere.</param>
 internal sealed record EvaluationSettings(
     ICorpus Corpus,
     EvaluationScope Scope,
@@ -51,7 +50,7 @@ internal sealed record EvaluationSettings(
     bool Ablation,
     bool ClinicalPlaces,
     IReadOnlyList<string> CompareWith,
-    string? ExportDirectory)
+    ICorpusOutput? Output)
 {
     private static readonly Uri DefaultLlmEndpoint = new("http://127.0.0.1:11434/");
 
@@ -61,6 +60,7 @@ internal sealed record EvaluationSettings(
 
           --corpus physionet-deid --text <id.text> --gold <id-phi.phrase>
           --corpus asq-phi [--queries <synthetic_clinical_queries.txt>]   (default: the bundled copy)
+          --corpus mimic-iv-note --notes <note/discharge.csv.gz>          (MIMIC-IV-Note 2.2, filled with surrogate PHI)
 
         Options:
           --scope safe-harbor|all    which gold spans count (default: safe-harbor)
@@ -89,6 +89,8 @@ internal sealed record EvaluationSettings(
           --export <dir>             write the corpus (with --corpus, its files and --split) for other tools to read, measuring
                                      nothing: one text file per document, a deid input file and documents.tsv; refused inside
                                      a Git working tree
+          --gold-review <file>       write every gold span with its label in context (with --corpus, its files and --split), for
+                                     you to check the annotation, measuring nothing; refused inside a Git working tree
         """;
 
     public static EvaluationSettings Parse(IReadOnlyList<string> args)
@@ -108,13 +110,12 @@ internal sealed record EvaluationSettings(
             throw new UsageException($"--split must be one of: {string.Join(", ", CorpusSplits.Ids)}.");
         }
 
-        // Writing the corpus out for another tool measures nothing, so any other option is refused.
-        if (commandLine.Optional("export") is { } export)
+        // Writing the corpus out, for another tool or for a person, measures nothing, so any other option is refused.
+        if (CorpusOutputs.Parse(commandLine) is { } corpusOutput)
         {
-            ReviewFiles.EnsureOutsideRepository(Path.Combine(export, CorpusExport.IndexFile), "export");
             commandLine.EnsureAllRead();
             return new EvaluationSettings(
-                corpus, scope, split, null, null, null, null, null, null, new HashSet<string>(StringComparer.Ordinal), [], [], [], DefaultLlmEndpoint, [Cli.LlmPrompts.DefaultId], [true], [], false, false, [], export);
+                corpus, scope, split, null, null, null, null, null, null, new HashSet<string>(StringComparer.Ordinal), [], [], [], DefaultLlmEndpoint, [Cli.LlmPrompts.DefaultId], [true], [], false, false, [], corpusOutput);
         }
 
         var predictions = ParsePredictions(commandLine);
@@ -260,22 +261,9 @@ internal sealed record EvaluationSettings(
         ReviewFiles.EnsureOutsideRepository(path, option);
 
         // A typo must not overwrite a corpus file or the other review file.
-        return commandLine.Values(except: option).Concat(predictions.Select(p => p.Path)).Any(v => SameFile(v, path))
+        return commandLine.Values(except: option).Concat(predictions.Select(p => p.Path)).Any(v => ReviewFiles.SameFile(v, path))
             ? throw new UsageException($"--{option} names a file another option uses too.")
             : path;
-    }
-
-    // Other options' values aren't all paths (an address, a note); one that isn't can't be the same file.
-    private static bool SameFile(string value, string path)
-    {
-        try
-        {
-            return string.Equals(Path.GetFullPath(value), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase);
-        }
-        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException)
-        {
-            return false;
-        }
     }
 
     private static Uri? Endpoint(CommandLine commandLine, string name)

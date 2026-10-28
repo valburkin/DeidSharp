@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Measures detector stacks on annotated corpora (PhysioNet's nursing notes, ASQ-PHI)
+    Measures detector stacks on annotated corpora (PhysioNet's nursing notes, ASQ-PHI, MIMIC-IV-Note with surrogates)
     and publishes the numbers to docs/evaluation. A tool for maintainers, not a package.
   -->
   <PropertyGroup>
@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <None Include="data\asq-phi\synthetic_clinical_queries.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="data\surrogates\first-names.tsv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\DeidSharp.Gazetteer\Data\surnames.txt" Link="data\surrogates\surnames.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\DeidSharp.Gazetteer\Data\places.txt" Link="data\surrogates\places.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

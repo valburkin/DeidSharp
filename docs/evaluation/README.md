@@ -29,6 +29,8 @@ The LLM is `gemma4:26b-a4b` through Ollama, with `LlmPrompt.WithPoolExamples`. "
 
 On ASQ-PHI (1,051 synthetic clinical queries, a second check with no held-out half), every stack with the clinical model or the LLM removes 99.6% to 99.7% of the PHI, at 95% to 99.6% precision (F39).
 
+On MIMIC-IV-Note (494 held-out discharge summaries from another decade, with surrogate PHI), measured once under a protocol fixed beforehand (D4), every stack with the LLM finds more PHI than deid in any configuration (93.3% to 95.3% against 91.5% to 92.1%), at deid's precision or better, though much of that lead is the generator's made-up hospitals and cities, which deid's lists rarely match. Philter touches more spans (99.4%) at 23 to 27 points less precision, so F37's lead over Philter does not carry over to this corpus (F41).
+
 The generated tables under [Results](#results) hold only the stacks without a language model: those are the ones the tool publishes, because a local model can't be pinned the way the sidecars are. The language-model numbers are the console output logged in the findings.
 
 ## Tuning and reporting halves
@@ -42,15 +44,29 @@ These are measurements on particular corpora, not a guarantee for your data. Fre
 | Corpus | What it is | Access | When it runs |
 |---|---|---|---|
 | [PhysioNet Deidentified Medical Text](https://physionet.org/content/deidentifiedmedicaltext/1.0/) (`physionet-deid`) | 2,434 ICU nursing notes with their PHI replaced by realistic surrogates; gold spans from the open [deid package](https://physionet.org/content/deid/) | Credentialed PhysioNet account and the dataset's data use agreement; never in this repository | By a maintainer, before each release |
+| [MIMIC-IV-Note](https://physionet.org/content/mimic-iv-note/2.2/) (`mimic-iv-note`) | 1,000 discharge summaries (one each from 1,000 patients, a fixed hashed sample), whose `___` placeholders are filled with made-up surrogates that become the gold spans | Credentialed PhysioNet account and the dataset's data use agreement; never in this repository | By a maintainer, for published results |
 | [ASQ-PHI](https://github.com/JamesWeatherhead/asq-phi) (`asq-phi`) | 1,051 synthetic clinical search queries, 832 with PHI and 219 hard negatives without | MIT; a copy ships in `tools/DeidSharp.Evaluation.Cli/data/asq-phi` | Every CI build (the deterministic stack's floor); published before each release |
 
-When you publish results on PhysioNet's notes, cite the dataset, the deid paper (its gold standard and baseline) and PhysioNet, as PhysioNet asks:
+When you publish results on PhysioNet's notes, cite the dataset, the deid paper (its gold standard and baseline), PhysioNet, and MIMIC-III, which the dataset's page lists as its parent project, as PhysioNet asks:
 
 - Douglass M, Long B, Moody G, Szolovits P, Lehman L, Mark R, Clifford GD. Deidentified Medical Text (version 1.0). PhysioNet; 2007. https://doi.org/10.13026/jc2a-ca12
 - Neamatullah I, Douglass M, Lehman LH, Reisner A, Villarroel M, Long WJ, Szolovits P, Moody GB, Mark RG, Clifford GD. Automated de-identification of free-text medical records. BMC Medical Informatics and Decision Making. 2008;8:32. https://doi.org/10.1186/1472-6947-8-32 (the deid software, version 1.1: https://doi.org/10.13026/C20M3F)
 - Pollard T, Moody BE, Lehman L, Gow B, Fernandes C, Xie C, Johnson A, Mark RG, Heldt T. PhysioNet as a global platform for biomedical research. Nature Health. 2026. https://doi.org/10.1038/s44360-026-00096-z
+- Johnson A, Pollard T, Mark R. MIMIC-III Clinical Database (version 1.4). PhysioNet; 2016. https://doi.org/10.13026/C2XW26
+- Johnson AEW, Pollard TJ, Shen L, Lehman LH, Feng M, Ghassemi M, Moody B, Szolovits P, Celi LA, Mark RG. MIMIC-III, a freely accessible critical care database. Scientific Data. 2016;3:160035. https://doi.org/10.1038/sdata.2016.35
 
-The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2014 corpus, so neither corpus here is one it has seen.
+### MIMIC-IV-Note with surrogates
+
+MIMIC-IV-Note's de-identification replaced each piece of PHI with `___` and kept no annotation of what it was. The `mimic-iv-note` corpus turns those placeholders back into PHI, as "hiding in plain sight" corpora are built (Carrell et al. 2013, in the [findings' references](findings.md#references)): a table of context rules (`Corpora/Surrogates/PlaceholderRules.cs`) decides what each placeholder stood for ("Dr. ___" a clinician's surname, "___ 07:15AM" a date, "Followup Instructions: ___" a section of appointments), and a made-up identity per note fills it, so the patient keeps one name and age and the dates fall around one admission. Each surrogate becomes a gold span. A placeholder no rule recognizes gets a first name or a surname: a maintainer's reading of a sample of the tuning half found nothing else among them. Names are drawn from the Census lists in proportion to how many people carry them ([sources](../../tools/DeidSharp.Evaluation.Cli/data/surrogates/SOURCES.md)); since the gazetteer is built from the same lists, its recall on this corpus is optimistic.
+
+The sample takes the 1,000 patients with the smallest SHA-256 of `deidsharp-mimic-patient:` and their number, and each one's note with the smallest SHA-256 of `deidsharp-mimic-note:` and its id; the surrogates come from a generator seeded by the note's id. The file is checked against the release's SHA-256 first, and the surrogate lists against the hashes the generator was built with, so anyone with access rebuilds the same corpus. The corpus title carries the generator's version; a test pins the generator's output on a fictional note, so a change to the rules, the lists or the drawing fails it until the version changes. Ages under 90 are gold spans outside the Safe Harbor scope, as in the other corpora. The rules and lists were developed on the tuning half only.
+
+Cite the dataset and PhysioNet (above), as PhysioNet asks, and MIMIC-IV, the database the notes belong to:
+
+- Johnson A, Pollard T, Horng S, Celi LA, Mark R. MIMIC-IV-Note: Deidentified free-text clinical notes (version 2.2). PhysioNet; 2023. https://doi.org/10.13026/1n74-ne17
+- Johnson AEW, Bulgarelli L, Shen L, et al. MIMIC-IV, a freely accessible electronic health record dataset. Scientific Data. 2023;10:1. https://doi.org/10.1038/s41597-022-01899-x
+
+The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2014 corpus, so no corpus here is one it has seen.
 
 ## Results
 
@@ -113,6 +129,34 @@ The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2
 
 </details>
 
+### MIMIC-IV-Note 2.2 discharge summaries with surrogate PHI (generator 3)
+
+494 documents · 29,023 gold spans · scope `safe-harbor` · split `report` · DeidSharp 1.0.0 · 2026-10-28 · clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362; the code is identified by the tree hashes in findings F41
+
+| Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
+|---|---:|---:|---:|---:|---:|---:|
+| deterministic | 87.07% (86.53–87.62) | 82.48% | 98.19% | 91.08% | 0.24% | 3,752 |
+| deterministic + presidio | 92.95% (92.61–93.31) | 87.81% | 65.10% | 71.57% | 3.31% | 2,045 |
+| deterministic + clinical | 91.57% (91.16–91.99) | 94.21% | 94.75% | 93.94% | 0.42% | 2,446 |
+| deterministic + presidio + clinical | 95.05% (94.75–95.33) | 96.53% | 64.27% | 74.06% | 3.40% | 1,436 |
+
+<details><summary>Recall by corpus label</summary>
+
+| Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
+|---|---:|---:|---:|---:|---:|
+| UntypedName | 12,632 | 73.29% | 85.76% | 80.69% | 88.67% |
+| Date | 9,115 | 96.10% | 97.55% | 99.96% | 99.97% |
+| StaffName | 2,049 | 100.00% | 100.00% | 100.00% | 100.00% |
+| Hospital | 1,300 | 98.92% | 98.92% | 100.00% | 100.00% |
+| Phone | 1,166 | 100.00% | 100.00% | 100.00% | 100.00% |
+| PatientName | 1,149 | 100.00% | 100.00% | 100.00% | 100.00% |
+| City | 556 | 98.92% | 98.92% | 99.28% | 99.28% |
+| RelativeName | 538 | 100.00% | 100.00% | 100.00% | 100.00% |
+| RecordNumber | 489 | 100.00% | 100.00% | 100.00% | 100.00% |
+| Age | 29 | 86.20% | 86.20% | 100.00% | 100.00% |
+
+</details>
+
 <!-- results:end -->
 
 ## How the numbers are counted
@@ -155,6 +199,10 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physi
   --text /data/physionet/id.text --gold /data/physionet/deid/id-phi.phrase \
   --presidio http://127.0.0.1:5002/ --clinical http://127.0.0.1:5003/ \
   --misses ~/deidsharp-misses.txt --false-positives ~/deidsharp-false-positives.txt
+
+# MIMIC-IV-Note: note/discharge.csv.gz from the dataset, unmodified
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic-iv-note \
+  --notes /data/mimic-iv-note/2.2/note/discharge.csv.gz --clinical http://127.0.0.1:5003/
 ```
 
 The deterministic stack (known identifiers, patterns and the gazetteer, the deterministic part of the recommended stack) always runs; each `--presidio` or `--clinical` adds a stack, and both add a stack with all three. Each note goes to each sidecar once: the stack with both reuses the answers. The CPU and GPU builds of the clinical sidecar can differ on a borderline token, so publish from one and keep to it. `--scope all` counts every label. The console shows counts and rates only, including the false positives counted by the category the stack gave them and by the recognizer that reported them ("clinical:SpacyRecognizer").
@@ -164,6 +212,8 @@ The deterministic stack (known identifiers, patterns and the gazetteer, the dete
 `--compare-with deid,philter` also compares every stack with those prediction files on the same resamples: the console shows each stack's change from the tool in recall, precision and word F1, with a paired 95% interval. Two stacks' own intervals can overlap while the paired one excludes zero, so this is the test to quote when one stack is said to beat another.
 
 `--export <folder>` writes the corpus (or one `--split` of it) for other tools to read, and measures nothing: one UTF-8 text file per document under `text/`, every document as a deid record in `deid.text`, and `documents.tsv`, which gives each file's key and its document's id. The folder holds corpus text, so the tool refuses one inside a Git working tree. [`tools/baselines/to-predictions.cs`](../../tools/baselines/to-predictions.cs) turns deid's and Philter's output on an export into the TSV above.
+
+`--gold-review <file>` writes every gold span with its label in its context, and for `mimic-iv-note` the rule that chose it, so a person can check a generated corpus; the console shows how many spans each rule typed. It measures nothing, holds corpus text, and is refused inside a Git working tree.
 
 ### Comparing with deid
 

@@ -25,10 +25,9 @@ internal static class EvaluationRun
             throw new UsageException("The corpus has no documents in this split.");
         }
 
-        if (settings.ExportDirectory is not null)
+        if (settings.Output is not null)
         {
-            CorpusExport.Write(settings.ExportDirectory, documents);
-            await output.WriteLineAsync(Formats.Invariant($"Wrote {documents.Count:N0} documents to {Path.GetFullPath(settings.ExportDirectory)}. They hold corpus text: keep the folder out of Git."));
+            await settings.Output.WriteAsync(documents, output);
             return;
         }
 

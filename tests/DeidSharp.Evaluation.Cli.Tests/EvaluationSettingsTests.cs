@@ -1,4 +1,6 @@
 using DeidSharp.Evaluation.Cli.Corpora;
+using DeidSharp.Evaluation.Cli.Predictions;
+using DeidSharp.Evaluation.Cli.Reporting;
 
 namespace DeidSharp.Evaluation.Cli.Tests;
 
@@ -148,8 +150,52 @@ public class EvaluationSettingsTests
         var settings = EvaluationSettings.Parse(["--corpus", "asq-phi", "--split", "all", "--export", temp.Path]);
         var e = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--export", temp.Path, "--clinical", "http://127.0.0.1:5003/"]));
 
-        Assert.Equal(temp.Path, settings.ExportDirectory);
+        Assert.Equal(temp.Path, Assert.IsType<CorpusExport>(settings.Output).Destination);
         Assert.Contains("--clinical is not an option here", e.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Reads_a_gold_review_with_the_corpus_and_its_split_only()
+    {
+        using var temp = new TempDirectory();
+        var path = Path.Combine(temp.Path, "gold.txt");
+
+        var settings = EvaluationSettings.Parse(["--corpus", "asq-phi", "--split", "tune", "--gold-review", path]);
+        var other = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--gold-review", path, "--clinical", "http://127.0.0.1:5003/"]));
+        var both = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--gold-review", path, "--export", temp.Path]));
+
+        Assert.Equal(path, Assert.IsType<GoldReviewFile>(settings.Output).Destination);
+        Assert.Contains("--clinical is not an option here", other.Message, StringComparison.Ordinal);
+        Assert.Contains("separate runs", both.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Refuses_a_gold_review_that_would_overwrite_a_corpus_file()
+    {
+        using var temp = new TempDirectory();
+        var queries = Path.Combine(temp.Path, "queries.txt");
+
+        var e = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--queries", queries, "--gold-review", queries]));
+
+        Assert.Contains("--gold-review names a file another option uses too", e.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Refuses_a_gold_review_inside_the_repository()
+    {
+        var e = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--gold-review", RepositoryFiles.Path("gold.txt")]));
+
+        Assert.Contains("--gold-review must point outside any Git working tree", e.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Reads_the_mimic_iv_note_corpus_with_its_notes()
+    {
+        var settings = EvaluationSettings.Parse(["--corpus", "mimic-iv-note", "--notes", "discharge.csv.gz"]);
+        var e = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "mimic-iv-note"]));
+
+        Assert.Equal("mimic-iv-note", settings.Corpus.Id);
+        Assert.Contains("--notes", e.Message, StringComparison.Ordinal);
     }
 
     [Fact]

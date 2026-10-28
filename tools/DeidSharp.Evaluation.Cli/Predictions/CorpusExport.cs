@@ -1,8 +1,15 @@
 using System.Globalization;
 using System.Text;
 using DeidSharp.Evaluation.Cli.Corpora;
+using DeidSharp.Evaluation.Cli.Reporting;
 
 namespace DeidSharp.Evaluation.Cli.Predictions;
+
+// Design pattern: Strategy.
+// The pattern: a family of interchangeable algorithms behind one interface; the
+// caller runs whichever it is given without knowing which one it got.
+// Here: one ICorpusOutput, the one --export picks: the corpus in the forms other
+// tools read. The run writes whichever output the command line chose.
 
 /// <summary>
 /// Writes a corpus's documents in the forms other de-identification tools read, so they can be
@@ -16,8 +23,9 @@ namespace DeidSharp.Evaluation.Cli.Predictions;
 /// </list>
 /// The files hold corpus text, so the directory must be outside any Git working tree, and new or empty.
 /// </summary>
-internal static class CorpusExport
+internal sealed class CorpusExport : ICorpusOutput
 {
+    public const string Option = "export";
     public const string IndexFile = "documents.tsv";
     public const string TextFolder = "text";
     public const string DeidFile = "deid.text";
@@ -26,6 +34,23 @@ internal static class CorpusExport
     // so its offsets count the same characters this tool reads.
     private static readonly UTF8Encoding Utf8WithMark = new(encoderShouldEmitUTF8Identifier: true);
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
+
+    /// <param name="directory">The new or empty directory to write to, outside any Git working tree.</param>
+    public CorpusExport(string directory)
+    {
+        ArgumentNullException.ThrowIfNull(directory);
+        ReviewFiles.EnsureOutsideRepository(Path.Combine(directory, IndexFile), Option);
+        Destination = directory;
+    }
+
+    public string Destination { get; }
+
+    public async Task WriteAsync(IReadOnlyList<CorpusDocument> documents, TextWriter console)
+    {
+        ArgumentNullException.ThrowIfNull(console);
+        Write(Destination, documents);
+        await console.WriteLineAsync(Formats.Invariant($"Wrote {documents.Count:N0} documents to {Path.GetFullPath(Destination)}. They hold corpus text: keep the folder out of Git."));
+    }
 
     public static void Write(string directory, IReadOnlyList<CorpusDocument> documents)
     {

@@ -23,6 +23,9 @@ internal sealed class DetectorStacks : IDisposable
     // one timeout stops the whole run (fail closed), possibly an hour in.
     private static readonly TimeSpan NoteTimeout = TimeSpan.FromMinutes(5);
 
+    // Fits a 35,000-character discharge summary with its candidates (see SecondOpinionRequest).
+    private const int SecondOpinionContextWindow = 16_384;
+
     private readonly List<HttpClient> _clients = [];
     private readonly List<PresidioDetector> _services = [];
     private readonly List<IPhiDetector> _memoized = [];
@@ -104,7 +107,7 @@ internal sealed class DetectorStacks : IDisposable
                 var withLlm = new NamedStack($"{stack.Name} + llm {l.Label}", new CompositePhiDetector([stack.Detector, l.Llm.Detector]), stack.Name);
                 return (secondOpinions ?? []).Select(SecondOpinions.Get).Select(row => new NamedStack(
                         $"{withLlm.Name} + {row.Label}",
-                        new LlmSecondOpinion(withLlm.Detector, l.Llm.Client, new LlmSecondOpinionOptions { ConfigureRequest = NoThinking, MayVeto = row.MayVeto }),
+                        new LlmSecondOpinion(withLlm.Detector, l.Llm.Client, new LlmSecondOpinionOptions { ConfigureRequest = SecondOpinionRequest, MayVeto = row.MayVeto }),
                         withLlm.Name))
                     .Prepend(withLlm);
             })
@@ -132,6 +135,12 @@ internal sealed class DetectorStacks : IDisposable
 
     // Reasoning first makes a note take a minute, not a second.
     private static void NoThinking(ChatOptions options) => options.RawRepresentationFactory = _ => new ChatRequest { Think = false };
+
+    // The second opinion sends the whole note at once, not a chunk, so its window must fit the
+    // longest note (Ollama's default of 4,096 tokens cut long discharge summaries from the start,
+    // instructions included, without an error).
+    private static void SecondOpinionRequest(ChatOptions options) =>
+        options.RawRepresentationFactory = _ => new ChatRequest { Think = false, Options = new RequestOptions { NumCtx = SecondOpinionContextWindow } };
 
     // A local model as a detector, with thinking off.
     private (MemoizingDetector Detector, IChatClient Client) Llm(string model, string prompt, Uri endpoint)

@@ -743,6 +743,368 @@
       ],
       "split": "report",
       "note": "clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362"
+    },
+    {
+      "corpus": "mimic-iv-note",
+      "title": "MIMIC-IV-Note 2.2 discharge summaries with surrogate PHI (generator 3)",
+      "scope": "safe-harbor",
+      "version": "1.0.0",
+      "commit": "",
+      "date": "2026-10-28",
+      "documents": 494,
+      "goldSpans": 29023,
+      "stacks": [
+        {
+          "stack": "deterministic",
+          "recall": 0.8707,
+          "characterRecall": 0.8248,
+          "precision": 0.9819,
+          "missed": 3752,
+          "labels": [
+            {
+              "label": "UntypedName",
+              "goldSpans": 12632,
+              "recall": 0.7329
+            },
+            {
+              "label": "Date",
+              "goldSpans": 9115,
+              "recall": 0.961
+            },
+            {
+              "label": "StaffName",
+              "goldSpans": 2049,
+              "recall": 1
+            },
+            {
+              "label": "Hospital",
+              "goldSpans": 1300,
+              "recall": 0.9892
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 1166,
+              "recall": 1
+            },
+            {
+              "label": "PatientName",
+              "goldSpans": 1149,
+              "recall": 1
+            },
+            {
+              "label": "City",
+              "goldSpans": 556,
+              "recall": 0.9892
+            },
+            {
+              "label": "RelativeName",
+              "goldSpans": 538,
+              "recall": 1
+            },
+            {
+              "label": "RecordNumber",
+              "goldSpans": 489,
+              "recall": 1
+            },
+            {
+              "label": "Age",
+              "goldSpans": 29,
+              "recall": 0.862
+            }
+          ],
+          "words": {
+            "recall": 0.8706,
+            "precision": 0.9548,
+            "f1": 0.9108
+          },
+          "nonPhiRemoved": 0.0024,
+          "intervals": {
+            "recall": {
+              "low": 0.8653,
+              "high": 0.8762
+            },
+            "characterRecall": {
+              "low": 0.8177,
+              "high": 0.8315
+            },
+            "precision": {
+              "low": 0.9795,
+              "high": 0.9841
+            },
+            "wordF1": {
+              "low": 0.9073,
+              "high": 0.9142
+            },
+            "nonPhiRemoved": {
+              "low": 0.0022,
+              "high": 0.0026
+            }
+          }
+        },
+        {
+          "stack": "deterministic + presidio",
+          "recall": 0.9295,
+          "characterRecall": 0.8781,
+          "precision": 0.651,
+          "missed": 2045,
+          "labels": [
+            {
+              "label": "UntypedName",
+              "goldSpans": 12632,
+              "recall": 0.8576
+            },
+            {
+              "label": "Date",
+              "goldSpans": 9115,
+              "recall": 0.9755
+            },
+            {
+              "label": "StaffName",
+              "goldSpans": 2049,
+              "recall": 1
+            },
+            {
+              "label": "Hospital",
+              "goldSpans": 1300,
+              "recall": 0.9892
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 1166,
+              "recall": 1
+            },
+            {
+              "label": "PatientName",
+              "goldSpans": 1149,
+              "recall": 1
+            },
+            {
+              "label": "City",
+              "goldSpans": 556,
+              "recall": 0.9892
+            },
+            {
+              "label": "RelativeName",
+              "goldSpans": 538,
+              "recall": 1
+            },
+            {
+              "label": "RecordNumber",
+              "goldSpans": 489,
+              "recall": 1
+            },
+            {
+              "label": "Age",
+              "goldSpans": 29,
+              "recall": 0.862
+            }
+          ],
+          "words": {
+            "recall": 0.9135,
+            "precision": 0.5883,
+            "f1": 0.7157
+          },
+          "nonPhiRemoved": 0.0331,
+          "intervals": {
+            "recall": {
+              "low": 0.9261,
+              "high": 0.9331
+            },
+            "characterRecall": {
+              "low": 0.872,
+              "high": 0.8844
+            },
+            "precision": {
+              "low": 0.6426,
+              "high": 0.6586
+            },
+            "wordF1": {
+              "low": 0.7107,
+              "high": 0.7209
+            },
+            "nonPhiRemoved": {
+              "low": 0.0321,
+              "high": 0.034
+            }
+          }
+        },
+        {
+          "stack": "deterministic + clinical",
+          "recall": 0.9157,
+          "characterRecall": 0.9421,
+          "precision": 0.9475,
+          "missed": 2446,
+          "labels": [
+            {
+              "label": "UntypedName",
+              "goldSpans": 12632,
+              "recall": 0.8069
+            },
+            {
+              "label": "Date",
+              "goldSpans": 9115,
+              "recall": 0.9996
+            },
+            {
+              "label": "StaffName",
+              "goldSpans": 2049,
+              "recall": 1
+            },
+            {
+              "label": "Hospital",
+              "goldSpans": 1300,
+              "recall": 1
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 1166,
+              "recall": 1
+            },
+            {
+              "label": "PatientName",
+              "goldSpans": 1149,
+              "recall": 1
+            },
+            {
+              "label": "City",
+              "goldSpans": 556,
+              "recall": 0.9928
+            },
+            {
+              "label": "RelativeName",
+              "goldSpans": 538,
+              "recall": 1
+            },
+            {
+              "label": "RecordNumber",
+              "goldSpans": 489,
+              "recall": 1
+            },
+            {
+              "label": "Age",
+              "goldSpans": 29,
+              "recall": 1
+            }
+          ],
+          "words": {
+            "recall": 0.9546,
+            "precision": 0.9248,
+            "f1": 0.9394
+          },
+          "nonPhiRemoved": 0.0042,
+          "intervals": {
+            "recall": {
+              "low": 0.9116,
+              "high": 0.9199
+            },
+            "characterRecall": {
+              "low": 0.9391,
+              "high": 0.9452
+            },
+            "precision": {
+              "low": 0.944,
+              "high": 0.9513
+            },
+            "wordF1": {
+              "low": 0.9373,
+              "high": 0.9417
+            },
+            "nonPhiRemoved": {
+              "low": 0.0039,
+              "high": 0.0044
+            }
+          }
+        },
+        {
+          "stack": "deterministic + presidio + clinical",
+          "recall": 0.9505,
+          "characterRecall": 0.9653,
+          "precision": 0.6427,
+          "missed": 1436,
+          "labels": [
+            {
+              "label": "UntypedName",
+              "goldSpans": 12632,
+              "recall": 0.8867
+            },
+            {
+              "label": "Date",
+              "goldSpans": 9115,
+              "recall": 0.9997
+            },
+            {
+              "label": "StaffName",
+              "goldSpans": 2049,
+              "recall": 1
+            },
+            {
+              "label": "Hospital",
+              "goldSpans": 1300,
+              "recall": 1
+            },
+            {
+              "label": "Phone",
+              "goldSpans": 1166,
+              "recall": 1
+            },
+            {
+              "label": "PatientName",
+              "goldSpans": 1149,
+              "recall": 1
+            },
+            {
+              "label": "City",
+              "goldSpans": 556,
+              "recall": 0.9928
+            },
+            {
+              "label": "RelativeName",
+              "goldSpans": 538,
+              "recall": 1
+            },
+            {
+              "label": "RecordNumber",
+              "goldSpans": 489,
+              "recall": 1
+            },
+            {
+              "label": "Age",
+              "goldSpans": 29,
+              "recall": 1
+            }
+          ],
+          "words": {
+            "recall": 0.973,
+            "precision": 0.5978,
+            "f1": 0.7406
+          },
+          "nonPhiRemoved": 0.034,
+          "intervals": {
+            "recall": {
+              "low": 0.9475,
+              "high": 0.9533
+            },
+            "characterRecall": {
+              "low": 0.9632,
+              "high": 0.9676
+            },
+            "precision": {
+              "low": 0.635,
+              "high": 0.6504
+            },
+            "wordF1": {
+              "low": 0.736,
+              "high": 0.7456
+            },
+            "nonPhiRemoved": {
+              "low": 0.033,
+              "high": 0.035
+            }
+          }
+        }
+      ],
+      "split": "report",
+      "note": "clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362; the code is identified by the tree hashes in findings F41"
     }
   ]
 }

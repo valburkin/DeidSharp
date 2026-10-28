@@ -9,4 +9,5 @@ internal sealed record CorpusDocument(string Id, string Text, IReadOnlyList<Labe
 }
 
 /// <summary>A gold span <c>[Start, End)</c> with the corpus's own label ("HCPName", "NAME").</summary>
-internal sealed record LabeledSpan(int Start, int End, string Label);
+/// <param name="TypedBy">In a generated corpus, the rule that chose the span's label ("doctor title"); null in an annotated one.</param>
+internal sealed record LabeledSpan(int Start, int End, string Label, string? TypedBy = null);

@@ -188,6 +188,7 @@ public partial class GuideExamplesTests
         using var chat = new CannedChatClient("""{"phi": [{"text": "Hart", "type": "name"}, {"text": "3/14", "type": "date"}]}""");
         using var judge = new CannedChatClient("""{"not_phi": []}""");
         Action<Microsoft.Extensions.AI.ChatOptions> ollamaSettings = _ => { };
+        Action<Microsoft.Extensions.AI.ChatOptions> secondOpinionSettings = _ => { };
 
         var llm = new LlmPhiDetector(chat, new LlmDetectorOptions { Prompt = LlmPrompt.WithPoolExamples, ConfigureRequest = ollamaSettings });
         var known = new KnownIdentifierDetector();
@@ -195,7 +196,7 @@ public partial class GuideExamplesTests
 
         var recallFirst = new SafeHarborAgeFilter(new CompositePhiDetector([clinical, llm, known, patterns]));
         var balanced = new SafeHarborAgeFilter(new LlmSecondOpinion(
-            new CompositePhiDetector([clinical, llm, known, patterns]), judge, new LlmSecondOpinionOptions { ConfigureRequest = ollamaSettings }));
+            new CompositePhiDetector([clinical, llm, known, patterns]), judge, new LlmSecondOpinionOptions { ConfigureRequest = secondOpinionSettings }));
         var places = new CategoryFilter(clinical, [PhiCategory.Location, PhiCategory.Organization]);
         var balancedOneCall = new SafeHarborAgeFilter(new CompositePhiDetector([places, llm, known, patterns]));
         var precisionFirst = new SafeHarborAgeFilter(new CompositePhiDetector([llm, known, patterns]));

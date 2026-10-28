@@ -15,6 +15,7 @@ internal static class CorpusCatalog
             c.Required("text", "for physionet-deid (the notes, id.text)"),
             c.Required("gold", "for physionet-deid (the gold spans, id-phi.phrase from the deid package)"))),
         ("asq-phi", c => new AsqPhiCorpus(c.Optional("queries") ?? AsqPhiCorpus.BundledPath)),
+        ("mimic-iv-note", c => new MimicIvNoteCorpus(c.Required("notes", "for mimic-iv-note (note/discharge.csv.gz from MIMIC-IV-Note 2.2)"))),
     ];
 
     public static IEnumerable<string> Ids => Entries.Select(e => e.Id);

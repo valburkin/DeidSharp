@@ -500,15 +500,22 @@ var llm = new LlmPhiDetector(ollama, new LlmDetectorOptions { Prompt = LlmPrompt
 var known = new KnownIdentifierDetector();
 var patterns = new PatternPhiDetector();
 
+// The second opinion sends the whole note at once, so its window must fit the longest note.
+Action<ChatOptions> secondOpinionSettings = o => o.RawRepresentationFactory = _ => new ChatRequest
+{
+    Think = false,
+    Options = new RequestOptions { NumCtx = 16384 },
+};
+
 var recallFirst = new SafeHarborAgeFilter(new CompositePhiDetector([clinical, llm, known, patterns]));
 var balanced = new SafeHarborAgeFilter(new LlmSecondOpinion(
-    new CompositePhiDetector([clinical, llm, known, patterns]), ollama, new LlmSecondOpinionOptions { ConfigureRequest = ollamaSettings }));
+    new CompositePhiDetector([clinical, llm, known, patterns]), ollama, new LlmSecondOpinionOptions { ConfigureRequest = secondOpinionSettings }));
 var places = new CategoryFilter(clinical, [PhiCategory.Location, PhiCategory.Organization]);
 var balancedOneCall = new SafeHarborAgeFilter(new CompositePhiDetector([places, llm, known, patterns]));
 var precisionFirst = new SafeHarborAgeFilter(new CompositePhiDetector([llm, known, patterns]));
 ```
 
-`clinical` is the sidecar's `PresidioDetector` ([The clinical sidecar and Presidio](#the-clinical-sidecar-and-presidio)). The second opinion needs the same Ollama settings as the detector. What to expect from each stack is in [Choosing a detector stack](#choosing-a-detector-stack). Leave the gazetteer out next to a model.
+`clinical` is the sidecar's `PresidioDetector` ([The clinical sidecar and Presidio](#the-clinical-sidecar-and-presidio)). The second opinion needs thinking off too, and a window that fits your longest note: unlike the detector, it sends the whole note at once, so long notes need more than 8,192 tokens (16,384 fits a 35,000-character discharge summary). What to expect from each stack is in [Choosing a detector stack](#choosing-a-detector-stack). Leave the gazetteer out next to a model.
 
 ### Prompts
 
