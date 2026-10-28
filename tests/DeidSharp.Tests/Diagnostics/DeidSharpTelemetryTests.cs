@@ -14,13 +14,19 @@ namespace DeidSharp.Tests.Diagnostics;
 /// <summary>
 /// DeidSharp's metrics and traces: each detector run is timed and traced, failures and
 /// refused outputs are counted, and nothing recorded carries the text. Listeners see the
-/// whole process, so each test looks only at what its own uniquely named detector did.
+/// whole process, so each test looks only at what its own uniquely named detector did, or,
+/// for counters that name no detector, at what its own run recorded.
 /// </summary>
 public sealed class DeidSharpTelemetryTests : IDisposable
 {
     private const string Secret = "Rosa Alvarez";
 
-    private readonly ConcurrentBag<(string Instrument, KeyValuePair<string, object?>[] Tags)> _measurements = [];
+    // Set by a test before its run. The listener is called inside the call that records a
+    // measurement, so it reads the recording run's value: this test's run sees this test,
+    // every other test's run sees null.
+    private static readonly AsyncLocal<DeidSharpTelemetryTests?> RunningTest = new();
+
+    private readonly ConcurrentBag<(string Instrument, KeyValuePair<string, object?>[] Tags, bool Own)> _measurements = [];
     private readonly ConcurrentBag<Activity> _activities = [];
     private readonly MeterListener _meters = new();
     private readonly ActivityListener _traces;
@@ -34,8 +40,8 @@ public sealed class DeidSharpTelemetryTests : IDisposable
                 listener.EnableMeasurementEvents(instrument);
             }
         };
-        _meters.SetMeasurementEventCallback<double>((instrument, _, tags, _) => _measurements.Add((instrument.Name, [.. tags])));
-        _meters.SetMeasurementEventCallback<long>((instrument, _, tags, _) => _measurements.Add((instrument.Name, [.. tags])));
+        _meters.SetMeasurementEventCallback<double>((instrument, _, tags, _) => _measurements.Add((instrument.Name, [.. tags], RunningTest.Value == this)));
+        _meters.SetMeasurementEventCallback<long>((instrument, _, tags, _) => _measurements.Add((instrument.Name, [.. tags], RunningTest.Value == this)));
         _meters.Start();
 
         _traces = new ActivityListener
@@ -94,12 +100,16 @@ public sealed class DeidSharpTelemetryTests : IDisposable
     {
         var detector = new StubDetector("telemetry-blind", new PhiSpan(0, 4, PhiCategory.Organization, 1.0, "telemetry-blind"));
         var known = KnownIdentifiers.Empty.AddName(Secret);
+        RunningTest.Value = this;
 
         await Assert.ThrowsAsync<ResidualPhiException>(() =>
             new TextDeidentifier(detector, new TagReplacement()).DeidentifyAsync($"Clinic: {Secret} called.", new TextContext("p", known), TestContext.Current.CancellationToken));
 
-        Assert.Contains(_measurements, m => m.Instrument == "deidsharp.residual_phi.refusals" && HasTag(m.Tags, "deidsharp.stage", "text"));
-        Assert.DoesNotContain(_measurements, m => m.Instrument == "deidsharp.text.replacements" && HasTag(m.Tags, "deidsharp.category", "Organization"));
+        // Neither counter names a detector: other tests replace and refuse text at the same time.
+        // Seeing the refusal as this run's own shows the listener reads the run's value, so the
+        // check for no replacement can't pass by seeing nothing.
+        Assert.Contains(_measurements, m => m is { Own: true, Instrument: "deidsharp.residual_phi.refusals" } && HasTag(m.Tags, "deidsharp.stage", "text"));
+        Assert.DoesNotContain(_measurements, m => m is { Own: true, Instrument: "deidsharp.text.replacements" });
     }
 
     [Fact]
