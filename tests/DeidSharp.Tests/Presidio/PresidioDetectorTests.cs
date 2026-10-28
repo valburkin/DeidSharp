@@ -314,12 +314,14 @@ public class PresidioDetectorTests
     // Design pattern: Test Double (Fake).
     // The pattern: a stand-in for a real dependency in a test. A fake works but takes a shortcut.
     // Here: waits before passing the request on, like a busy service, so the
-    // detector's own timeout fires first.
+    // detector's own timeout fires first. The wait is far longer than any timeout under
+    // test: on a loaded machine both timers can fire late, and a short wait could end first.
+    // It still ends, so a timeout that never fires fails the test instead of hanging it.
     private sealed class DelayingHandler(HttpMessageHandler inner) : DelegatingHandler(inner)
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            await Task.Delay(500, cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
             return await base.SendAsync(request, cancellationToken);
         }
     }
