@@ -13,6 +13,11 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 
 - The README starts from what a user needs (install, quick start, which stack), and the evaluation README opens with the results at a glance, language-model stacks included.
 - [safe-harbor.md](docs/safe-harbor.md) lists a gap that was undocumented: in free text, the birth year of someone aged 90 or over is kept, since a date is cut to its year without knowing whose it is (FHIR removes the record's birth date).
+- Dependencies: `DeidSharp.Fhir` requires Hl7.Fhir.R4 6.8.0 and `DeidSharp.Llm` requires Microsoft.Extensions.AI.Abstractions 10.11.0.
+
+### Security
+
+- The clinical sidecar's images take certifi 2026.10.23, filelock 4.2.4 and setuptools 84.2.1, which fix known vulnerabilities.
 
 ## [1.0.0] - 2026-10-19
 

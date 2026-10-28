@@ -72,6 +72,8 @@ uv pip compile requirements.in --override torch-cuda.txt --generate-hashes --emi
 
 When PyTorch moves to a new release, change `torch-cuda.txt` along with `requirements.in`.
 
+To fix an audit finding without moving anything else, so detection stays as measured, add `--upgrade-package <name>` for each flagged package to both commands (replacing `--upgrade` in the first), and give the five-day cutoff as `--exclude-newer-package <name>=<date>` for each of them in place of `--exclude-newer`. Combined with `--upgrade-package`, a global `--exclude-newer` downgrades packages that PyTorch's indexes mirror without upload dates (sympy, mpmath, typing-extensions) and what depends on them, so the cutoff goes on the flagged packages only.
+
 ## Checking the code
 
 `ruff.toml` pins the lint rules and `tools/requirements.txt` the tools; neither is in the image.
