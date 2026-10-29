@@ -39,6 +39,8 @@ internal static class PlaceholderRules
         new("staff field", @"\b(?:Attending|Surgeon|PCP|Primary\s+Care(?:\s+Physician|\s+Provider)?|Provider|Physician)\s*:?[ \t]*(?:is[ \t]+)?", null, SurrogateKind.StaffName),
         new("doctor title", @"\b(?:Dr|Drs|Doctor)\.?[ \t]*", null, SurrogateKind.StaffSurname),
         // "M\.[ ]?D" and not "M\.D\.": the closing \b needs a letter after it, which "M.D. " lacks.
+        // A city before Maryland's or Pennsylvania's abbreviation ("___, MD") reads the same and
+        // becomes a clinician; changing that would change generator 3, which F40 and F41 used.
         new("credential after", null, @",?[ \t]*(?-i:MD|M\.[ ]?D|DO|NP|PA|RN|PhD)\b", SurrogateKind.StaffName),
         new("patient title", @"\b(?-i:Mr|Mrs|Ms|Miss|Mister|MR|MRS|MISS|MISTER)\.?[ \t]*", null, SurrogateKind.PatientSurname),
         new("relative", @"\b(?:" + Relatives + @")[ \t]*(?:\(|,|named|is)?[ \t]*", null, SurrogateKind.RelativeName),

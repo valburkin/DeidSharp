@@ -138,13 +138,13 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic
   --compare-with deid,deid-generic,deid-nohosp,philter
 ```
 
-F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options.
+F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`.
 
 For an earlier finding, start from these commands and set the flags its settings line names: `--split tune` for the tuning half, `--llm` with the models it compares, `--llm-prompts` with its prompts, `--variants repeated-names` for F7, `--llm-second-opinion self` for F31. The console prints counts and rates only, never note text.
 
 ## Commits
 
-F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on MIMIC-IV-Note, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code.
+F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on MIMIC-IV-Note, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code. F42 ran on a `tools` tree that no commit holds; the commit that carries F42 differs from it only in when the word list is read and in comments, so rerun F42 from that commit.
 
 ## What to expect
 

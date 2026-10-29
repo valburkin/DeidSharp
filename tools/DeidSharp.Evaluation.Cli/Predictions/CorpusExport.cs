@@ -56,6 +56,7 @@ internal sealed class CorpusExport : ICorpusOutput
     {
         ArgumentNullException.ThrowIfNull(directory);
         ArgumentNullException.ThrowIfNull(documents);
+        ReviewFiles.EnsureOutsideRepository(Path.Combine(directory, IndexFile), Option);
         if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
         {
             throw new UsageException("--export needs a new or empty directory, so no earlier export is mixed in.");

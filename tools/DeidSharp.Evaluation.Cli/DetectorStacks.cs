@@ -32,7 +32,7 @@ internal sealed class DetectorStacks : IDisposable
     private readonly List<(string Model, OllamaApiClient Client)> _ollama = [];
 
     /// <param name="droppedSources">Recognizers whose spans the services' answers leave out, if any.</param>
-    /// <param name="variants">Changes each stack is also measured with (<see cref="StackVariants"/>), if any.</param>
+    /// <param name="variants">Changes each stack, with its LLM layers or without, is also measured with (<see cref="StackVariants"/>), if any.</param>
     /// <param name="llmModels">Ollama models each stack is also measured with, as an LLM layer, if any.</param>
     /// <param name="llmEndpoint">The Ollama server, on this machine.</param>
     /// <param name="llmPrompts">The prompts each model is measured with (<see cref="LlmPrompts"/>); default the instructions alone.</param>
@@ -100,7 +100,9 @@ internal sealed class DetectorStacks : IDisposable
         // Safe Harbor keeps ages under 90, so every stack leaves them out, as the recommended stack does.
         Stacks = [.. Stacks.Select(s => s with { Detector = new SafeHarborAgeFilter(s.Detector) })];
 
-        // Each variant and LLM layer right after the stack it changes, so they read side by side.
+        // Each stack, then its LLM stacks (each followed by its second opinions and variants), then
+        // its own variants, so a change reads next to the stack it changes. Second opinions aren't
+        // wrapped in variants.
         Stacks = [.. Stacks.SelectMany(stack => llms
             .SelectMany(l =>
             {
@@ -109,7 +111,8 @@ internal sealed class DetectorStacks : IDisposable
                         $"{withLlm.Name} + {row.Label}",
                         new LlmSecondOpinion(withLlm.Detector, l.Llm.Client, new LlmSecondOpinionOptions { ConfigureRequest = SecondOpinionRequest, MayVeto = row.MayVeto }),
                         withLlm.Name))
-                    .Prepend(withLlm);
+                    .Prepend(withLlm)
+                    .Concat((variants ?? []).Select(v => StackVariants.Apply(v, withLlm)));
             })
             .Concat((variants ?? []).Select(v => StackVariants.Apply(v, stack)))
             .Prepend(stack))];

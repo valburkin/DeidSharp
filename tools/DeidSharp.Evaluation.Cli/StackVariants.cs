@@ -6,7 +6,7 @@ namespace DeidSharp.Evaluation.Cli;
 // The pattern: behavior that varies case by case is written as rows of data that one
 // piece of code reads, instead of as one branch per case.
 // Here: each variant a run can add is one row, its name and how it wraps a stack, so a
-// new experiment (an LLM layer) is a row, never a branch in DetectorStacks.
+// new experiment (another way to search the note again) is a row, never a branch in DetectorStacks.
 
 /// <summary>
 /// Changes to try on every stack: with <c>--variants</c>, each stack is also measured

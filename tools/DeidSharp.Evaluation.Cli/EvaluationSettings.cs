@@ -29,6 +29,7 @@ namespace DeidSharp.Evaluation.Cli;
 /// <param name="SecondOpinions">The second opinions (<see cref="SecondOpinions"/>) each LLM stack is also measured with.</param>
 /// <param name="CompareWith">Prediction files every stack is also compared with, paired: the names given to <paramref name="Predictions"/>.</param>
 /// <param name="Output">Where to write the corpus instead of measuring anything (<see cref="CorpusOutputs"/>), if anywhere.</param>
+/// <param name="MissProfileLabel">The corpus label whose misses to count by feature (<see cref="MissProfile"/>), if any.</param>
 internal sealed record EvaluationSettings(
     ICorpus Corpus,
     EvaluationScope Scope,
@@ -50,7 +51,8 @@ internal sealed record EvaluationSettings(
     bool Ablation,
     bool ClinicalPlaces,
     IReadOnlyList<string> CompareWith,
-    ICorpusOutput? Output)
+    ICorpusOutput? Output,
+    string? MissProfileLabel)
 {
     private static readonly Uri DefaultLlmEndpoint = new("http://127.0.0.1:11434/");
 
@@ -69,6 +71,8 @@ internal sealed record EvaluationSettings(
           --clinical <url>           also stack the clinical sidecar (e.g. http://127.0.0.1:5003/)
           --misses <file>            write each missed span with its text, for you to read; refused inside a Git working tree
           --false-positives <file>   write each false positive with its text, for you to read; refused inside a Git working tree
+          --miss-profile <label>     count each stack's misses of one corpus label by feature (one word, an ordinary word,
+                                     found elsewhere in the note), counts only
           --publish <dir>            update docs/evaluation: results.json, the README table and badge.json
           --note <text>              published with the results, e.g. "clinical sidecar on CUDA"
           --drop-sources <a,b>       leave out the spans only these recognizers report, e.g. clinical:SpacyRecognizer;
@@ -115,7 +119,7 @@ internal sealed record EvaluationSettings(
         {
             commandLine.EnsureAllRead();
             return new EvaluationSettings(
-                corpus, scope, split, null, null, null, null, null, null, new HashSet<string>(StringComparer.Ordinal), [], [], [], DefaultLlmEndpoint, [Cli.LlmPrompts.DefaultId], [true], [], false, false, [], corpusOutput);
+                corpus, scope, split, null, null, null, null, null, null, new HashSet<string>(StringComparer.Ordinal), [], [], [], DefaultLlmEndpoint, [Cli.LlmPrompts.DefaultId], [true], [], false, false, [], corpusOutput, null);
         }
 
         var predictions = ParsePredictions(commandLine);
@@ -164,6 +168,12 @@ internal sealed record EvaluationSettings(
             ResultsPublisher.EnsurePublishable(publish);
         }
 
+        var missProfile = commandLine.Optional(MissProfile.Option);
+        if (missProfile is not null && (string.IsNullOrWhiteSpace(missProfile) || missProfile.Any(char.IsControl)))
+        {
+            throw new UsageException($"--{MissProfile.Option} takes one corpus label, such as UntypedName.");
+        }
+
         var note = commandLine.Optional("note");
         if (note is not null && (string.IsNullOrWhiteSpace(note) || note.Any(char.IsControl)))
         {
@@ -171,7 +181,7 @@ internal sealed record EvaluationSettings(
         }
 
         var settings = new EvaluationSettings(
-            corpus, scope, split, Endpoint(commandLine, "presidio"), Endpoint(commandLine, "clinical"), misses, falsePositives, publish, note, dropped, predictions, variants, models, llmEndpoint, ParseLlmPrompts(commandLine), gazetteer, secondOpinions, ablation, clinicalPlaces, compareWith, null);
+            corpus, scope, split, Endpoint(commandLine, "presidio"), Endpoint(commandLine, "clinical"), misses, falsePositives, publish, note, dropped, predictions, variants, models, llmEndpoint, ParseLlmPrompts(commandLine), gazetteer, secondOpinions, ablation, clinicalPlaces, compareWith, null, missProfile);
         commandLine.EnsureAllRead();
         return settings;
     }

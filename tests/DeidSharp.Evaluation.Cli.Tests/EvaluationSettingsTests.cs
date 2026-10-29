@@ -331,4 +331,12 @@ public class EvaluationSettingsTests
 
         Assert.Equal(path, EvaluationSettings.Parse(["--corpus", "asq-phi", "--misses", path]).MissesPath);
     }
+
+    [Fact]
+    public void Keeps_the_label_to_profile_and_refuses_a_blank_one()
+    {
+        Assert.Equal("UntypedName", EvaluationSettings.Parse(["--corpus", "asq-phi", "--miss-profile", "UntypedName"]).MissProfileLabel);
+        Assert.Null(EvaluationSettings.Parse(["--corpus", "asq-phi"]).MissProfileLabel);
+        Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--miss-profile", " "]));
+    }
 }

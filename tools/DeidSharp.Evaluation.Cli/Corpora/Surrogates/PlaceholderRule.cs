@@ -10,6 +10,7 @@ namespace DeidSharp.Evaluation.Cli.Corpora.Surrogates;
 /// <param name="name">For tests and diagnostics ("doctor title").</param>
 /// <param name="before">What the text before must end with, case-insensitive; null for anything.</param>
 /// <param name="after">What the text after must start with, case-insensitive; null for anything.</param>
+/// <param name="kind">What a placeholder this rule matches stood for, and so what fills it.</param>
 internal sealed class PlaceholderRule(string name, string? before, string? after, SurrogateKind kind)
 {
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled;

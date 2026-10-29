@@ -7,8 +7,8 @@ using DeidSharp.Evaluation.Cli.Scoring;
 namespace DeidSharp.Evaluation.Cli;
 
 /// <summary>
-/// One run: reads the corpus, scores each stack, reports the numbers, then writes the
-/// misses file and publishes the results if the settings ask for them.
+/// One run: reads the corpus, scores each stack, reports the numbers and the miss profile,
+/// then writes the misses file and publishes the results if the settings ask for them.
 /// </summary>
 internal static class EvaluationRun
 {
@@ -29,6 +29,11 @@ internal static class EvaluationRun
         {
             await settings.Output.WriteAsync(documents, output);
             return;
+        }
+
+        if (settings.MissProfileLabel is not null)
+        {
+            MissProfile.EnsureLabel(settings.MissProfileLabel, documents);
         }
 
         var files = settings.Predictions.Select(p => PredictionsFile.Read(p.Name, p.Path, corpus)).ToList();
@@ -65,6 +70,11 @@ internal static class EvaluationRun
         {
             await output.WriteLineAsync();
             await output.WriteLineAsync($"Left out the spans only these reported: {string.Join(", ", settings.DroppedSources.Order(StringComparer.Ordinal))}.");
+        }
+
+        if (settings.MissProfileLabel is not null)
+        {
+            MissProfile.Write(output, settings.MissProfileLabel, settings.Corpus, settings.Scope, documents, results);
         }
 
         if (settings.MissesPath is not null)

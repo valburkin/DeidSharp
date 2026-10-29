@@ -14,6 +14,7 @@
     <None Include="data\surrogates\first-names.tsv" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\DeidSharp.Gazetteer\Data\surnames.txt" Link="data\surrogates\surnames.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\DeidSharp.Gazetteer\Data\places.txt" Link="data\surrogates\places.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\DeidSharp.Gazetteer\Data\common-words.txt" Link="data\common-words.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -58,4 +58,13 @@ public class CorpusExportTests
 
         Assert.Contains("--export needs a new or empty directory", e.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Refuses_to_write_inside_a_git_working_tree()
+    {
+        var e = Assert.Throws<UsageException>(() => CorpusExport.Write(RepositoryFiles.Path("export"), Documents));
+
+        Assert.Contains("must point outside any Git working tree", e.Message, StringComparison.Ordinal);
+        Assert.False(Directory.Exists(RepositoryFiles.Path("export")));
+    }
 }

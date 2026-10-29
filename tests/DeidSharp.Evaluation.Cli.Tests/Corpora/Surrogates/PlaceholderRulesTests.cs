@@ -49,6 +49,9 @@ public class PlaceholderRulesTests
     [InlineData("seen by ", " ED physicians", "facility word after", nameof(SurrogateKind.City))]
     [InlineData("evaluated by ", " procedure", "eponym after", nameof(SurrogateKind.Untyped))]
     [InlineData("lasix on ___ followed by ", ".", "date preposition", nameof(SurrogateKind.Date))]
+    [InlineData("Discharge Disposition:\nExtended Care\nFacility:\n", "\n", "facility field", nameof(SurrogateKind.Hospital))]
+    [InlineData("on aspirin from ___ to ", " for pain", "date range end", nameof(SurrogateKind.Date))]
+    [InlineData("held ___ - ", ".", "date range end", nameof(SurrogateKind.Date))]
     public void Types_a_placeholder_by_the_first_rule_its_context_matches(string before, string after, string rule, string kind)
     {
         var match = PlaceholderRules.Match(before, after);

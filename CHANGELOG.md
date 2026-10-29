@@ -9,6 +9,7 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 - **Guide** ([docs/guide.md](docs/guide.md)): how to install, choose a detector stack, de-identify free text and FHIR, add the clinical sidecar or a local language model, pseudonymize, check output, handle errors, run DeidSharp in a service, read its telemetry and measure it on your own data, with a reference of every option. Its examples run as tests (`GuideExamplesTests`).
 - **Samples** ([samples](samples)): three console programs (free text, a FHIR bundle, a local language model), built by CI.
 - **Evaluation on MIMIC-IV-Note**: `--corpus mimic-iv-note` builds a corpus of 1,000 MIMIC-IV-Note 2.2 discharge summaries (one per patient, a fixed hashed sample) whose `___` placeholders are filled with made-up surrogates that become the gold spans, typed by context rules; `--gold-review` writes the gold spans in context for a person to check ([evaluation](docs/evaluation/README.md#mimic-iv-note-with-surrogates)). Its reporting half, measured once under a protocol fixed beforehand, is in the [results](docs/evaluation/README.md#results) and [findings](docs/evaluation/findings.md) (F41).
+- **Miss profile**: the evaluation tool's `--miss-profile <label>` counts each stack's misses of one corpus label by feature (one word, an ordinary word, found elsewhere in the note), printing counts only; `--variants` now also wraps the stacks with a language model ([findings](docs/evaluation/findings.md), F42).
 
 ### Changed
 
