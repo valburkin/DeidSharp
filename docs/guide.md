@@ -784,7 +784,7 @@ foreach (var (category, recall) in report.PerCategory)
 
 `DetectionEvaluator` gives each detector the text only, as `AnnotatedText` carries no record, so the known-identifier detector finds nothing there: the numbers are a floor for use with the record's identifiers.
 
-4. **Read the misses by category**, not just the total: one missed category (staff names, say) can matter more than the overall number. Character recall shows partly covered names; `NonPhiRemoved` is the clinical text you lose.
+4. **Read the misses by category**, not just the total: one missed category (staff names, say) can matter more than the overall number. Character recall shows partly covered names; `NonPhiRemoved` is the clinical text you lose. `Strict` counts only exact matches of a gold span's start and end, the exact-boundary match published i2b2 results use (categories aside); a span that also takes in a title removes the PHI but misses there.
 5. **Fix and re-measure** on a different sample than the one you read, or you'll fit your fixes to it.
 
 ## Re-identification risk

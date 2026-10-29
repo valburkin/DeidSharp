@@ -11,24 +11,16 @@ public class StackScorerTests
         "Dr. Hart saw Rosa in 2019.",
         [new LabeledSpan(4, 8, "Staff"), new LabeledSpan(13, 17, "Patient"), new LabeledSpan(21, 25, "Year")]);
 
-    private sealed class Fictional : ICorpus
-    {
-        public string Id => "fictional";
-
-        public string Title => "Fictional";
-
-        public LabelMap Labels { get; } = new(
+    private static readonly FictionalCorpus Corpus = new(
         [
             new LabelRule("Staff", PhiCategory.Name, SafeHarbor: true),
             new LabelRule("Patient", PhiCategory.Name, SafeHarbor: true),
             new LabelRule("Year", PhiCategory.Date, SafeHarbor: false),
-        ]);
-
-        public IReadOnlyList<CorpusDocument> Read() => [Note];
-    }
+        ],
+        Note);
 
     private static Task<StackResult> ScoreAsync(EvaluationScope scope, params (string, PhiCategory)[] words) =>
-        StackScorer.ScoreAsync(new NamedStack("scripted", new ScriptedDetector(words)), new Fictional(), [Note], scope, cancellationToken: TestContext.Current.CancellationToken);
+        StackScorer.ScoreAsync(new NamedStack("scripted", new ScriptedDetector(words)), Corpus, [Note], scope, cancellationToken: TestContext.Current.CancellationToken);
 
     [Fact]
     public async Task Counts_recall_by_corpus_label_and_keeps_the_misses()

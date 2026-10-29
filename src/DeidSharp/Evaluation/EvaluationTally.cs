@@ -10,17 +10,20 @@ public sealed class EvaluationTally
 {
     private readonly IReadOnlyDictionary<PhiCategory, CategoryRecall> _perCategory;
 
-    internal EvaluationTally(DetectionMetrics spans, Characters characters, WordMetrics words, IReadOnlyDictionary<PhiCategory, CategoryRecall> perCategory)
+    internal EvaluationTally(DetectionMetrics spans, DetectionMetrics strict, Characters characters, WordMetrics words, IReadOnlyDictionary<PhiCategory, CategoryRecall> perCategory)
     {
         Spans = spans;
+        Strict = strict;
         Chars = characters;
         Words = words;
         _perCategory = perCategory;
     }
 
-    public static EvaluationTally Empty { get; } = new(new DetectionMetrics(0, 0, 0, 0), default, new WordMetrics(0, 0, 0), new Dictionary<PhiCategory, CategoryRecall>());
+    public static EvaluationTally Empty { get; } = new(new DetectionMetrics(0, 0, 0, 0), new DetectionMetrics(0, 0, 0, 0), default, new WordMetrics(0, 0, 0), new Dictionary<PhiCategory, CategoryRecall>());
 
     private DetectionMetrics Spans { get; }
+
+    private DetectionMetrics Strict { get; }
 
     private Characters Chars { get; }
 
@@ -29,7 +32,7 @@ public sealed class EvaluationTally
     public static EvaluationTally Sum(IEnumerable<EvaluationTally> tallies)
     {
         ArgumentNullException.ThrowIfNull(tallies);
-        int gold = 0, detected = 0, predicted = 0, correct = 0, phiWords = 0, predictedWords = 0, correctWords = 0;
+        int gold = 0, detected = 0, predicted = 0, correct = 0, strictDetected = 0, strictCorrect = 0, phiWords = 0, predictedWords = 0, correctWords = 0;
         var characters = default(Characters);
         var perCategory = new Dictionary<PhiCategory, CategoryRecall>();
         foreach (var tally in tallies)
@@ -39,6 +42,8 @@ public sealed class EvaluationTally
             detected += tally.Spans.DetectedGoldSpans;
             predicted += tally.Spans.PredictedSpans;
             correct += tally.Spans.CorrectPredictedSpans;
+            strictDetected += tally.Strict.DetectedGoldSpans;
+            strictCorrect += tally.Strict.CorrectPredictedSpans;
             characters += tally.Chars;
             phiWords += tally.Words.PhiWords;
             predictedWords += tally.Words.PredictedWords;
@@ -52,7 +57,9 @@ public sealed class EvaluationTally
         }
 
         return new EvaluationTally(
-            new DetectionMetrics(gold, detected, predicted, correct), characters, new WordMetrics(phiWords, predictedWords, correctWords), perCategory);
+            new DetectionMetrics(gold, detected, predicted, correct),
+            new DetectionMetrics(gold, strictDetected, predicted, strictCorrect),
+            characters, new WordMetrics(phiWords, predictedWords, correctWords), perCategory);
     }
 
     public EvaluationTally Add(EvaluationTally other) => Sum([this, other]);
@@ -63,7 +70,10 @@ public sealed class EvaluationTally
         DetectionEvaluator.Ratio(Chars.Overlap, Chars.Predicted),
         _perCategory,
         Words,
-        Chars.NonPhi == 0 ? 0 : (double)Chars.RemovedNonPhi / Chars.NonPhi);
+        Chars.NonPhi == 0 ? 0 : (double)Chars.RemovedNonPhi / Chars.NonPhi)
+    {
+        Strict = Strict,
+    };
 
     /// <summary>Character counts: gold, predicted, both, and the non-whitespace characters outside gold (and how many of those were removed).</summary>
     internal readonly record struct Characters(long Gold, long Predicted, long Overlap, long NonPhi, long RemovedNonPhi)

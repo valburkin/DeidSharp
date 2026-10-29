@@ -15,21 +15,13 @@ public class MissProfileTests
         Text,
         [Span("Ellen Hart", "Staff"), Span("Rose", "Name"), Span("Hart", "Name", from: 20), Span("LANE", "Name"), Span("Lane", "Name"), Span("bed", "Ward"), Span("Okafor", "Name"), Span("Janet Laneway", "Staff"), Span("42", "Name")]);
 
-    private sealed class Fictional : ICorpus
-    {
-        public string Id => "fictional";
-
-        public string Title => "Fictional";
-
-        public LabelMap Labels { get; } = new(
+    private static readonly FictionalCorpus Corpus = new(
         [
             new LabelRule("Staff", PhiCategory.Name, SafeHarbor: true),
             new LabelRule("Name", PhiCategory.Name, SafeHarbor: true),
             new LabelRule("Ward", PhiCategory.Location, SafeHarbor: false),
-        ]);
-
-        public IReadOnlyList<CorpusDocument> Read() => [Note];
-    }
+        ],
+        Note);
 
     private static LabeledSpan Span(string text, string label, int from = 0)
     {
@@ -42,11 +34,10 @@ public class MissProfileTests
     // only as part of a word, and "42" has no letters, so it has no case.
     private static async Task<string> ProfileAsync(string label, EvaluationScope scope = EvaluationScope.SafeHarbor)
     {
-        var corpus = new Fictional();
         var result = await StackScorer.ScoreAsync(
-            new NamedStack("scripted", new ScriptedDetector(("Ellen Hart", PhiCategory.Name), ("LANE", PhiCategory.Name))), corpus, [Note], scope, cancellationToken: TestContext.Current.CancellationToken);
+            new NamedStack("scripted", new ScriptedDetector(("Ellen Hart", PhiCategory.Name), ("LANE", PhiCategory.Name))), Corpus, [Note], scope, cancellationToken: TestContext.Current.CancellationToken);
         await using var output = new StringWriter();
-        MissProfile.Write(output, label, corpus, scope, [Note], [result]);
+        MissProfile.Write(output, label, Corpus, scope, [Note], [result]);
         return output.ToString();
     }
 

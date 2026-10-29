@@ -66,7 +66,8 @@ internal static class ConsoleReport
         WriteSources(output, results);
     }
 
-    // The units other papers report in: words PHI or not (Philter, pyclipse), and the clinical text lost.
+    // The units other papers report in: words PHI or not (Philter, pyclipse), the clinical text lost,
+    // and the exact-boundary ("strict") span match of the 2014 i2b2/UTHealth challenge, categories aside.
     private static void WriteComparable(TextWriter output, IReadOnlyList<StackResult> results, int width)
     {
         output.WriteLine();
@@ -77,6 +78,16 @@ internal static class ConsoleReport
             var words = r.Report.Words;
             output.WriteLine(
                 $"{r.Stack.PadRight(width)}  {Formats.Percent(words.Recall),11}  {Formats.Percent(words.Precision),14}  {Formats.Percent(words.F1),8}  {Formats.Percent(r.Report.NonPhiRemoved),15}");
+        }
+
+        output.WriteLine();
+        output.WriteLine("Strict span match (a prediction with exactly the gold span's start and end, categories aside, as in i2b2 2014's binary evaluation)");
+        output.WriteLine($"{"Stack".PadRight(width)}  {"Strict recall",13}  {"Strict precision",16}  {"Strict F1",9}");
+        foreach (var r in results)
+        {
+            var strict = r.Report.Strict;
+            output.WriteLine(
+                $"{r.Stack.PadRight(width)}  {Formats.Percent(strict?.Recall),13}  {Formats.Percent(strict?.Precision),16}  {Formats.Percent(strict?.F1),9}");
         }
     }
 

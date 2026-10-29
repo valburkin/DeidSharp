@@ -138,7 +138,7 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic
   --compare-with deid,deid-generic,deid-nohosp,philter
 ```
 
-F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`.
+F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`. F43's numbers come from `--split tune --gazetteer with,without` on PhysioNet's notes and MIMIC-IV-Note, and `--gazetteer with,without` on ASQ-PHI.
 
 For an earlier finding, start from these commands and set the flags its settings line names: `--split tune` for the tuning half, `--llm` with the models it compares, `--llm-prompts` with its prompts, `--variants repeated-names` for F7, `--llm-second-opinion self` for F31. The console prints counts and rates only, never note text.
 

@@ -10,6 +10,7 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 - **Samples** ([samples](samples)): three console programs (free text, a FHIR bundle, a local language model), built by CI.
 - **Evaluation on MIMIC-IV-Note**: `--corpus mimic-iv-note` builds a corpus of 1,000 MIMIC-IV-Note 2.2 discharge summaries (one per patient, a fixed hashed sample) whose `___` placeholders are filled with made-up surrogates that become the gold spans, typed by context rules; `--gold-review` writes the gold spans in context for a person to check ([evaluation](docs/evaluation/README.md#mimic-iv-note-with-surrogates)). Its reporting half, measured once under a protocol fixed beforehand, is in the [results](docs/evaluation/README.md#results) and [findings](docs/evaluation/findings.md) (F41).
 - **Miss profile**: the evaluation tool's `--miss-profile <label>` counts each stack's misses of one corpus label by feature (one word, an ordinary word, found elsewhere in the note), printing counts only; `--variants` now also wraps the stacks with a language model ([findings](docs/evaluation/findings.md), F42).
+- **Strict span match**: `EvaluationReport.Strict` gives recall, precision and F1 counting only predictions with exactly a gold span's start and end, categories aside, like the binary evaluation of the 2014 i2b2/UTHealth challenge; the evaluation tool shows it on the console and publishes it in `results.json`.
 
 ### Changed
 

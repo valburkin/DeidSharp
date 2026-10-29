@@ -113,7 +113,7 @@ public class PublishedResultsTests
     {
         var stack = new StackSummary("deterministic + clinical", 0.9, 0.88, 0.5, 9, [])
         {
-            Words = new WordSummary(0.91, 0.6, 0.7232),
+            Words = new RatesSummary(0.91, 0.6, 0.7232),
             NonPhiRemoved = StackSummary.RoundUp(0.01234),
             Intervals = new IntervalsSummary(new RangeSummary(0.87, 0.93), new RangeSummary(0.85, 0.9), new RangeSummary(0.4, 0.6), new RangeSummary(0.7, 0.75), new RangeSummary(0.01, 0.015)),
         };
@@ -122,6 +122,18 @@ public class PublishedResultsTests
         Assert.Contains("| deterministic + clinical | 90.00% (87.00–93.00) | 88.00% | 50.00% | 72.32% | 1.24% | 9 |", ResultsPage.Render(results), StringComparison.Ordinal);
         Assert.Contains("\"nonPhiRemoved\": 0.0124", ResultsPublisher.ResultsJsonText(results), StringComparison.Ordinal);
         Assert.DoesNotContain("\"intervals\"", ResultsPublisher.ResultsJsonText(new PublishedResults([Result("asq-phi", "safe-harbor", 0.97)])), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task The_strict_match_is_published_rounded_down_and_left_out_when_absent()
+    {
+        var stack = StackSummary.From(await ConsoleReportTests.ScoreAsync());
+        var json = ResultsPublisher.ResultsJsonText(new PublishedResults([Result("physionet-deid", "safe-harbor", 0.9) with { Stacks = [stack] }]));
+
+        Assert.Equal(new RatesSummary(0.5, 0.5, 0.5), stack.Strict);
+        Assert.Contains("\"strict\": {", json, StringComparison.Ordinal);
+        Assert.Equal(0.6666, StackSummary.Round(2.0 / 3));
+        Assert.DoesNotContain("\"strict\"", ResultsPublisher.ResultsJsonText(new PublishedResults([Result("asq-phi", "safe-harbor", 0.97)])), StringComparison.Ordinal);
     }
 
     [Theory]

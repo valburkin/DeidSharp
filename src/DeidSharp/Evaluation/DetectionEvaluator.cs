@@ -13,7 +13,9 @@ namespace DeidSharp.Evaluation;
 /// still leak. Per-category numbers also report labeled recall (found with the right
 /// category), which matters for surrogates. Word-level counts (PHI or not, as Philter and
 /// pyclipse report them) and the share of other text removed make the numbers comparable
-/// with published ones.
+/// with published ones, and so does the strict match: a gold span found only by a prediction
+/// with exactly its start and end, categories aside, like the binary PHI-or-not evaluation of
+/// the 2014 i2b2/UTHealth challenge (whose headline score also wants the right type).
 /// </summary>
 public static class DetectionEvaluator
 {
@@ -45,14 +47,11 @@ public static class DetectionEvaluator
         ArgumentNullException.ThrowIfNull(predicted);
         SpanMerger.EnsureWithin(document.Text, predicted, "evaluated detector");
 
-        var detected = 0;
         var perCategory = new Dictionary<PhiCategory, CategoryRecall>();
         foreach (var g in document.Gold)
         {
             var overlapping = predicted.Where(p => Overlap(g, p)).ToList();
             var found = overlapping.Count > 0;
-            detected += found ? 1 : 0;
-
             var entry = perCategory.GetValueOrDefault(g.Category) ?? new CategoryRecall(0, 0, 0);
             perCategory[g.Category] = new CategoryRecall(
                 entry.GoldSpans + 1,
@@ -60,8 +59,8 @@ public static class DetectionEvaluator
                 entry.DetectedWithCategory + (overlapping.Any(p => p.Category == g.Category) ? 1 : 0));
         }
 
-        var correct = predicted.Count(p => document.Gold.Any(g => Overlap(g, p)));
-        var spans = new DetectionMetrics(document.Gold.Count, detected, predicted.Count, correct);
+        var spans = Metrics(document.Gold, predicted, Overlap);
+        var strict = Metrics(document.Gold, predicted, Same);
 
         var text = document.Text;
         var goldMask = Mask(text.Length, document.Gold.Select(g => (g.Start, g.End)));
@@ -84,6 +83,7 @@ public static class DetectionEvaluator
 
         return new EvaluationTally(
             spans,
+            strict,
             new EvaluationTally.Characters(goldChars, predictedChars, overlapChars, nonPhi, removedNonPhi),
             Words(text, goldMask, predictedMask),
             perCategory);
@@ -117,7 +117,13 @@ public static class DetectionEvaluator
         return new WordMetrics(phi, predicted, correct);
     }
 
+    // The span counts under one way of matching a prediction to a gold span.
+    private static DetectionMetrics Metrics(IReadOnlyList<GoldSpan> gold, IReadOnlyList<PhiSpan> predicted, Func<GoldSpan, PhiSpan, bool> match) => new(
+        gold.Count, gold.Count(g => predicted.Any(p => match(g, p))), predicted.Count, predicted.Count(p => gold.Any(g => match(g, p))));
+
     private static bool Overlap(GoldSpan gold, PhiSpan predicted) => predicted.Start < gold.End && gold.Start < predicted.End;
+
+    private static bool Same(GoldSpan gold, PhiSpan predicted) => predicted.Start == gold.Start && predicted.End == gold.End;
 
     private static bool[] Mask(int length, IEnumerable<(int Start, int End)> spans)
     {

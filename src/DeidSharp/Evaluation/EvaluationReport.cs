@@ -11,11 +11,22 @@ public sealed record EvaluationReport(
     double CharacterPrecision,
     IReadOnlyDictionary<PhiCategory, CategoryRecall> PerCategory,
     WordMetrics Words,
-    double NonPhiRemoved);
+    double NonPhiRemoved)
+{
+    /// <summary>
+    /// Span-level counts under the strict (exact-boundary) match, categories aside, like the
+    /// binary PHI-or-not evaluation of the 2014 i2b2/UTHealth challenge: a gold span is found
+    /// only by a prediction with exactly its start and end, and a prediction is right only if it
+    /// is exactly a gold span. A prediction that adds a title ("Dr. Hart" for "Hart") or cuts a
+    /// name short is wrong here, though it removes the PHI. <see cref="DetectionEvaluator"/>
+    /// always sets it; it is null only in a report constructed directly.
+    /// </summary>
+    public DetectionMetrics? Strict { get; init; }
+}
 
 /// <summary>Span-level counts, category-agnostic.</summary>
-/// <param name="DetectedGoldSpans">Gold spans overlapped by at least one prediction.</param>
-/// <param name="CorrectPredictedSpans">Predictions overlapping at least one gold span.</param>
+/// <param name="DetectedGoldSpans">Gold spans overlapped by at least one prediction (in <see cref="EvaluationReport.Strict"/>, matched exactly).</param>
+/// <param name="CorrectPredictedSpans">Predictions overlapping at least one gold span (in <see cref="EvaluationReport.Strict"/>, matching one exactly).</param>
 public sealed record DetectionMetrics(int GoldSpans, int DetectedGoldSpans, int PredictedSpans, int CorrectPredictedSpans)
 {
     public double Recall => DetectionEvaluator.Ratio(DetectedGoldSpans, GoldSpans);

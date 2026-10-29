@@ -694,6 +694,27 @@ Untyped names are where every tool but Philter loses on these notes (F41). `--mi
 
 **Meaning:** the stacks' remaining misses of untyped names are mostly a name's only mention in its note, a quarter of them ordinary words. Whether their sentences give any cue was not measured; no context rule typed them, but that holds for the untyped names the stacks find too. Name propagation adds 1.5 to 2 points of recall to the stacks with the model at 2.4 to 5.2 points of precision, but on a corpus that often repeats the clinicians' names the stacks find; on PhysioNet's short nursing notes it found one span in 844 (F7), which says little about discharge summaries. So the recommended stacks don't change, and propagation stays an experiment in the evaluation tool: its value depends on how real notes repeat names, which needs real gold to measure. Whether a reader would see the lone misses as names is open; reading a sample of them locally (`--misses`) would tell.
 
+## F43. The strict span match: far below the overlap with the gazetteer, close to it without
+
+*2026-10-29, **PhysioNet tuning half**, **MIMIC-IV-Note tuning half** and **ASQ-PHI** (whole; it has no tuning half), Safe Harbor scope; the deterministic stacks with and without the gazetteer (`--gazetteer with,without`), no sidecar and no model. Code: the commit that carries this finding, which adds the strict match to the scorer and changes no detector.*
+
+The 2014 i2b2/UTHealth challenge's headline score counts an entity as found only when a prediction has exactly its start and end and the right type; its "relaxed" match lets the end differ by up to two characters, and it also reports a binary PHI-or-not evaluation that needs the exact boundaries and ignores the type. DeidSharp's headline recall counts a gold span as found when any prediction overlaps it, since what matters for privacy is whether the PHI was removed. The scorer now also reports the exact-boundary match, categories aside, like that binary evaluation (`EvaluationReport.Strict`):
+
+| Corpus | Stack | Recall | Strict recall | Precision | Strict precision |
+|---|---|---:|---:|---:|---:|
+| PhysioNet, tuning half | deterministic | 44.19% | 22.87% | 43.41% | 25.70% |
+| | without the gazetteer | 25.71% | 15.52% | 87.12% | 56.22% |
+| MIMIC-IV-Note, tuning half | deterministic | 87.27% | 74.34% | 98.46% | 84.12% |
+| | without the gazetteer | 49.48% | 46.66% | 99.64% | 94.60% |
+| ASQ-PHI | deterministic | 86.63% | 55.17% | 97.68% | 61.38% |
+| | without the gazetteer | 47.58% | 42.61% | 99.72% | 89.11% |
+
+- **With the gazetteer, much of what is found has other boundaries than the gold**: 48% of the gold spans the deterministic stack finds on PhysioNet's notes, 36% on ASQ-PHI and 15% on MIMIC-IV-Note, so the strict match costs 21, 31 and 13 points of recall. A prediction that takes in a title or a neighboring word, covers less of the PHI, or covers two gold spans at once (the stack merges overlapping spans into one) removes the PHI and fails the strict match.
+- **Without the gazetteer the gap is far smaller**: 40%, 10% and 6% of the found spans, 10, 5 and 3 points of recall. Most of the gap is the gazetteer's spans, and under the strict match its gain nearly disappears on PhysioNet's notes and ASQ-PHI: strict F1 24.20% with it and 24.33% without, 58.11% and 57.65%. Why its boundaries differ, the counts don't say.
+- **MIMIC-IV-Note's gap is the smallest partly by construction.** Its gold names are surrogates drawn from the same Census lists as the gazetteer's (F40), so their boundaries line up with the gazetteer's more than an annotator's would; its strict numbers flatter the gazetteer, as its recall does.
+
+**Meaning:** strict numbers measure agreement with an annotation convention as much as detection, and here mostly the gazetteer's; a comparison with published strict results holds only on the same corpus and conventions. Runs from now on report both, while the published results predate the strict match. The overlap stays the headline, as the measure of what was removed.
+
 ## Methodological notes
 
 - **M1. deid's input format.** deid ignores text on the line that carries `||||END_OF_RECORD`; the marker needs a line of its own. A first run on ASQ-PHI with the marker after the text found nothing at all.
@@ -735,7 +756,7 @@ Untyped names are where every tool but Philter loses on these notes (F41). `--mi
   - **When the numbers could move**, the release measures every corpus whose numbers could move again, MIMIC-IV-Note's reporting half included, and publishes each measurement as the next finding whatever it shows. No detector choice is made from it; a new choice still needs the tuning half or new data.
   - **When the measured code changed but the numbers can't move**, or a finding has already counted the change's effect and the published numbers err on the conservative side, the release keeps the results and says why in a line under [Releases](#releases). CI refuses the tag without that line, so a kept result is a recorded judgment, never an oversight.
   - **Since `ee4f226`**, where F37 and F39 were measured, the measured code changed in five ways: the package icon in each project file and the FHIR package's dependency, which no measured stack runs; certifi, filelock and setuptools in the sidecar's locks, which handle certificates, cache locks and installation, not the model's code; Microsoft.Extensions.AI.Abstractions 10.10.1 to 10.11.0, the interfaces the language-model detector calls through, with the model, the prompts and the requests unchanged; the second opinion's window in the evaluation tool, 4,096 to 16,384 tokens, which PhysioNet's notes and ASQ-PHI's queries already fit (D4's second amendment); and the clinical sidecar's whitespace fix (D4's first amendment), which F41 counted at no span on ASQ-PHI and at most 9 false alarms across PhysioNet's notes, recall unchanged, so their published precision is, if anything, slightly low. The evaluation tool's other changes add a corpus and options and leave the scoring as it was.
-  - **Since `7ada415`**, where F41 was measured, only the evaluation tool changed: the miss profile and variants on the stacks with a language model (F42), which add reports and stacks and leave the published ones as they were.
+  - **Since `7ada415`**, where F41 was measured, the evaluation tool and the scorer changed: the miss profile and variants on the stacks with a language model (F42), and the strict match (F43), which add reports, stacks and a measure and leave the published ones as they were.
 
 ## Releases
 

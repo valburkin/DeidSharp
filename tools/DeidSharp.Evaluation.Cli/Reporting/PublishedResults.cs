@@ -74,6 +74,7 @@ internal sealed record CorpusResult(
 /// <param name="Words">Word-level recall, precision and F1; absent in results measured before the tool reported them.</param>
 /// <param name="NonPhiRemoved">The share of non-PHI text removed; absent in older results.</param>
 /// <param name="Intervals">95% bootstrap confidence intervals; absent in older results.</param>
+/// <param name="Strict">Recall, precision and F1 under the strict span match; absent in older results.</param>
 internal sealed record StackSummary(
     string Stack,
     double Recall,
@@ -81,9 +82,10 @@ internal sealed record StackSummary(
     double Precision,
     int Missed,
     IReadOnlyList<LabelSummary> Labels,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] WordSummary? Words = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] RatesSummary? Words = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] double? NonPhiRemoved = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntervalsSummary? Intervals = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntervalsSummary? Intervals = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] RatesSummary? Strict = null)
 {
     public static StackSummary From(StackResult result)
     {
@@ -96,12 +98,15 @@ internal sealed record StackSummary(
             Round(result.Report.Overall.Precision),
             result.Misses.Count,
             [.. result.Labels.Select(l => new LabelSummary(l.Label, l.GoldSpans, Round(l.Recall)))],
-            new WordSummary(Round(words.Recall), Round(words.Precision), Round(words.F1)),
+            Rates(words.Recall, words.Precision, words.F1),
             RoundUp(result.Report.NonPhiRemoved),
             result.Intervals is { } i
                 ? new IntervalsSummary(Outward(i.Recall), Outward(i.CharacterRecall), Outward(i.Precision), Outward(i.WordF1), Outward(i.NonPhiRemoved))
-                : null);
+                : null,
+            result.Report.Strict is { } strict ? Rates(strict.Recall, strict.Precision, strict.F1) : null);
     }
+
+    private static RatesSummary Rates(double recall, double precision, double f1) => new(Round(recall), Round(precision), Round(f1));
 
     // In decimal: a double such as 57/100 is stored just below 0.57, and would round down to 0.5699.
     internal static double Round(double value) => (double)(Math.Floor((decimal)value * 10_000m) / 10_000m);
@@ -111,8 +116,8 @@ internal sealed record StackSummary(
     private static RangeSummary Outward(Interval interval) => new(Round(interval.Low), RoundUp(interval.High));
 }
 
-/// <summary>Word-level recall, precision and F1 (PHI or not), as Philter and pyclipse report them.</summary>
-internal sealed record WordSummary(double Recall, double Precision, double F1);
+/// <summary>Recall, precision and F1 in one unit: words PHI or not, as Philter and pyclipse report them, or strict spans.</summary>
+internal sealed record RatesSummary(double Recall, double Precision, double F1);
 
 /// <summary>95% confidence intervals for a stack's headline numbers.</summary>
 internal sealed record IntervalsSummary(RangeSummary Recall, RangeSummary CharacterRecall, RangeSummary Precision, RangeSummary WordF1, RangeSummary NonPhiRemoved);

@@ -28,6 +28,36 @@ public class DetectionEvaluatorTests
         Assert.Equal(1, report.Overall.F1);
         Assert.Equal(1, report.CharacterRecall);
         Assert.Equal(1, report.CharacterPrecision);
+        Assert.Equal(1, report.Strict!.F1);
+    }
+
+    [Fact]
+    public void The_strict_match_needs_exactly_the_gold_span()
+    {
+        // "Jane Doe" exactly, the date one character short, and "Hart" with its title.
+        var report = DetectionEvaluator.Evaluate([(Document, [P(0, 8, PhiCategory.Name), P(14, 23, PhiCategory.Date), P(28, 35, PhiCategory.Name)])]);
+
+        Assert.Equal(1, report.Overall.Recall);
+        Assert.Equal(new DetectionMetrics(3, 1, 3, 1), report.Strict);
+        Assert.Equal(1.0 / 3, report.Strict!.Recall, 6);
+        Assert.Equal(1.0 / 3, report.Strict.Precision, 6);
+    }
+
+    [Fact]
+    public void The_strict_match_ignores_the_category_and_counts_a_repeated_prediction_once_per_gold_span()
+    {
+        var report = DetectionEvaluator.Evaluate([(Document, [P(0, 8, PhiCategory.Organization), P(0, 8, PhiCategory.Name)])]);
+
+        Assert.Equal(new DetectionMetrics(3, 1, 2, 2), report.Strict);
+    }
+
+    [Fact]
+    public void One_prediction_over_two_gold_spans_matches_neither_strictly()
+    {
+        var report = DetectionEvaluator.Evaluate([(Document, [P(0, 24, PhiCategory.Name)])]);
+
+        Assert.Equal(new DetectionMetrics(3, 2, 1, 1), report.Overall);
+        Assert.Equal(new DetectionMetrics(3, 0, 1, 0), report.Strict);
     }
 
     [Fact]
@@ -110,6 +140,8 @@ public class DetectionEvaluatorTests
         var summed = DetectionEvaluator.Tally(Document, first).Add(DetectionEvaluator.Tally(second, other)).ToReport();
 
         Assert.Equal(whole.Overall, summed.Overall);
+        Assert.Equal(new DetectionMetrics(5, 2, 3, 2), whole.Strict);
+        Assert.Equal(whole.Strict, summed.Strict);
         Assert.Equal(whole.Words, summed.Words);
         Assert.Equal(whole.CharacterRecall, summed.CharacterRecall);
         Assert.Equal(whole.NonPhiRemoved, summed.NonPhiRemoved);
