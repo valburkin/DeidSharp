@@ -749,7 +749,7 @@
       "title": "MIMIC-IV-Note 2.2 discharge summaries with surrogate PHI (generator 3)",
       "scope": "safe-harbor",
       "version": "1.0.0",
-      "commit": "",
+      "commit": "7ada41514cf3d07d9dc94cc4c3282eb1d7669f2a",
       "date": "2026-10-28",
       "documents": 494,
       "goldSpans": 29023,
@@ -1104,7 +1104,7 @@
         }
       ],
       "split": "report",
-      "note": "clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362; the code is identified by the tree hashes in findings F41"
+      "note": "clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362; measured before its commit, 7ada415, which holds exactly the code measured (the tree hashes in findings F41)"
     }
   ]
 }

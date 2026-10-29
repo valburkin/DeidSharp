@@ -6,7 +6,7 @@ name: CI
 on:
   push:
     branches: [main]
-    # A release tag also checks that docs/evaluation holds that version's measurements.
+    # A release tag also checks that docs/evaluation holds the published measurements.
     tags: ["v*"]
   pull_request:
   # Weekly, so a vulnerability published against a pinned package fails the build
@@ -56,11 +56,13 @@ jobs:
       - run: dotnet pack DeidSharp.slnx --configuration Release --no-build --output artifacts
 
   # The PhysioNet notes may not leave a credentialed maintainer's machine, so CI cannot
-  # measure on them. A maintainer runs DeidSharp.Evaluation.Cli before tagging
-  # (docs/evaluation/README.md); this job refuses a tag whose published results came from
-  # another version.
+  # measure on them. Results keep the version and commit they were measured at, and a
+  # release measures again only when a change could alter what the measured stacks find
+  # (D5 in docs/evaluation/findings.md): this job refuses a tag without the published
+  # measurements, with results from a later version, or with results whose code changed
+  # since they were measured unless findings.md records why they still stand.
   evaluation-results:
-    name: Evaluation results match the release
+    name: Evaluation results published
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -68,6 +70,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The whole history, to compare the tag with each measured commit.
+          fetch-depth: 0
       - name: Check docs/evaluation/results.json
         shell: bash
         env:
@@ -76,18 +80,53 @@ jobs:
           set -euo pipefail
           version="${TAG#v}"
           results=docs/evaluation/results.json
+          findings=docs/evaluation/findings.md
+          # What the published numbers depend on: the detectors and their packages' locks, the
+          # sidecar, the stock Presidio image, and the tool that runs and scores the stacks.
+          measured_code=(src sidecar tools/DeidSharp.Evaluation.Cli docker-compose.yml ':!*.md' ':!sidecar/tests')
           # PhysioNet's headline is the held-out half (split "report"); ASQ-PHI has no tuning half, so it is measured whole.
           for want in "physionet-deid report" "asq-phi all"; do
-            set -- $want
-            if ! jq --exit-status --arg c "$1" --arg s "$2" '[.corpora[] | select(.corpus == $c and .scope == "safe-harbor" and .split == $s)] | length == 1' "$results" > /dev/null; then
-              echo "$results has no safe-harbor measurement on $1, split $2." >&2
+            read -r corpus split <<< "$want"
+            if ! jq --exit-status --arg c "$corpus" --arg s "$split" '[.corpora[] | select(.corpus == $c and .scope == "safe-harbor" and .split == $s)] | length == 1' "$results" > /dev/null; then
+              echo "$results has no safe-harbor measurement on $corpus, split $split." >&2
               exit 1
             fi
           done
-          stale=$(jq --raw-output --arg v "$version" '[.corpora[] | select(.version != $v) | "\(.corpus)/\(.scope)/\(.split) (\(.version))"] | join(", ")' "$results")
-          if [ -n "$stale" ]; then
-            echo "Measured with another version than $version: $stale. Rerun DeidSharp.Evaluation.Cli with --publish (docs/evaluation/README.md)." >&2
+          if ! jq --exit-status 'all(.corpora[]; (.version // "") != "")' "$results" > /dev/null; then
+            echo "$results has a measurement without a version." >&2
             exit 1
+          fi
+          # Release versions carry no suffix; a pre-release is compared by its release part.
+          unrecorded=$(jq --raw-output '.corpora[] | [.corpus, .scope, .split, .version, (.commit // "")] | join("\u001f")' "$results" |
+            while IFS=$'\x1f' read -r corpus scope split measured commit; do
+              name="$corpus/$scope/$split"
+              if [ "$(printf '%s\n%s\n' "${measured%%-*}" "${version%%-*}" | sort -V | tail -n 1)" != "${version%%-*}" ]; then
+                echo "$name was measured with $measured, a later version than $version." >&2
+                exit 1
+              fi
+              if [[ ! "$commit" =~ ^[0-9a-f]{7,40}$ ]] || ! git cat-file -e "$commit^{commit}" 2> /dev/null; then
+                echo "$name (no commit in this history)"
+              elif ! git diff --quiet "$commit" HEAD -- "${measured_code[@]}"; then
+                echo "$name (measured at ${commit:0:7}; changed since: $(git diff --name-only "$commit" HEAD -- "${measured_code[@]}" | wc -l))"
+              fi
+            done)
+          # A measurement stays the result of record until its code changes what it finds. Whether
+          # a change does is the maintainer's call, but it must be written down, so a kept result
+          # is never an oversight.
+          # The line must be a top-level item of the Releases section, starting "- **v<version>**".
+          release_line=$(awk -v want="- **v$version**" '
+            /^## Releases$/ { section = 1; next }
+            /^## / { section = 0 }
+            section && ($0 == want || index($0, want " ") == 1) { found = 1 }
+            END { print found + 0 }' "$findings")
+          if [ -n "$unrecorded" ] && [ "$release_line" = 0 ]; then
+            echo "The measured code changed since these results, or can't be checked, and the Releases section of $findings has no line for v$version saying why they stand:" >&2
+            echo "$unrecorded" >&2
+            echo "Measure again, or add the line under Releases (docs/evaluation/README.md#before-a-release)." >&2
+            exit 1
+          fi
+          if [ -n "$unrecorded" ]; then
+            echo "::notice::Kept results whose code changed, as findings.md records for v$version: $(echo "$unrecorded" | paste -sd ';' -)"
           fi
 
   integration:
