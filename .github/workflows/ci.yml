@@ -55,7 +55,7 @@ jobs:
       # The five packages and their symbols, as a release ships them.
       - run: dotnet pack DeidSharp.slnx --configuration Release --no-build --output artifacts
 
-  # The PhysioNet notes may not leave a credentialed maintainer's machine, so CI cannot
+  # The nursing notes may not leave a credentialed maintainer's machine, so CI cannot
   # measure on them. Results keep the version and commit they were measured at, and a
   # release measures again only when a change could alter what the measured stacks find
   # (D5 in docs/evaluation/findings.md): this job refuses a tag without the published
@@ -84,7 +84,7 @@ jobs:
           # What the published numbers depend on: the detectors and their packages' locks, the
           # sidecar, the stock Presidio image, and the tool that runs and scores the stacks.
           measured_code=(src sidecar tools/DeidSharp.Evaluation.Cli docker-compose.yml ':!*.md' ':!sidecar/tests')
-          # PhysioNet's headline is the held-out half (split "report"); ASQ-PHI has no tuning half, so it is measured whole.
+          # The nursing notes' headline is the held-out half (split "report"); ASQ-PHI has no tuning half, so it is measured whole.
           for want in "physionet-deid report" "asq-phi all"; do
             read -r corpus split <<< "$want"
             if ! jq --exit-status --arg c "$corpus" --arg s "$split" '[.corpora[] | select(.corpus == $c and .scope == "safe-harbor" and .split == $s)] | length == 1' "$results" > /dev/null; then

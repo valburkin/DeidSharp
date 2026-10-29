@@ -42,8 +42,9 @@ public sealed class ClinicalAsqPhiTests(ClinicalAnalyzerContainer analyzer)
         var result = await AsqPhiRecallFloor.ScoreAsync(analyzer.Detector("clinical"));
 
         // Measured at 0.9973 and 0.9596. Leaving out spaCy's general NER and the URL and license
-        // recognizers cost 7 of 2,976 spans here, and 2 points of recall on PhysioNet's tuning
-        // half, for precision from 64% to 76% here and from 5% to 55% there (docs/evaluation).
+        // recognizers cost 7 of 2,976 spans here, and 2 points of recall on the tuning half of
+        // PhysioNet's nursing notes, for precision from 64% to 76% here and from 5% to 55% there
+        // (docs/evaluation).
         // One of the 8 misses is a labeling error in the corpus.
         Assert.True(result.Report.Overall.Recall >= 0.997, $"recall {result.Report.Overall.Recall:0.0000}");
         Assert.True(result.Report.CharacterRecall >= 0.959, $"character recall {result.Report.CharacterRecall:0.0000}");

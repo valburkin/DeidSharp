@@ -3,7 +3,7 @@
 A Presidio analyzer service with a clinical NER model. It speaks Presidio's REST API, so `DeidSharp.Presidio.PresidioDetector` uses it exactly like the stock Presidio image.
 
 - **Model:** `obi/deid_roberta_i2b2`, a RoBERTa model trained on the i2b2 2014 de-identification corpus. It finds patients, staff, hospitals, places, ages, dates, phones, emails and ids.
-- **Recognizers:** Presidio's built-in pattern recognizers, less three that flagged far more clinical text than PHI in evaluation (spaCy's general NER, URLs and US driver's licenses; `recognizers.py`). Where recall must win at any cost to the text, `DEIDSHARP_KEEP_RECOGNIZERS=SpacyRecognizer,UrlRecognizer,UsLicenseRecognizer` keeps any of them: together they cost 11% of the non-PHI text on PhysioNet's notes for about 2 points of recall (docs/evaluation/findings.md, F2).
+- **Recognizers:** Presidio's built-in pattern recognizers, less three that flagged far more clinical text than PHI in evaluation (spaCy's general NER, URLs and US driver's licenses; `recognizers.py`). Where recall must win at any cost to the text, `DEIDSHARP_KEEP_RECOGNIZERS=SpacyRecognizer,UrlRecognizer,UsLicenseRecognizer` keeps any of them: together they cost 11% of the non-PHI text on PhysioNet's nursing notes for about 2 points of recall (docs/evaluation/findings.md, F2).
 - **Offline:** the model, and the public suffix list Presidio's email recognizer needs, are downloaded when the image is built. The running container sets `HF_HUB_OFFLINE=1` and needs no network, so text sent to it stays on the host.
 - **Port:** 3000 inside the container (`docker compose` maps it to 5003 on 127.0.0.1 only: the service receives raw patient text).
 

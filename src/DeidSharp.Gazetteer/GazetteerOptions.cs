@@ -9,7 +9,8 @@ public sealed record GazetteerOptions
     /// A surname counts on its own only if at least this many people had it in the 2010
     /// Census: rarer surnames collide with abbreviations and clinical words, above all in
     /// capitals. A rarer surname still counts with context ("Dr. Xu"). Default 10,000 (3,567
-    /// surnames), chosen on PhysioNet's tuning half (docs/evaluation/findings.md, F9).
+    /// surnames), chosen on the tuning half of PhysioNet's nursing notes
+    /// (docs/evaluation/findings.md, F9).
     /// </summary>
     public int MinimumSurnameCount { get; init; } = 10_000;
 

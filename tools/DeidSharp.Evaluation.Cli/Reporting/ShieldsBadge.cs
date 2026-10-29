@@ -5,8 +5,8 @@ namespace DeidSharp.Evaluation.Cli.Reporting;
 /// <summary>
 /// docs/evaluation/badge.json, in shields.io's endpoint format: the README's badge shows the
 /// recall of one named stack, the deterministic detectors with the clinical sidecar (the stack
-/// docs/providers.md recommends), on the held-out half of PhysioNet's nursing notes in the
-/// Safe Harbor scope. The stack is fixed and named on the badge, so the number never silently
+/// docs/providers.md recommends), on the held-out half of the nursing notes (PhysioNet's
+/// Deidentified Medical Text) in the Safe Harbor scope. The stack is fixed and named on the badge, so the number never silently
 /// comes from another one.
 /// </summary>
 internal sealed record ShieldsBadge(int SchemaVersion, string Label, string Message, string Color)
@@ -15,7 +15,7 @@ internal sealed record ShieldsBadge(int SchemaVersion, string Label, string Mess
     private const string HeadlineScope = "safe-harbor";
     private const string HeadlineSplit = "report";
     private const string HeadlineStack = "deterministic + clinical";
-    private const string BadgeLabel = "PHI recall (PhysioNet notes)";
+    private const string BadgeLabel = "PHI recall (nursing notes)";
 
     public static ShieldsBadge From(PublishedResults results)
     {

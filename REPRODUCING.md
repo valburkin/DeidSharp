@@ -1,6 +1,6 @@
 # Reproducing the evaluation
 
-How to rerun the measurements of record, [findings](docs/evaluation/findings.md) F36 onward and the [results table](docs/evaluation/README.md#results), from the `v1.0.0` tag on your own machine; MIMIC-IV-Note's findings, F40 onward, need later code (see [Commits](#commits)). Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
+How to rerun the measurements of record, [findings](docs/evaluation/findings.md) F36 onward and the [results table](docs/evaluation/README.md#results), from the `v1.0.0` tag on your own machine; findings F40 onward (the discharge summaries, and F43's strict match) need later code (see [Commits](#commits)). Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
 
 The published table (`results.json`) holds the stacks without a language model; the tool publishes nothing else. The numbers for stacks with a language model, for the other tools, and for every earlier experiment are the console output logged in the findings.
 
@@ -20,14 +20,14 @@ The published table (`results.json`) holds the stacks without a language model; 
 ## Corpora
 
 - **ASQ-PHI** ships in `tools/DeidSharp.Evaluation.Cli/data/asq-phi` (MIT) and needs no flags beyond `--corpus asq-phi`.
-- **PhysioNet's Deidentified Medical Text 1.0** needs a credentialed PhysioNet account and its data use agreement. Download `id.text` from the dataset and `id-phi.phrase` from the deid package, and keep both outside any Git working tree. Never commit them, share them, or paste their text into an online service or AI assistant.
-- **MIMIC-IV-Note 2.2** needs the same account and the dataset's own data use agreement. Download `note/discharge.csv.gz` and keep it as it is: the tool checks its SHA-256 against the release's, then builds the corpus from it on each run (`--corpus mimic-iv-note --notes <discharge.csv.gz>`).
+- **PhysioNet's Deidentified Medical Text 1.0** (the nursing notes) needs a credentialed PhysioNet account and its data use agreement. Download `id.text` from the dataset and `id-phi.phrase` from the deid package, and keep both outside any Git working tree. Never commit them, share them, or paste their text into an online service or AI assistant.
+- **MIMIC-IV-Note 2.2** (the discharge summaries) needs the same account and the dataset's own data use agreement. Download `note/discharge.csv.gz` and keep it as it is: the tool checks its SHA-256 against the release's, then builds the corpus from it on each run (`--corpus mimic-iv-note --notes <discharge.csv.gz>`).
 
 The notes split by patient into a tuning half (`--split tune`) and a reporting half (`--split report`), by the lowest bit of the first byte of the SHA-256 of `deidsharp-split:patient ` followed by the patient's number (`deidsharp-split:patient 10`), 0 for tuning. Confidence intervals are a percentile bootstrap over patients (documents in ASQ-PHI), 1,000 resamples from the fixed seed in `Scoring/Bootstrap.cs`, so a rerun repeats them exactly.
 
 ## Commands
 
-In what follows, `<id.text>` and `<id-phi.phrase>` are your copies of PhysioNet's files, and `<work>` is a folder outside any Git working tree for the other tools' input and output, which hold corpus text.
+In what follows, `<id.text>` and `<id-phi.phrase>` are your copies of the nursing notes' files, and `<work>` is a folder outside any Git working tree for the other tools' input and output, which hold corpus text.
 
 Start the sidecars and pull the model:
 
@@ -49,7 +49,7 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus asq-p
 
 ### The other tools' spans
 
-deid on PhysioNet reads `id.text` as it comes, once per configuration ([evaluation](docs/evaluation/README.md#comparing-with-deid) says which settings each one turns off). Copy `id.text` into `<work>/deid-default`, `<work>/deid-generic` and `<work>/deid-nohosp`, and from deid's folder:
+deid on the nursing notes reads `id.text` as it comes, once per configuration ([evaluation](docs/evaluation/README.md#comparing-with-deid) says which settings each one turns off). Copy `id.text` into `<work>/deid-default`, `<work>/deid-generic` and `<work>/deid-nohosp`, and from deid's folder:
 
 ```bash
 perl deid.pl <work>/deid-default/id deid-output.config
@@ -138,13 +138,13 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic
   --compare-with deid,deid-generic,deid-nohosp,philter
 ```
 
-F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`. F43's numbers come from `--split tune --gazetteer with,without` on PhysioNet's notes and MIMIC-IV-Note, and `--gazetteer with,without` on ASQ-PHI.
+F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`. F43's numbers come from `--split tune --gazetteer with,without` on the nursing notes and the discharge summaries, and `--gazetteer with,without` on ASQ-PHI.
 
 For an earlier finding, start from these commands and set the flags its settings line names: `--split tune` for the tuning half, `--llm` with the models it compares, `--llm-prompts` with its prompts, `--variants repeated-names` for F7, `--llm-second-opinion self` for F31. The console prints counts and rates only, never note text.
 
 ## Commits
 
-F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on MIMIC-IV-Note, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code. F42 ran on a `tools` tree that no commit holds; the commit that carries F42 differs from it only in when the word list is read and in comments, so rerun F42 from that commit.
+F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on the discharge summaries, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code. F42 ran on a `tools` tree that no commit holds; the commit that carries F42 differs from it only in when the word list is read and in comments, so rerun F42 from that commit.
 
 ## What to expect
 
