@@ -4,6 +4,8 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-30
+
 ### Added
 
 - **Guide** ([docs/guide.md](docs/guide.md)): how to install, choose a detector stack, de-identify free text and FHIR, add the clinical sidecar or a local language model, pseudonymize, check output, handle errors, run DeidSharp in a service, read its telemetry and measure it on your own data, with a reference of every option. Its examples run as tests (`GuideExamplesTests`).
@@ -58,5 +60,6 @@ The first public release.
 - **Packages**: the five libraries on nuget.org, with an icon, symbol packages and Source Link, so a debugger steps into the sources of the packed commit. CI packs and publishes them from a release tag by Trusted Publishing, so no API key is stored.
 - **Project**: CI on Linux and Windows, CodeQL, Dependabot, a security policy and contribution guidelines.
 
-[Unreleased]: https://github.com/valburkin/DeidSharp/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/valburkin/DeidSharp/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/valburkin/DeidSharp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/valburkin/DeidSharp/releases/tag/v1.0.0

@@ -6,8 +6,8 @@ authors:
   - family-names: Burkin
     given-names: Valentin
     orcid: "https://orcid.org/0009-0001-9497-9496"
-version: 1.0.0
-date-released: 2026-10-19
+version: 1.1.0
+date-released: 2026-10-30
 license: MIT
 repository-code: "https://github.com/valburkin/DeidSharp"
 keywords:
