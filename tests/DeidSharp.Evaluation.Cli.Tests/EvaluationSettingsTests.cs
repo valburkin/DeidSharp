@@ -253,18 +253,13 @@ public class EvaluationSettingsTests
     }
 
     [Fact]
-    public void Reads_the_clinical_places_experiment_only_with_the_clinical_sidecar_and_never_for_publishing()
+    public void Reads_the_clinical_places_stack_only_with_the_clinical_sidecar()
     {
-        using var temp = new TempDirectory();
-
         var settings = EvaluationSettings.Parse(["--corpus", "asq-phi", "--clinical", "http://127.0.0.1:5003/", "--clinical-places", "on"]);
         var noSidecar = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--clinical-places", "on"]));
-        var published = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(
-            ["--corpus", "asq-phi", "--clinical", "http://127.0.0.1:5003/", "--clinical-places", "on", "--publish", temp.Path]));
 
         Assert.True(settings.ClinicalPlaces);
         Assert.Contains("needs --clinical", noSidecar.Message, StringComparison.Ordinal);
-        Assert.Contains("can't be published", published.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -300,13 +295,30 @@ public class EvaluationSettingsTests
     }
 
     [Fact]
-    public void Refuses_to_publish_an_llm_layer()
+    public void Publishes_the_recommended_stacks_with_an_llm_layer_but_not_the_self_check()
     {
         using var temp = new TempDirectory();
+        temp.File(ResultsPublisher.PageFile, $"{ResultsPage.Begin}\n{ResultsPage.End}\n");
+        string[] recordRun =
+        [
+            "--corpus", "asq-phi", "--clinical", "http://127.0.0.1:5003/", "--clinical-places", "on", "--gazetteer", "with,without",
+            "--llm", "gemma4:26b-a4b", "--llm-prompts", "all-examples", "--llm-second-opinion", "on", "--publish", temp.Path,
+        ];
 
-        var e = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--llm", "qwen3.5:9b", "--publish", temp.Path]));
+        var settings = EvaluationSettings.Parse(recordRun);
+        var selfCheck = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(
+            ["--corpus", "asq-phi", "--llm", "gemma4:26b-a4b", "--llm-second-opinion", "on,self", "--publish", temp.Path]));
 
-        Assert.Contains("can't be published", e.Message, StringComparison.Ordinal);
+        Assert.Equal(temp.Path, settings.PublishDirectory);
+        Assert.Equal(["gemma4:26b-a4b"], settings.LlmModels);
+        Assert.Equal([true, false], settings.Gazetteer);
+        Assert.Contains("self is an experiment, so it can't be published", selfCheck.Message, StringComparison.Ordinal);
+        var retrieved = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(
+            ["--corpus", "asq-phi", "--llm", "gemma4:26b-a4b", "--llm-prompts", "all-examples,retrieved", "--publish", temp.Path]));
+        Assert.Contains("retrieved is an experiment, so it can't be published", retrieved.Message, StringComparison.Ordinal);
+        var ablation = Assert.Throws<UsageException>(() => EvaluationSettings.Parse(
+            ["--corpus", "asq-phi", "--llm", "gemma4:26b-a4b", "--llm-prompts", "focused-rules", "--publish", temp.Path]));
+        Assert.Contains("focused-rules is an experiment, so it can't be published", ablation.Message, StringComparison.Ordinal);
     }
 
     [Fact]

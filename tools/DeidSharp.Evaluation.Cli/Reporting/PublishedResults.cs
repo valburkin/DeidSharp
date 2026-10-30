@@ -33,6 +33,7 @@ internal sealed record PublishedResults(IReadOnlyList<CorpusResult> Corpora)
 /// <param name="Split">Which half of the corpus: all, tune or report (<see cref="CorpusSplit"/>).</param>
 /// <param name="Commit">The Git commit the build came from, or empty if unknown.</param>
 /// <param name="Note">What the numbers came from that the tool can't see (the sidecar images, CPU or GPU), if given.</param>
+/// <param name="LanguageModels">The Ollama server and models the stacks with an LLM layer asked, if any.</param>
 internal sealed record CorpusResult(
     string Corpus,
     string Title,
@@ -44,10 +45,19 @@ internal sealed record CorpusResult(
     int GoldSpans,
     IReadOnlyList<StackSummary> Stacks,
     string Split = "all",
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Note = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Note = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LanguageModels? LanguageModels = null)
 {
     public static CorpusResult From(
-        ICorpus corpus, EvaluationScope scope, CorpusSplit split, int documents, IReadOnlyList<StackResult> results, BuildVersion build, DateOnly date, string? note = null)
+        ICorpus corpus,
+        EvaluationScope scope,
+        CorpusSplit split,
+        int documents,
+        IReadOnlyList<StackResult> results,
+        BuildVersion build,
+        DateOnly date,
+        string? note = null,
+        LanguageModels? languageModels = null)
     {
         ArgumentNullException.ThrowIfNull(corpus);
         ArgumentNullException.ThrowIfNull(results);
@@ -63,8 +73,12 @@ internal sealed record CorpusResult(
             results.Count > 0 ? results[0].Report.Overall.GoldSpans : 0,
             [.. results.Select(StackSummary.From)],
             CorpusSplits.Id(split),
-            note);
+            note,
+            languageModels);
     }
+
+    /// <summary>The build that measured, as the pages name it: its version and the commit's first seven characters.</summary>
+    public string BuildLabel() => Commit.Length >= 7 ? $"DeidSharp {Version} (`{Commit[..7]}`)" : $"DeidSharp {Version}";
 }
 
 /// <summary>

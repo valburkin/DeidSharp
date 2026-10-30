@@ -38,7 +38,17 @@ internal static class EvaluationRun
 
         var files = settings.Predictions.Select(p => PredictionsFile.Read(p.Name, p.Path, corpus)).ToList();
         using var stacks = new DetectorStacks(settings.Presidio, settings.Clinical, settings.DroppedSources, settings.Variants, settings.LlmModels, settings.LlmEndpoint, settings.LlmPrompts, settings.Gazetteer, settings.SecondOpinions, settings.Ablation, settings.ClinicalPlaces);
+        if (settings.PublishDirectory is not null
+            && HeadlineStacks.MissingFrom(stacks.Stacks.Select(s => s.Name), settings.LlmModels.Count > 0) is { Count: > 0 } missing)
+        {
+            throw new UsageException(
+                $"--publish replaces the corpus's published results, so the run must measure the stacks the README shows; this one wouldn't measure: {string.Join(", ", missing)}.");
+        }
+
         await stacks.EnsureReachableAsync(cancellationToken);
+
+        // The weights a published number came from, read before the run and checked after it.
+        var models = settings.PublishDirectory is null ? null : await stacks.PinModelsAsync(cancellationToken);
 
         var bootstrap = new Bootstrap(documents.Select(d => d.SplitGroup).Distinct(StringComparer.Ordinal).Count());
         var results = new List<StackResult>();
@@ -93,11 +103,18 @@ internal static class EvaluationRun
 
         if (settings.PublishDirectory is not null)
         {
-            ResultsPublisher.Publish(
+            // A pull or an update during a run of hours would publish numbers under weights they didn't come from.
+            models?.EnsureUnchanged(await stacks.PinModelsAsync(cancellationToken));
+
+            var notice = ResultsPublisher.Publish(
                 settings.PublishDirectory,
-                CorpusResult.From(settings.Corpus, settings.Scope, settings.Split, documents.Count, results, BuildVersion.OfLibrary(), today, settings.Note));
+                CorpusResult.From(settings.Corpus, settings.Scope, settings.Split, documents.Count, results, BuildVersion.OfLibrary(), today, settings.Note, models));
             await output.WriteLineAsync();
             await output.WriteLineAsync($"Published to {Path.GetFullPath(settings.PublishDirectory)}.");
+            if (notice is not null)
+            {
+                await output.WriteLineAsync(notice);
+            }
         }
     }
 

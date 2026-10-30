@@ -1,0 +1,18 @@
+# The model baselines' packages. Edit this file, then regenerate the lock:
+#   uv pip compile requirements.in --generate-hashes --emit-index-url --python-version 3.12 --python-platform x86_64-unknown-linux-gnu --index-url https://pypi.org/simple --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match --output-file requirements.txt
+# The image installs exactly the locked set. opf (OpenAI Privacy Filter's package) is not on
+# PyPI; the Dockerfile adds its source at a pinned commit, and its dependencies are here.
+# CPU-only PyTorch, from PyTorch's own index: the image stays a few GB instead of pulling CUDA.
+torch==2.14.1+cpu
+# gliner 0.2.29 needs transformers below 5.17.
+transformers==5.16.1
+gliner==0.2.29
+huggingface_hub
+safetensors
+numpy
+tiktoken
+packaging
+sentencepiece
+# transformers reads a SentencePiece tokenizer (GLiNER's encoder's) through protobuf; without it,
+# it falls back to a converter that can't read the file.
+protobuf

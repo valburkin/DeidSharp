@@ -8,6 +8,7 @@ internal sealed class TempDirectory : IDisposable
     public string File(string name, string content)
     {
         var path = System.IO.Path.Combine(Path, name);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
         System.IO.File.WriteAllText(path, content);
         return path;
     }

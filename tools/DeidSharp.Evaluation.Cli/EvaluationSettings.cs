@@ -73,23 +73,27 @@ internal sealed record EvaluationSettings(
           --false-positives <file>   write each false positive with its text, for you to read; refused inside a Git working tree
           --miss-profile <label>     count each stack's misses of one corpus label by feature (one word, an ordinary word,
                                      found elsewhere in the note), counts only
-          --publish <dir>            update docs/evaluation: results.json, the README table and badge.json
+          --publish <dir>            update docs/evaluation: results.json, its README's table, badge.json and, where it
+                                     has the markers, the repository README's results at a glance; the run must measure
+                                     the stacks they show
           --note <text>              published with the results, e.g. "clinical sidecar on CUDA"
           --drop-sources <a,b>       leave out the spans only these recognizers report, e.g. clinical:SpacyRecognizer;
                                      an experiment, so it can't be published
           --predictions <n=file,...> also score other tools' spans from files ("document<TAB>start<TAB>end[<TAB>category]")
           --compare-with <n,...>     also compare every stack with these prediction files, paired: the change and its 95% CI
           --variants <a,b>           also measure each stack with these changes: repeated-names; can't be published
-          --llm <model,...>          also measure each stack with an LLM layer: an Ollama model, e.g. qwen3.5:9b; can't be published
+          --llm <model,...>          also measure each stack with an LLM layer: an Ollama model, e.g. qwen3.5:9b; published with
+                                     the model's digest and Ollama's version
           --llm-endpoint <url>       the Ollama server (default http://127.0.0.1:11434/); the notes go to it, so keep it local
           --llm-second-opinion <a,b> also measure each LLM stack with the model's second opinion: on (the other detectors' spans),
-                                     self (also the model's own)
-          --clinical-places on       also measure the clinical sidecar keeping only its locations and organizations; can't be published
+                                     self (also the model's own; an experiment, so it can't be published)
+          --clinical-places on       also measure the clinical sidecar keeping only its locations and organizations
           --ablation on              also measure each Presidio service and model without the deterministic layer; can't be published
           --gazetteer <with,without> whether the deterministic layer has the gazetteer, or both families (default with)
-          --llm-prompts <a,b>        the prompts each model is measured with: instructions, examples, neutral-examples, focused, focused-rules, retrieved, all-examples (default instructions)
+          --llm-prompts <a,b>        the prompts each model is measured with: instructions, examples, neutral-examples, focused, focused-rules, retrieved, all-examples (default instructions); focused-rules and retrieved are
+                                     experiments, so they can't be published
 
-          --render <dir>             rewrite the README table and badge.json from results.json, measuring nothing
+          --render <dir>             rewrite the tables and badge.json from results.json, measuring nothing
           --export <dir>             write the corpus (with --corpus, its files and --split) for other tools to read, measuring
                                      nothing: one text file per document, a deid input file and documents.tsv; refused inside
                                      a Git working tree
@@ -147,13 +151,23 @@ internal sealed record EvaluationSettings(
         var clinicalPlaces = commandLine.Optional("clinical-places") switch
         {
             null => false,
-            "on" when publish is not null => throw new UsageException("--clinical-places measures a stack nobody runs, so it can't be published."),
             "on" => Endpoint(commandLine, "clinical") is not null ? true : throw new UsageException("--clinical-places needs --clinical."),
             _ => throw new UsageException("--clinical-places takes on."),
         };
-        if (publish is not null && (variants.Count > 0 || models.Count > 0 || !gazetteer.SequenceEqual([true])))
+        if (publish is not null && variants.Count > 0)
         {
-            throw new UsageException("--variants, --llm and --gazetteer measure experiments, so they can't be published.");
+            throw new UsageException("--variants measures experiments, so it can't be published.");
+        }
+
+        if (publish is not null && secondOpinions.FirstOrDefault(Cli.SecondOpinions.IsExperiment) is { } secondOpinion)
+        {
+            throw new UsageException($"--llm-second-opinion {secondOpinion} is an experiment, so it can't be published.");
+        }
+
+        var prompts = ParseLlmPrompts(commandLine);
+        if (publish is not null && prompts.FirstOrDefault(Cli.LlmPrompts.IsExperiment) is { } prompt)
+        {
+            throw new UsageException($"--llm-prompts {prompt} is an experiment, so it can't be published.");
         }
 
         // The corpus's notes go to the model: credentialed notes must never leave this machine.
@@ -181,7 +195,7 @@ internal sealed record EvaluationSettings(
         }
 
         var settings = new EvaluationSettings(
-            corpus, scope, split, Endpoint(commandLine, "presidio"), Endpoint(commandLine, "clinical"), misses, falsePositives, publish, note, dropped, predictions, variants, models, llmEndpoint, ParseLlmPrompts(commandLine), gazetteer, secondOpinions, ablation, clinicalPlaces, compareWith, null, missProfile);
+            corpus, scope, split, Endpoint(commandLine, "presidio"), Endpoint(commandLine, "clinical"), misses, falsePositives, publish, note, dropped, predictions, variants, models, llmEndpoint, prompts, gazetteer, secondOpinions, ablation, clinicalPlaces, compareWith, null, missProfile);
         commandLine.EnsureAllRead();
         return settings;
     }

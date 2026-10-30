@@ -181,7 +181,10 @@ public class PresidioDetectorTests
     public async Task Unusable_answers_are_failures_not_empty_results(string body)
     {
         var (detector, _) = Create(body);
-        await Assert.ThrowsAsync<PhiDetectionException>(() => Detect(detector, "abcde"));
+        var error = await Assert.ThrowsAsync<PhiDetectionException>(() => Detect(detector, "abcde"));
+
+        // The parser's message may quote the answer, which may quote the text.
+        Assert.Null(error.InnerException);
     }
 
     [Fact]
@@ -249,7 +252,8 @@ public class PresidioDetectorTests
 
         var error = await Assert.ThrowsAsync<PhiDetectionException>(() => Detect(detector, "Rosa Alvarez"));
 
-        Assert.IsType<InvalidOperationException>(error.InnerException);
+        Assert.Null(error.InnerException);
+        Assert.EndsWith("failed in the HTTP pipeline with InvalidOperationException.", error.Message, StringComparison.Ordinal);
     }
 
     [Fact]

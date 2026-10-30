@@ -181,9 +181,15 @@ jobs:
       # tests prove it pins every other package at the CPU lock's version.
       - name: GPU image lock vulnerabilities
         run: pip-audit --requirement sidecar/requirements-cuda.txt --require-hashes --disable-pip --progress-spinner off
+      # The model baselines' image (tools/baselines/models), audited the same way.
+      - name: Baseline models lock vulnerabilities
+        run: |
+          pip-audit --requirement tools/baselines/models/requirements.txt --require-hashes --disable-pip --progress-spinner off
+          sed -n 's/^torch==\([0-9.]*\).*/torch==\1/p' tools/baselines/models/requirements.txt > "$RUNNER_TEMP/baseline-torch.txt"
+          pip-audit --requirement "$RUNNER_TEMP/baseline-torch.txt" --no-deps --disable-pip --progress-spinner off
       - run: ruff check sidecar tools/baselines
       - run: ruff format --check sidecar tools/baselines
-      - run: python -m pytest sidecar/tests
+      - run: python -m pytest sidecar/tests tools/baselines/models/tests
 
   # A release tag that passed every job above is packed here and pushed to nuget.org with
   # Trusted Publishing: GitHub's OIDC token is exchanged for a key that lives an hour, so

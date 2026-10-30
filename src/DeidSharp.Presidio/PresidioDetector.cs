@@ -100,15 +100,17 @@ public sealed partial class PresidioDetector : IPhiDetector
         {
             throw new PhiDetectionException($"Presidio analyzer '{Name}' is unreachable.", ex);
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            throw new PhiDetectionException($"Presidio analyzer '{Name}' returned a response that is not a result list.", ex);
+            // Not passed on: the parser's message can quote the response, which an analyzer may echo the text into.
+            throw new PhiDetectionException($"Presidio analyzer '{Name}' returned a response that is not a result list.");
         }
         catch (Exception ex) when (ex is not (PhiDetectionException or OperationCanceledException))
         {
-            // A handler in the HTTP pipeline can fail in its own way: a retry policy's
-            // timeout, an open circuit breaker, a full rate limiter.
-            throw new PhiDetectionException($"Presidio analyzer '{Name}' failed in the HTTP pipeline.", ex);
+            // A handler in the HTTP pipeline can fail in its own way: a retry policy's timeout, an
+            // open circuit breaker, a full rate limiter. Only its type is named: a handler of the
+            // caller's could hold the request, and with it the text.
+            throw new PhiDetectionException($"Presidio analyzer '{Name}' failed in the HTTP pipeline with {ex.GetType().Name}.");
         }
     }
 

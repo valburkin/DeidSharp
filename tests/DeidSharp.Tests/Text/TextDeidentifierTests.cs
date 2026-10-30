@@ -98,7 +98,7 @@ public class TextDeidentifierTests
     {
         var deidentifier = Tags(new FailingDetector("presidio", new HttpRequestException()));
         var ex = await Assert.ThrowsAsync<PhiDetectionException>(() => Run(deidentifier, "Jane Doe"));
-        Assert.IsType<HttpRequestException>(ex.InnerException);
+        Assert.EndsWith("failed with HttpRequestException.", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]

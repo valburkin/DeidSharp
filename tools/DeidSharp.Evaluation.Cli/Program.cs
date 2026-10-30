@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DeidSharp.Detection;
 using DeidSharp.Evaluation.Cli;
 using DeidSharp.Evaluation.Cli.Corpora;
@@ -19,13 +20,22 @@ if (args is ["--render", var directory])
     try
     {
         ResultsPublisher.EnsurePublishable(directory);
-        ResultsPublisher.Render(directory);
+        var notice = ResultsPublisher.Render(directory);
         Console.WriteLine($"Rendered {Path.GetFullPath(directory)} from its {ResultsPublisher.ResultsFile}.");
+        if (notice is not null)
+        {
+            Console.WriteLine(notice);
+        }
         return 0;
     }
     catch (Exception e) when (e is UsageException or IOException or UnauthorizedAccessException)
     {
         Console.Error.WriteLine(e.Message);
+        return 2;
+    }
+    catch (JsonException)
+    {
+        Console.Error.WriteLine($"{ResultsPublisher.ResultsFile} is not valid; restore it from Git.");
         return 2;
     }
 }

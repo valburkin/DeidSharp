@@ -25,7 +25,7 @@ Every input may be PHI. Each change keeps these guarantees, and so do its tests:
 dotnet build DeidSharp.slnx
 dotnet test DeidSharp.slnx                           # never add -nologo (see below)
 DEIDSHARP_INTEGRATION=1 dotnet test DeidSharp.slnx   # also the stock Presidio container (Docker)
-ruff check sidecar tools/baselines && python -m pytest sidecar/tests # the sidecar and Philter's runner (tools: sidecar/tools/requirements.txt)
+ruff check sidecar tools/baselines && python -m pytest sidecar/tests tools/baselines/models/tests # the sidecar and the baselines' Python (tools: sidecar/tools/requirements.txt)
 dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus asq-phi   # recall on a corpus (docs/evaluation)
 ```
 
@@ -42,7 +42,7 @@ ReSharper-clean is part of done. Check with `jb inspectcode DeidSharp.slnx --sev
 - `src/DeidSharp.Presidio/`: a detector backed by a Presidio analyzer over HTTP.
 - `sidecar/`: the clinical analyzer (Presidio with a transformer NER model, run offline).
 - `tools/DeidSharp.Evaluation.Cli/`: measures detector stacks on annotated corpora (the nursing notes from PhysioNet's Deidentified Medical Text, the discharge summaries from MIMIC-IV-Note with surrogate PHI, the bundled ASQ-PHI copy) and publishes the numbers to `docs/evaluation`. Not a package. It also holds the experiments that didn't earn a place in the libraries (`RepeatedNameDetector`, `TfIdfExampleRetriever`, the self-check second opinion), so every finding stays reproducible.
-- `tools/baselines/`: what runs the other tools the evaluation compares with (Philter's image, a converter of their output to the tool's TSV). Neither tool is vendored.
+- `tools/baselines/`: what runs the other tools the evaluation compares with (Philter's image, a converter of deid's and Philter's output to the tool's TSV, and `models/`, one offline image for the model baselines, which writes that TSV itself). No tool or model is vendored.
 - `samples/`: console programs that use the libraries as an application would, built by CI.
 - `tests/`: `DeidSharp.Tests` (unit, property and corpus tests, mirroring `src/`), `DeidSharp.Evaluation.Cli.Tests` (the evaluation tool, mirroring `tools/`) and `DeidSharp.IntegrationTests` (real sidecars, opt-in). Read the tests as the specification.
 

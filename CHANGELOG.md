@@ -10,10 +10,13 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 - **Samples** ([samples](samples)): three console programs (free text, a FHIR bundle, a local language model), built by CI.
 - **Evaluation on MIMIC-IV-Note**: `--corpus mimic-iv-note` builds a corpus of 1,000 MIMIC-IV-Note 2.2 discharge summaries (one per patient, a fixed hashed sample) whose `___` placeholders are filled with made-up surrogates that become the gold spans, typed by context rules; `--gold-review` writes the gold spans in context for a person to check ([evaluation](docs/evaluation/README.md#mimic-iv-note-with-surrogates)). Its reporting half, measured once under a protocol fixed beforehand, is in the [results](docs/evaluation/README.md#results) and [findings](docs/evaluation/findings.md) (F41).
 - **Miss profile**: the evaluation tool's `--miss-profile <label>` counts each stack's misses of one corpus label by feature (one word, an ordinary word, found elsewhere in the note), printing counts only; `--variants` now also wraps the stacks with a language model ([findings](docs/evaluation/findings.md), F42).
+- **Model baselines**: `tools/baselines/models` builds one offline image that runs the Stanford/Penn de-identifier, OpenAI Privacy Filter and GLiNER multi-PII, each at its defaults with its weights pinned by commit, on an `--export` of a corpus, and writes their spans for `--predictions` ([evaluation](docs/evaluation/README.md#comparing-with-model-baselines)).
+- **Language-model stacks in the published results**: the evaluation tool's `--publish` now takes `--llm` (with `--llm-prompts`, `--gazetteer with,without`, `--clinical-places` and the second opinion), and records Ollama's version and each model's digest with the results, read before the run and checked after it; the README's badge shows the recall-first stack beside the one without a model ([evaluation](docs/evaluation/README.md#results)).
 - **Strict span match**: `EvaluationReport.Strict` gives recall, precision and F1 counting only predictions with exactly a gold span's start and end, categories aside, like the binary evaluation of the 2014 i2b2/UTHealth challenge; the evaluation tool shows it on the console and publishes it in `results.json`.
 
 ### Changed
 
+- `PhiDetectionException.InnerException` is now null when a detector throws (and when the Presidio detector's response isn't a result list, or a handler in its HTTP pipeline fails): the message names the original exception's type instead. Code that inspected the inner exception should read the message, or the Presidio detector's `HttpRequestException`, which is still passed on. See Security below.
 - A release no longer measures the evaluation again when its changes can't alter what the measured stacks find: published results keep the version and commit they were measured at. CI refuses a release tag when the results on the nursing notes (PhysioNet's Deidentified Medical Text) or ASQ-PHI are missing, or when any published result comes from a later version or from code that has changed since, unless the findings record why it still stands ([evaluation](docs/evaluation/README.md#before-a-release), D5).
 - The README starts from what a user needs (install, quick start, which stack), and the evaluation README opens with the results at a glance, language-model stacks included.
 - [safe-harbor.md](docs/safe-harbor.md) lists a gap that was undocumented: in free text, the birth year of someone aged 90 or over is kept, since a date is cut to its year without knowing whose it is (FHIR removes the record's birth date).
@@ -26,6 +29,7 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 
 ### Security
 
+- `PhiDetectionException` no longer passes on a detector's exception as its inner exception, since some exceptions hold the text they were working on in a property (a regex timeout's `Input`) that a structured logger writes out; its message names the exception's type instead ("Detector 'patterns' failed with RegexMatchTimeoutException.").
 - The clinical sidecar's images take certifi 2026.10.23, filelock 4.2.4 and setuptools 84.2.1, which fix known vulnerabilities.
 
 ## [1.0.0] - 2026-10-19
