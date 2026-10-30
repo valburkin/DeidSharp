@@ -79,7 +79,7 @@ Runnable versions are in [samples](https://github.com/valburkin/DeidSharp/tree/m
 
 ## Choosing a detector stack
 
-The deterministic stack above finds the record's own identifiers and shaped ones (phones, dates, record numbers). Clinical notes also name people and places the record doesn't list, which takes NER or a language model. What to expect on real clinical notes:
+The deterministic stack above finds the record's own identifiers and shaped ones (phones, dates, record numbers). Clinical notes also name people and places the record doesn't list, which takes NER or a language model. What to expect on clinical notes (ICU nursing notes whose PHI was replaced by realistic surrogates, the half no choice was tuned on):
 
 | Stack | Needs | Identifiers removed | Precision |
 |---|---|---:|---:|

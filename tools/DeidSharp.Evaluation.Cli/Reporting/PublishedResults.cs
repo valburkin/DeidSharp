@@ -15,7 +15,7 @@ internal sealed record PublishedResults(IReadOnlyList<CorpusResult> Corpora)
     {
         ArgumentNullException.ThrowIfNull(result);
         var corpora = Corpora.ToList();
-        var index = corpora.FindIndex(c => c.Corpus == result.Corpus && c.Scope == result.Scope && c.Split == result.Split);
+        var index = corpora.FindIndex(c => c.Matches(result.Corpus, result.Scope, result.Split));
         if (index >= 0)
         {
             corpora[index] = result;
@@ -27,6 +27,9 @@ internal sealed record PublishedResults(IReadOnlyList<CorpusResult> Corpora)
 
         return new PublishedResults(corpora);
     }
+
+    /// <summary>The entry for a corpus, scope and split, if published.</summary>
+    public CorpusResult? Find(string corpus, string scope, string split) => Corpora.FirstOrDefault(c => c.Matches(corpus, scope, split));
 }
 
 /// <summary>One corpus measured in one scope and split by one build of DeidSharp.</summary>
@@ -76,6 +79,9 @@ internal sealed record CorpusResult(
             note,
             languageModels);
     }
+
+    /// <summary>Whether this entry is the one for a corpus, scope and split: results.json holds one each.</summary>
+    public bool Matches(string corpus, string scope, string split) => Corpus == corpus && Scope == scope && Split == split;
 
     /// <summary>The build that measured, as the pages name it: its version and the commit's first seven characters.</summary>
     public string BuildLabel() => Commit.Length >= 7 ? $"DeidSharp {Version} (`{Commit[..7]}`)" : $"DeidSharp {Version}";

@@ -186,6 +186,8 @@ jobs:
         run: |
           pip-audit --requirement tools/baselines/models/requirements.txt --require-hashes --disable-pip --progress-spinner off
           sed -n 's/^torch==\([0-9.]*\).*/torch==\1/p' tools/baselines/models/requirements.txt > "$RUNNER_TEMP/baseline-torch.txt"
+          # An empty file would audit nothing and pass.
+          test -s "$RUNNER_TEMP/baseline-torch.txt"
           pip-audit --requirement "$RUNNER_TEMP/baseline-torch.txt" --no-deps --disable-pip --progress-spinner off
       - run: ruff check sidecar tools/baselines
       - run: ruff format --check sidecar tools/baselines

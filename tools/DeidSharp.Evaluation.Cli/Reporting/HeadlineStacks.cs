@@ -32,14 +32,20 @@ internal static class HeadlineStacks
 
     /// <summary>
     /// The headline stacks a run that publishes would not measure: the stack without a model
-    /// always, and with a model the recall-first and precision-first ones. Publishing replaces a
-    /// corpus's results, so a run without them would take them off the README.
+    /// always, the recall-first and precision-first ones when the run has a model, and any
+    /// <paramref name="published"/> already holds. Publishing replaces a corpus's results, so a
+    /// run without them would take them off the README.
     /// </summary>
-    public static IReadOnlyList<string> MissingFrom(IEnumerable<string> measured, bool withLlm)
+    public static IReadOnlyList<string> MissingFrom(IEnumerable<string> measured, bool withLlm, CorpusResult? published = null)
     {
         var names = measured.ToHashSet(StringComparer.Ordinal);
-        string[] required = withLlm ? [WithoutLlm, PrecisionFirst, RecallFirst] : [WithoutLlm];
-        return [.. required.Where(stack => !names.Contains(stack))];
+        var publishedNames = published?.Stacks.Select(s => s.Stack).ToHashSet(StringComparer.Ordinal) ?? [];
+        return
+        [
+            .. Stacks.Select(s => s.Stack)
+                .Where(stack => stack == WithoutLlm || withLlm || publishedNames.Contains(stack))
+                .Where(stack => !names.Contains(stack)),
+        ];
     }
 
     /// <summary>The columns: the held-out halves of the two real corpora, and all of ASQ-PHI, which has none.</summary>
@@ -54,6 +60,6 @@ internal static class HeadlineStacks
     public static CorpusResult? Find(PublishedResults results, string corpus, string split)
     {
         ArgumentNullException.ThrowIfNull(results);
-        return results.Corpora.FirstOrDefault(c => c.Corpus == corpus && c.Scope == EvaluationScopes.Id(EvaluationScope.SafeHarbor) && c.Split == split);
+        return results.Find(corpus, EvaluationScopes.Id(EvaluationScope.SafeHarbor), split);
     }
 }

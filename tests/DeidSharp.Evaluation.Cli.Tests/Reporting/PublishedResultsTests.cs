@@ -243,6 +243,28 @@ public class PublishedResultsTests
     }
 
     [Fact]
+    public void A_run_without_a_model_must_not_drop_the_published_stacks_with_one()
+    {
+        var published = Result("physionet-deid", "safe-harbor", 0.88) is var result
+            ? result with { Stacks = [.. result.Stacks, result.Stacks[1] with { Stack = HeadlineStacks.RecallFirst }] }
+            : null;
+
+        Assert.Equal([HeadlineStacks.RecallFirst], HeadlineStacks.MissingFrom(["deterministic", HeadlineStacks.WithoutLlm], withLlm: false, published));
+    }
+
+    [Fact]
+    public void A_broken_results_json_is_refused_before_the_run()
+    {
+        using var temp = new TempDirectory();
+        temp.File(ResultsPublisher.PageFile, $"# Evaluation\n\n{ResultsPage.Begin}\n{ResultsPage.End}\n");
+        temp.File(ResultsPublisher.ResultsFile, "{ \"corpora\": [");
+
+        var error = Assert.Throws<UsageException>(() => ResultsPublisher.EnsurePublishable(temp.Path));
+
+        Assert.Contains("restore it from Git", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Only_a_docs_evaluation_folder_reaches_the_repository_readme_and_a_lone_marker_is_refused()
     {
         using var temp = new TempDirectory();
@@ -304,7 +326,7 @@ public class PublishedResultsTests
     public void The_committed_readme_glance_agrees_with_results_json()
     {
         var readme = Normalized(RepositoryFiles.Path(ResultsPublisher.PageFile));
-        Assert.SkipUnless(ResultsGlance.HasSection(readme), "The README has no results at a glance yet.");
+        Assert.True(ResultsGlance.HasSection(readme), "The README's results-at-a-glance markers are gone; restore them from Git.");
 
         // Hand edits would drift from the measurement; rerun the tool (--render) instead.
         Assert.Equal(ResultsGlance.Render(ResultsPublisher.Load(RepositoryFiles.Path("docs", "evaluation"))), ResultsGlance.Current(readme));

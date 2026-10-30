@@ -22,12 +22,12 @@ The reporting half of the nursing notes: 1,307 ICU notes, 889 PHI spans, that no
 
 The LLM is `gemma4:26b-a4b` through Ollama, with `LlmPrompt.WithPoolExamples`. "Deterministic" is known identifiers and patterns, plus the gazetteer in the stack without an LLM only (D3). The Stanford/Penn de-identifier is the strongest of the three published models compared (with OpenAI Privacy Filter and GLiNER multi-PII, F44). Paired on the same resamples:
 
-- **Against Stanford/Penn**, as stated beforehand: the recall-first stack finds more (+2.81 points, +1.38 to +4.37) at 9.3 points less precision, and the precision-first stack ties its recall (+0.45, −1.45 to +2.54) at 19.6 points more precision.
+- **Against Stanford/Penn**, as stated beforehand: the recall-first stack finds more (+2.81 points, +1.38 to +4.37) at 9.3 points less precision, and the precision-first stack's recall is within the 2-point margin stated beforehand (+0.45, −1.45 to +2.54), at 19.6 points more precision.
 - **No configuration finds significantly more PHI than deid with every list built for this corpus.** The recall-first stack misses 10 spans against deid's 24, but its paired interval (+1.57 points, 0.00 to +3.27) starts at zero. Against deid without its corpus aids, the recall-first and balanced stacks find more (+2.81 and +2.14).
-- **The precision-first stack ties deid's recall** at 10.6 points more precision.
+- **The precision-first stack's recall doesn't differ significantly from deid's** (−0.79, −2.80 to +1.27), at 10.6 points more precision.
 - **Without a language model**, DeidSharp trails deid by 9 points of recall.
 
-On the discharge summaries' reporting half (494 MIMIC-IV-Note discharge summaries from another decade, with surrogate PHI), every recommended stack with the LLM finds 94.0% to 95.3% of the PHI, more than deid in any configuration (91.5% to 92.1%) at its precision or better, and 20.2 to 21.5 points more than Stanford/Penn (73.8%), which misses most of the untyped names; much of the lead over deid is the generator's made-up hospitals and cities, which deid's lists rarely match. Philter touches more spans (99.4%) at 23 to 27 points less precision (F41, F46).
+On the discharge summaries' reporting half (494 MIMIC-IV-Note discharge summaries from another decade, with surrogate PHI), every recommended stack with the LLM finds 94.0% to 95.3% of the PHI, more than deid in any configuration (91.5% to 92.1%) at its precision or better, and 20.2 to 21.5 points more than Stanford/Penn (73.8%), all of it on the untyped names, which it mostly misses (on the typed labels both find 99% or more). Much of the lead over deid is the generator's made-up hospitals and cities, which deid's lists rarely match: without them it shrinks to about 1.5 points for the recall-first stack and 0.2 for the precision-first one. Philter touches more spans (99.4%) at 23 to 27 points less precision (F41, F46).
 
 On ASQ-PHI (1,051 synthetic clinical queries, a second check with no held-out half), every recommended stack removes 99.6% to 99.7% of the PHI, at 95% to 99.6% precision, as does Stanford/Penn (99.7% at 97.7%) (F39, F46).
 
@@ -303,7 +303,7 @@ Philter removes every letter and digit its whitelists don't keep, so its spans a
 
 ### Comparing with model baselines
 
-Three open models are the learned baselines, each run as its authors recommend, at its default settings, with nothing tuned on these corpora:
+Three open models are the learned baselines, each from its published weights at its default settings, with nothing tuned on these corpora. The Stanford/Penn model runs as a Hugging Face token-classification pipeline, its tokens grouped into spans with the `simple` aggregation (our choice; its model card names none), not through the script in its authors' repository, which can add hospital and vendor lists:
 
 | Model | What it is | License | Its labels, as DeidSharp's categories |
 |---|---|---|---|

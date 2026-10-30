@@ -43,8 +43,9 @@ internal static class ResultsPublisher
             throw new UsageException($"--publish needs a directory whose {PageFile} holds the results markers (docs/evaluation).");
         }
 
-        // A lost glance marker is refused here, not after a run of hours.
+        // A lost glance marker or a broken results.json is refused here, not after a run of hours.
         _ = ReadGlance(GlancePage(directory));
+        _ = Load(directory);
     }
 
     /// <summary>
@@ -98,10 +99,20 @@ internal static class ResultsPublisher
     {
         ArgumentNullException.ThrowIfNull(directory);
         var path = Path.Combine(directory, ResultsFile);
-        return File.Exists(path)
-            ? JsonSerializer.Deserialize(File.ReadAllText(path, Utf8), ResultsJson.Files.PublishedResults)
-              ?? throw new UsageException($"{ResultsFile} is empty.")
-            : new PublishedResults([]);
+        if (!File.Exists(path))
+        {
+            return new PublishedResults([]);
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize(File.ReadAllText(path, Utf8), ResultsJson.Files.PublishedResults)
+                   ?? throw new UsageException($"{ResultsFile} is empty.");
+        }
+        catch (JsonException)
+        {
+            throw new UsageException($"{ResultsFile} is not valid; restore it from Git.");
+        }
     }
 
     public static string ResultsJsonText(PublishedResults results) => JsonSerializer.Serialize(results, ResultsJson.Files.PublishedResults) + "\n";

@@ -12,11 +12,11 @@ The published table (`results.json`) holds every stack and tool of the last run 
 | Docker | any recent | For the sidecars and Philter |
 | Clinical sidecar | built from `sidecar/` | `obi/deid_roberta_i2b2` at a fixed commit, packages hash-locked. The measurements of record used the CPU build (`clinical`, port 5003), so the GPU kept the language model. The GPU build (`clinical-gpu`) can differ on a borderline token, so compare like with like |
 | Stock Presidio | the digest pinned in `docker-compose.yml` (2.2.362) | Only for the stacks with `--presidio` |
-| Ollama | 0.40.6 for F37 to F39, 0.40.11 from F41 on (D6's run included) | Only for stacks with a language model; it must run on the same machine (the tool refuses any other). `--publish` records the version and the model's digest in `results.json` |
+| Ollama | 0.40.6 for F37 to F39, 0.40.11 from F41 on (D6's run included) | Only for stacks with a language model; it must run on the same machine (the tool refuses any other). `--publish` records the version and the model's digest in `results.json`; F45 also needs `ollama pull ministral-3:14b` (digest `4760c35aeb9d…`) |
 | Language model | `gemma4:26b-a4b`, Q4_K_M, digest `001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c` | Temperature 0 and thinking off (set by the tool); the `all-examples` prompt raises the context window to 8,192 tokens. Measured on an NVIDIA RTX 5080 (16 GB) |
 | deid | 1.1, from PhysioNet | A baseline; you download and run it yourself ([evaluation](docs/evaluation/README.md#comparing-with-deid)) |
 | Philter | philter-ucsf 1.0.3 | A baseline; `tools/baselines/philter` builds its image ([evaluation](docs/evaluation/README.md#comparing-with-philter)) |
-| Model baselines | `tools/baselines/models` (`deidsharp/baseline-models:1`) | The Stanford/Penn de-identifier, OpenAI Privacy Filter and GLiNER multi-PII, weights pinned by commit, packages by hash; an NVIDIA GPU (CUDA 13.0: Turing or later, driver 580 or later), no network ([evaluation](docs/evaluation/README.md#comparing-with-model-baselines)). F45 also needs `ollama pull ministral-3:14b` (digest `4760c35aeb9d…`) |
+| Model baselines | `tools/baselines/models` (`deidsharp/baseline-models:1`) | The Stanford/Penn de-identifier, OpenAI Privacy Filter and GLiNER multi-PII, weights pinned by commit, packages by hash; an NVIDIA GPU (CUDA 13.0: Turing or later, driver 580 or later), no network ([evaluation](docs/evaluation/README.md#comparing-with-model-baselines)) |
 
 ## Corpora
 
@@ -148,7 +148,7 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physi
   --text <id.text> --gold <id-phi.phrase> --split report --export <work>/physionet-report
 for m in stanford-deid privacy-filter gliner-pii; do
   docker run --rm --gpus all --network none -v <work>/physionet-report:/data/in:ro -v <work>/models-physionet:/data/out \
-    deidsharp/baseline-models:1 $m /data/in /data/out/$m.tsv
+    deidsharp/baseline-models:1 $m /data/in /data/out/$m.tsv   # on Linux, also --user "$(id -u):$(id -g)"
 done
 
 RECORD=(--clinical http://127.0.0.1:5003/ --clinical-places on --gazetteer with,without \

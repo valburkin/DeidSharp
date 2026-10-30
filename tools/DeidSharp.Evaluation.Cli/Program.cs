@@ -1,4 +1,3 @@
-using System.Text.Json;
 using DeidSharp.Detection;
 using DeidSharp.Evaluation.Cli;
 using DeidSharp.Evaluation.Cli.Corpora;
@@ -31,11 +30,6 @@ if (args is ["--render", var directory])
     catch (Exception e) when (e is UsageException or IOException or UnauthorizedAccessException)
     {
         Console.Error.WriteLine(e.Message);
-        return 2;
-    }
-    catch (JsonException)
-    {
-        Console.Error.WriteLine($"{ResultsPublisher.ResultsFile} is not valid; restore it from Git.");
         return 2;
     }
 }
