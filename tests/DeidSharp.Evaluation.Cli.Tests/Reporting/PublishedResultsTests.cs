@@ -144,7 +144,7 @@ public class PublishedResultsTests
     [Fact]
     public void A_page_without_markers_is_refused()
     {
-        Assert.Throws<InvalidOperationException>(() => ResultsPage.Update("# Evaluation\n", new PublishedResults([])));
+        Assert.Throws<UsageException>(() => ResultsPage.Update("# Evaluation\n", new PublishedResults([])));
     }
 
     [Fact]
@@ -157,17 +157,157 @@ public class PublishedResultsTests
     }
 
     [Fact]
+    public void A_lone_glance_marker_in_the_repository_readme_is_refused_before_the_run()
+    {
+        using var temp = new TempDirectory();
+        temp.File(Path.Combine("docs", "evaluation", ResultsPublisher.PageFile), $"# Evaluation\n\n{ResultsPage.Begin}\n{ResultsPage.End}\n");
+        temp.File(ResultsPublisher.PageFile, $"# DeidSharp\n\n{ResultsGlance.Begin}\n");
+
+        var error = Assert.Throws<UsageException>(() => ResultsPublisher.EnsurePublishable(Path.Combine(temp.Path, "docs", "evaluation")));
+
+        Assert.Contains("restore them from Git", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Publishing_says_when_the_repository_readme_has_no_glance_markers()
+    {
+        using var temp = new TempDirectory();
+        temp.File(Path.Combine("docs", "evaluation", ResultsPublisher.PageFile), $"# Evaluation\n\n{ResultsPage.Begin}\n{ResultsPage.End}\n");
+        temp.File(ResultsPublisher.PageFile, "# DeidSharp\n");
+
+        var notice = ResultsPublisher.Publish(Path.Combine(temp.Path, "docs", "evaluation"), Result("physionet-deid", "safe-harbor", 0.9712));
+
+        Assert.Equal("The repository README has no results-at-a-glance markers, so its table was left as it is.", notice);
+        Assert.Equal("# DeidSharp\n", File.ReadAllText(Path.Combine(temp.Path, ResultsPublisher.PageFile)));
+    }
+
+    [Fact]
     public void Publishing_writes_all_three_files()
     {
         using var temp = new TempDirectory();
         temp.File(ResultsPublisher.PageFile, $"# Evaluation\n\n{ResultsPage.Begin}\n{ResultsPage.End}\n");
 
-        ResultsPublisher.Publish(temp.Path, Result("physionet-deid", "safe-harbor", 0.9712));
+        // A directory other than docs/evaluation has no repository README to tell about.
+        Assert.Null(ResultsPublisher.Publish(temp.Path, Result("physionet-deid", "safe-harbor", 0.9712)));
 
         var results = ResultsPublisher.Load(temp.Path);
         Assert.Equal("physionet-deid", Assert.Single(results.Corpora).Corpus);
         Assert.Contains("97.1% · deterministic + clinical", File.ReadAllText(Path.Combine(temp.Path, ResultsPublisher.BadgeFile)), StringComparison.Ordinal);
         Assert.Contains("97.12%", File.ReadAllText(Path.Combine(temp.Path, ResultsPublisher.PageFile)), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_language_models_are_published_pinned_and_left_out_when_absent()
+    {
+        using var temp = new TempDirectory();
+        var models = new LanguageModels("0.40.11", [new ModelPin("gemma4:26b-a4b", "001e5dafc3c7a8f2b6d4e1c0f9b8a7d6e5f4c3b2a1908f7e6d5c4b3a29180706")]);
+        var measured = Result("physionet-deid", "safe-harbor", 0.97) with { LanguageModels = models };
+        var json = ResultsPublisher.ResultsJsonText(new PublishedResults([measured]));
+        temp.File(ResultsPublisher.ResultsFile, json);
+
+        Assert.Contains("· LLM gemma4:26b-a4b (`001e5dafc3c7`) on Ollama 0.40.11", ResultsPage.Render(new PublishedResults([measured])), StringComparison.Ordinal);
+        Assert.Contains("\"digest\": \"001e5dafc3c7a8f2", json, StringComparison.Ordinal);
+        Assert.Equal(models, ResultsPublisher.Load(temp.Path).Corpora[0].LanguageModels, LanguageModelsComparer.Instance);
+        Assert.DoesNotContain("\"languageModels\"", ResultsPublisher.ResultsJsonText(new PublishedResults([Result("asq-phi", "safe-harbor", 0.97)])), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Language_models_are_the_same_only_with_the_same_server_and_weights()
+    {
+        var models = new LanguageModels("0.40.11", [new ModelPin("gemma4:26b-a4b", "001e"), new ModelPin("qwen3.5:9b", "5667")]);
+
+        Assert.True(models.SameAs(new LanguageModels("0.40.11", [new ModelPin("gemma4:26b-a4b", "001e"), new ModelPin("qwen3.5:9b", "5667")])));
+        Assert.False(models.SameAs(models with { Ollama = "0.40.12" }));
+        Assert.False(models.SameAs(new LanguageModels("0.40.11", [new ModelPin("gemma4:26b-a4b", "9999"), new ModelPin("qwen3.5:9b", "5667")])));
+    }
+
+    [Fact]
+    public void Results_are_not_published_when_the_server_or_the_weights_changed_during_the_run()
+    {
+        var before = new LanguageModels("0.40.11", [new ModelPin("gemma4:26b-a4b", "001e")]);
+
+        before.EnsureUnchanged(before with { });
+        Assert.Throws<UsageException>(() => before.EnsureUnchanged(before with { Ollama = "0.41.0" }));
+        Assert.Throws<UsageException>(() => before.EnsureUnchanged(null));
+    }
+
+    [Fact]
+    public void A_run_that_publishes_must_measure_the_headline_stacks()
+    {
+        string[] withoutModel = ["deterministic", HeadlineStacks.WithoutLlm];
+
+        Assert.Empty(HeadlineStacks.MissingFrom(withoutModel, withLlm: false));
+        Assert.Equal([HeadlineStacks.WithoutLlm], HeadlineStacks.MissingFrom(["deterministic"], withLlm: false));
+        Assert.Equal(2, HeadlineStacks.MissingFrom(withoutModel, withLlm: true).Count);
+        Assert.Empty(HeadlineStacks.MissingFrom([.. withoutModel, HeadlineStacks.RecallFirst, "deterministic without gazetteer + llm gemma4:26b-a4b (all-examples)"], withLlm: true));
+    }
+
+    [Fact]
+    public void Only_a_docs_evaluation_folder_reaches_the_repository_readme_and_a_lone_marker_is_refused()
+    {
+        using var temp = new TempDirectory();
+
+        Assert.Null(ResultsPublisher.GlancePage(temp.Path));
+        Assert.Equal(Path.Combine(temp.Path, "README.md"), ResultsPublisher.GlancePage(Path.Combine(temp.Path, "docs", "evaluation")));
+        Assert.Equal(Path.Combine(temp.Path, "README.md"), ResultsPublisher.GlancePage(Path.Combine(temp.Path, "Docs", "Evaluation")));
+        Assert.False(ResultsGlance.HasSection("# DeidSharp\n"));
+        Assert.Throws<UsageException>(() => ResultsGlance.HasSection($"# DeidSharp\n\n{ResultsGlance.Begin}\n"));
+        Assert.Throws<UsageException>(() => ResultsGlance.HasSection($"{ResultsGlance.End}\n{ResultsGlance.Begin}\n"));
+    }
+
+    [Fact]
+    public void The_badge_shows_the_recall_first_stack_beside_the_one_without_a_model_once_both_are_published()
+    {
+        var measured = Result("physionet-deid", "safe-harbor", 0.883);
+        measured = measured with { Stacks = [.. measured.Stacks, new StackSummary(HeadlineStacks.RecallFirst, 0.98889, 0.99, 0.54, 10, [])] };
+
+        var badge = ShieldsBadge.From(new PublishedResults([measured]));
+
+        Assert.Equal("98.8% with a local LLM · 88.3% without · v0.1.0", badge.Message);
+    }
+
+    [Fact]
+    public void The_glance_shows_recall_and_precision_of_each_headline_stack_per_corpus_and_what_was_not_measured()
+    {
+        var nursing = Result("physionet-deid", "safe-harbor", 0.883);
+        nursing = nursing with { Stacks = [.. nursing.Stacks, new StackSummary(HeadlineStacks.RecallFirst, 0.9888, 0.99, 0.5431, 10, [])] };
+        var asq = Result("asq-phi", "safe-harbor", 0.9973, split: "all");
+
+        var glance = ResultsGlance.Render(new PublishedResults([nursing, asq, Result("physionet-deid", "all", 0.5)]));
+
+        Assert.StartsWith(ResultsGlance.Begin, glance, StringComparison.Ordinal);
+        Assert.EndsWith(ResultsGlance.End, glance, StringComparison.Ordinal);
+        Assert.Contains("| Recall / precision | Nursing notes | Discharge summaries | ASQ-PHI |", glance, StringComparison.Ordinal);
+        Assert.Contains("| Recall first: deterministic + clinical + LLM | 98.88% / 54.31% | not measured | not measured |", glance, StringComparison.Ordinal);
+        Assert.Contains("| Without an LLM: deterministic + clinical | 88.30% / 70.00% | not measured | 99.73% / 70.00% |", glance, StringComparison.Ordinal);
+        Assert.Contains("measured with DeidSharp 0.1.0 (`0123456`).", glance, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Publishing_also_updates_the_repository_readme_where_it_has_the_glance_markers()
+    {
+        using var temp = new TempDirectory();
+        temp.File(Path.Combine("docs", "evaluation", ResultsPublisher.PageFile), $"# Evaluation\n\n{ResultsPage.Begin}\n{ResultsPage.End}\n");
+        temp.File(ResultsPublisher.PageFile, $"# DeidSharp\n\n{ResultsGlance.Begin}\nstale\n{ResultsGlance.End}\n\nAfter.\n");
+        var evaluation = Path.Combine(temp.Path, "docs", "evaluation");
+
+        Assert.Null(ResultsPublisher.Publish(evaluation, Result("physionet-deid", "safe-harbor", 0.9712)));
+
+        var readme = File.ReadAllText(Path.Combine(temp.Path, ResultsPublisher.PageFile));
+        Assert.Equal(Path.Combine(temp.Path, ResultsPublisher.PageFile), ResultsPublisher.GlancePage(evaluation));
+        Assert.Contains("| Without an LLM: deterministic + clinical | 97.12% / 70.00% |", readme, StringComparison.Ordinal);
+        Assert.DoesNotContain("stale", readme, StringComparison.Ordinal);
+        Assert.EndsWith($"{ResultsGlance.End}\n\nAfter.\n", readme, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_committed_readme_glance_agrees_with_results_json()
+    {
+        var readme = Normalized(RepositoryFiles.Path(ResultsPublisher.PageFile));
+        Assert.SkipUnless(ResultsGlance.HasSection(readme), "The README has no results at a glance yet.");
+
+        // Hand edits would drift from the measurement; rerun the tool (--render) instead.
+        Assert.Equal(ResultsGlance.Render(ResultsPublisher.Load(RepositoryFiles.Path("docs", "evaluation"))), ResultsGlance.Current(readme));
     }
 
     [Fact]
@@ -184,4 +324,14 @@ public class PublishedResultsTests
 
     // A Windows checkout may turn the files' "\n" into "\r\n".
     private static string Normalized(string path) => File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal);
+
+    // Records compare lists by reference; this compares the pins.
+    private sealed class LanguageModelsComparer : IEqualityComparer<LanguageModels?>
+    {
+        public static LanguageModelsComparer Instance { get; } = new();
+
+        public bool Equals(LanguageModels? x, LanguageModels? y) => x is null ? y is null : y is not null && x.SameAs(y);
+
+        public int GetHashCode(LanguageModels? obj) => obj?.Ollama.GetHashCode(StringComparison.Ordinal) ?? 0;
+    }
 }

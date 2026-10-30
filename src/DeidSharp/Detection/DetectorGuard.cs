@@ -58,7 +58,10 @@ internal static class DetectorGuard
         }
         catch (Exception ex)
         {
-            throw new PhiDetectionException($"Detector '{detector.Name}' failed.", ex);
+            // Only the type is named: a detector's exception may hold the text, in its message or
+            // in a property (a regex timeout's Input) that a structured logger writes out, so it is
+            // not passed on as the inner exception.
+            throw new PhiDetectionException($"Detector '{detector.Name}' failed with {ex.GetType().Name}.");
         }
 
         if (spans is null)

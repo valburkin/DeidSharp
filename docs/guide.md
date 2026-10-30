@@ -639,7 +639,7 @@ DeidSharp prefers no output to a leaky one. Four exceptions matter:
 | `FhirInputException` | The input isn't valid FHIR JSON | Reject the input. The message has only a count of problems |
 | `ArgumentException` (and `ArgumentOutOfRangeException`) | An option is out of range: a key too short, a chunk length below 500 | Fix the configuration. Options never fall back to a default silently |
 
-Their messages never quote the input, so log the exception's type and message. **Don't log the exception object itself**, or an inner exception: `PhiDetectionException` wraps the detector's original exception, and some exceptions carry the text they were working on as a property (a regex timeout does), which structured loggers write out. An example is under [An endpoint](#an-endpoint).
+Their messages never quote the input, so log the exception's type and message. **Don't log the exception object itself**, or an inner exception. When a detector throws, `PhiDetectionException` names the type of its exception (`failed with RegexMatchTimeoutException`) instead of wrapping it, since some exceptions carry the text they were working on as a property (a regex timeout does), which structured loggers write out; the Presidio detector passes on only its HTTP client's network error (`HttpRequestException`), which holds no text, as the inner exception. An example is under [An endpoint](#an-endpoint).
 
 A canceled `CancellationToken` throws `OperationCanceledException`, as usual.
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DeidSharp.Detection;
+using DeidSharp.Evaluation.Cli.Reporting;
 using DeidSharp.Evaluation.Cli.Tests.TestDoubles;
 
 namespace DeidSharp.Evaluation.Cli.Tests;
@@ -34,6 +35,29 @@ public class DetectorStacksTests
         Assert.All(ollama.Requests.Where(r => !IsSecondOpinion(r)), r => Assert.Equal(8192, r.GetProperty("options").GetProperty("num_ctx").GetInt32()));
         Assert.Equal(16384, Assert.Single(ollama.Requests, IsSecondOpinion).GetProperty("options").GetProperty("num_ctx").GetInt32());
         Assert.All(ollama.Requests, r => Assert.False(r.GetProperty("think").GetBoolean()));
+    }
+
+    [Fact]
+    public async Task Pins_each_model_by_its_digest_and_ollama_by_its_version_and_nothing_without_a_model()
+    {
+        using var ollama = new FakeOllamaServer(_ => "{}", [("fictional-model", "abc123def4567890"), ("other-model", "fedcba")]);
+        using var stacks = new DetectorStacks(
+            null, null, new HashSet<string>(StringComparer.Ordinal), llmModels: ["fictional-model"], llmEndpoint: ollama.Endpoint,
+            llmPrompts: ["instructions", "all-examples"], gazetteer: [false]);
+        using var unpulled = new DetectorStacks(
+            null, null, new HashSet<string>(StringComparer.Ordinal), llmModels: ["unpulled-model"], llmEndpoint: ollama.Endpoint, gazetteer: [false]);
+        using var noModel = new DetectorStacks(null, null, new HashSet<string>(StringComparer.Ordinal));
+
+        var pinned = await stacks.PinModelsAsync(TestContext.Current.CancellationToken);
+        ollama.Version = "0.41.0";
+        var updated = await stacks.PinModelsAsync(TestContext.Current.CancellationToken);
+
+        Assert.NotNull(pinned);
+        Assert.Equal("0.40.11", pinned.Ollama);
+        Assert.Equal([new ModelPin("fictional-model", "abc123def4567890")], pinned.Models);
+        Assert.False(pinned.SameAs(updated!));
+        await Assert.ThrowsAsync<UsageException>(() => unpulled.PinModelsAsync(TestContext.Current.CancellationToken));
+        Assert.Null(await noModel.PinModelsAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]

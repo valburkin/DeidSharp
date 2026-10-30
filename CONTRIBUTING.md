@@ -17,7 +17,7 @@ dotnet build DeidSharp.slnx
 dotnet test DeidSharp.slnx                           # do not add -nologo (see docs/testing.md)
 DEIDSHARP_INTEGRATION=1 dotnet test DeidSharp.slnx   # also the stock Presidio container (Docker)
 python -m pip install -r sidecar/tools/requirements.txt
-ruff check sidecar tools/baselines && ruff format --check sidecar tools/baselines && python -m pytest sidecar/tests
+ruff check sidecar tools/baselines && ruff format --check sidecar tools/baselines && python -m pytest sidecar/tests tools/baselines/models/tests
 ```
 
 CI runs all of this on every pull request ([docs/testing.md](docs/testing.md#continuous-integration)).

@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using DeidSharp.Evaluation.Cli.Corpora;
+using DeidSharp.Evaluation.Cli.Reporting;
 using DeidSharp.Evaluation.Cli.Tests.Corpora.Surrogates;
 
 namespace DeidSharp.Evaluation.Cli.Tests;
@@ -20,6 +21,20 @@ public class EvaluationRunTests
         var section = report[report.IndexOf("Change from none, in points (paired bootstrap, 95% CI)", StringComparison.Ordinal)..];
         Assert.StartsWith("deterministic", section.Split('\n')[2], StringComparison.Ordinal);
         Assert.DoesNotContain("\nnone ", section.Split("\n\n")[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Refuses_to_publish_a_run_without_the_stacks_the_readme_shows_before_scoring_anything()
+    {
+        using var temp = new TempDirectory();
+        temp.File(ResultsPublisher.PageFile, $"{ResultsPage.Begin}\n{ResultsPage.End}\n");
+        var settings = EvaluationSettings.Parse(["--corpus", "asq-phi", "--publish", temp.Path]);
+
+        var e = await Assert.ThrowsAsync<UsageException>(() =>
+            EvaluationRun.RunAsync(settings, TextWriter.Null, TextWriter.Null, new DateOnly(2026, 10, 30), TestContext.Current.CancellationToken));
+
+        Assert.Contains("wouldn't measure: deterministic + clinical", e.Message, StringComparison.Ordinal);
+        Assert.False(File.Exists(Path.Combine(temp.Path, ResultsPublisher.ResultsFile)));
     }
 
     [Fact]

@@ -44,8 +44,21 @@ public class CompositePhiDetectorTests
 
         var ex = await Assert.ThrowsAsync<PhiDetectionException>(() => composite.DetectAsync(Request, TestContext.Current.CancellationToken));
 
-        Assert.Contains("sidecar", ex.Message, StringComparison.Ordinal);
-        Assert.IsType<HttpRequestException>(ex.InnerException);
+        Assert.Equal("Detector 'sidecar' failed with HttpRequestException.", ex.Message);
+        Assert.Null(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task A_detectors_exception_holding_the_text_is_not_passed_on()
+    {
+        // A regex timeout keeps the text it was matching in its Input property, which a structured logger writes out.
+        var timeout = new System.Text.RegularExpressions.RegexMatchTimeoutException("Rosa Alvarez called", @"\w+", TimeSpan.FromSeconds(1));
+        var composite = new CompositePhiDetector([new FailingDetector("patterns", timeout)]);
+
+        var ex = await Assert.ThrowsAsync<PhiDetectionException>(() => composite.DetectAsync(Request, TestContext.Current.CancellationToken));
+
+        Assert.Null(ex.InnerException);
+        Assert.Equal("Detector 'patterns' failed with RegexMatchTimeoutException.", ex.Message);
     }
 
     [Fact]

@@ -1,0 +1,6 @@
+# The sidecar's lint rules, for the Python of this image.
+extend = "../../../sidecar/ruff.toml"
+
+[lint.per-file-ignores]
+# Tests compare against literal expected values.
+"tests/**" = ["PLR2004"]

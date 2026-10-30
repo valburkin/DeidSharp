@@ -1,4 +1,5 @@
 using DeidSharp.Detection;
+using DeidSharp.Evaluation.Cli.Reporting;
 using DeidSharp.Gazetteer;
 using DeidSharp.Llm;
 using DeidSharp.Presidio;
@@ -70,8 +71,8 @@ internal sealed class DetectorStacks : IDisposable
             _memoized.Add(memoized);
         }
 
-        // An experiment: the clinical model's places alone (its HOSP label maps to organizations),
-        // the findings it adds next to an LLM (F33). It reads the same memoized answers.
+        // The clinical model's places alone (its HOSP label maps to organizations), what it adds
+        // next to an LLM in the one-call stack (F33). It reads the same memoized answers.
         if (clinicalPlaces && _memoized.FirstOrDefault(s => s.Name == "clinical") is { } clinicalService)
         {
             _memoized.Add(new CategoryFilter(clinicalService, [PhiCategory.Location, PhiCategory.Organization], "clinical places"));
@@ -185,6 +186,27 @@ internal sealed class DetectorStacks : IDisposable
                 throw new UsageException($"The {service.Name} analyzer doesn't answer its /health endpoint. Is the container running?");
             }
         }
+    }
+
+    /// <summary>
+    /// Ollama's version and the digest of each model the stacks ask, for publishing with the
+    /// results; none without an LLM layer. Every model runs on the one endpoint the settings give.
+    /// </summary>
+    public async Task<LanguageModels?> PinModelsAsync(CancellationToken cancellationToken)
+    {
+        if (_ollama.Count == 0)
+        {
+            return null;
+        }
+
+        var ollama = _ollama[0].Client;
+        var version = await ollama.GetVersionAsync(cancellationToken);
+        var local = (await ollama.ListLocalModelsAsync(cancellationToken)).ToList();
+        var pins = _ollama.Select(o => o.Model).Distinct(StringComparer.Ordinal).Select(model =>
+            local.FirstOrDefault(m => m.Name == model) is { Digest: { Length: > 0 } digest }
+                ? new ModelPin(model, digest)
+                : throw new UsageException($"Ollama lists no digest for {model}, so the results can't name the weights measured."));
+        return new LanguageModels(version, [.. pins]);
     }
 
     public void Dispose()

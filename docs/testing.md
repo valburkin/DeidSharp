@@ -39,7 +39,7 @@ DEIDSHARP_INTEGRATION=1 DEIDSHARP_CLINICAL=1 dotnet test tests/DeidSharp.Integra
 |---|---|
 | .NET on Linux and Windows | A locked restore (exactly the packages in the lock files, each audited for known vulnerabilities, transitive ones too), a Release build with analyzers and code style as errors, all tests |
 | Integration with stock Presidio | The integration tests against the pinned stock Presidio image, the same one `docker-compose.yml` pins (a test keeps the two in step); the clinical sidecar's tests stay opt-in, its image being several GB |
-| Clinical sidecar code | The image's lock downloads with every hash matching and holds no package with a known vulnerability (`pip-audit`); `ruff check`, `ruff format --check` (with `tools/baselines`) and the sidecar's tests |
+| The sidecar's and the model baselines' Python | The image's lock downloads with every hash matching and holds no package with a known vulnerability (`pip-audit`); the model baselines' lock (`tools/baselines/models`) holds none either, and pins a hash for every package; `ruff check`, `ruff format --check` (with `tools/baselines`), and the tests of the sidecar and of the model baselines' Python |
 | Evaluation results (release tags only) | `docs/evaluation/results.json` holds safe-harbor measurements on the nursing notes and ASQ-PHI, and that none of its measurements comes from a later version than the tag, or from code that changed since unless `findings.md` has a release line saying why it stands ([evaluation](evaluation/README.md#before-a-release)) |
 | Publish (release tags only) | After every other job passes, packs the five libraries and their symbols and pushes them to nuget.org by Trusted Publishing; the tag must name the packages' version |
 

@@ -11,9 +11,10 @@ namespace DeidSharp.Evaluation.Cli.Tests.TestDoubles;
 // shortcut; a spy records how it was called.
 // Here: an HTTP server on this machine that answers Ollama's chat endpoint with canned
 // JSON and keeps each request's body, so a test can check what the evaluation tool
-// sends to Ollama (its context window) without a model.
+// sends to Ollama (its context window) without a model; it also lists its models and
+// its version, as the tool reads them to pin what it published.
 
-/// <summary>Answers <c>/api/chat</c> as Ollama does, with the answer a test picks for each request.</summary>
+/// <summary>Answers <c>/api/chat</c> as Ollama does, with the answer a test picks for each request, and <c>/api/tags</c> and <c>/api/version</c>.</summary>
 internal sealed class FakeOllamaServer : IDisposable
 {
     private readonly HttpListener _listener;
@@ -22,15 +23,22 @@ internal sealed class FakeOllamaServer : IDisposable
     private readonly ConcurrentQueue<Exception> _errors = new();
     private readonly Task _serving;
 
+    private readonly IReadOnlyList<(string Name, string Digest)> _models;
+
     /// <param name="answer">The model's answer to a request, given the request's JSON body.</param>
-    public FakeOllamaServer(Func<JsonElement, string> answer)
+    /// <param name="models">The models <c>/api/tags</c> lists, with their digests.</param>
+    public FakeOllamaServer(Func<JsonElement, string> answer, IReadOnlyList<(string Name, string Digest)>? models = null)
     {
         _answer = answer;
+        _models = models ?? [];
         (_listener, Endpoint) = Listen();
         _serving = Task.Run(ServeAsync);
     }
 
     public Uri Endpoint { get; }
+
+    /// <summary>The version <c>/api/version</c> reports; a test can change it, as an update would.</summary>
+    public string Version { get; set; } = "0.40.11";
 
     /// <summary>The JSON bodies of the chat requests, in the order they came.</summary>
     public IReadOnlyList<JsonElement> Requests => [.. _requests];
@@ -116,6 +124,15 @@ internal sealed class FakeOllamaServer : IDisposable
 
     private async Task AnswerAsync(HttpListenerContext context)
     {
+        if (context.Request.Url?.AbsolutePath is "/api/version" or "/api/tags")
+        {
+            var listing = context.Request.Url.AbsolutePath == "/api/version"
+                ? JsonSerializer.Serialize(new { version = Version })
+                : JsonSerializer.Serialize(new { models = _models.Select(m => new { name = m.Name, model = m.Name, digest = m.Digest, size = 1 }) });
+            await ReplyAsync(context, "application/json", listing);
+            return;
+        }
+
         using var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8);
         var body = JsonDocument.Parse(await reader.ReadToEndAsync()).RootElement.Clone();
         _requests.Enqueue(body);
@@ -128,9 +145,13 @@ internal sealed class FakeOllamaServer : IDisposable
             done = true,
             done_reason = "stop",
         });
-        var bytes = Encoding.UTF8.GetBytes(reply + "\n");
-        context.Response.ContentType = "application/x-ndjson";
-        await context.Response.OutputStream.WriteAsync(bytes);
+        await ReplyAsync(context, "application/x-ndjson", reply + "\n");
+    }
+
+    private static async Task ReplyAsync(HttpListenerContext context, string contentType, string body)
+    {
+        context.Response.ContentType = contentType;
+        await context.Response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(body));
         context.Response.Close();
     }
 }

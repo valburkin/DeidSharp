@@ -55,7 +55,7 @@ public class FhirDeidentificationSessionTests
         var error = await Assert.ThrowsAsync<PhiDetectionException>(() =>
             Run(bundle, SafeHarbor(o => o with { FreeTextDetector = spy, MaxFreeTextConcurrency = 4 })));
 
-        Assert.IsType<HttpRequestException>(error.InnerException);
+        Assert.EndsWith("failed with HttpRequestException.", error.Message, StringComparison.Ordinal);
         Assert.True(spy.Calls < 24, "Texts queued after the failure still ran.");
     }
 

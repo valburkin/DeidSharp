@@ -2,7 +2,7 @@
 
 How to rerun the measurements of record, [findings](docs/evaluation/findings.md) F36 onward and the [results table](docs/evaluation/README.md#results), from the `v1.0.0` tag on your own machine; findings F40 onward (the discharge summaries, and F43's strict match) need later code (see [Commits](#commits)). Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
 
-The published table (`results.json`) holds the stacks without a language model; the tool publishes nothing else. The numbers for stacks with a language model, for the other tools, and for every earlier experiment are the console output logged in the findings.
+The published table (`results.json`) holds every stack and tool of the last run that `--publish` accepted for each corpus. Until D6's run of record it holds the measurements of F36 to F41 without a language model; D6's runs add the recommended stacks with one (the model pinned by its digest and Ollama's version) and the other tools compared with them. Experiments are never published; their numbers, and those of the stacks with a language model before D6, are the console output logged in the findings.
 
 ## What you need
 
@@ -12,10 +12,11 @@ The published table (`results.json`) holds the stacks without a language model; 
 | Docker | any recent | For the sidecars and Philter |
 | Clinical sidecar | built from `sidecar/` | `obi/deid_roberta_i2b2` at a fixed commit, packages hash-locked. The measurements of record used the CPU build (`clinical`, port 5003), so the GPU kept the language model. The GPU build (`clinical-gpu`) can differ on a borderline token, so compare like with like |
 | Stock Presidio | the digest pinned in `docker-compose.yml` (2.2.362) | Only for the stacks with `--presidio` |
-| Ollama | 0.40.6 | Only for stacks with a language model; it must run on the same machine (the tool refuses any other) |
+| Ollama | 0.40.6 for F37 to F39, 0.40.11 from F41 on (D6's run included) | Only for stacks with a language model; it must run on the same machine (the tool refuses any other). `--publish` records the version and the model's digest in `results.json` |
 | Language model | `gemma4:26b-a4b`, Q4_K_M, digest `001e5dafc3c77684c2307ebc6ab8e336e10c9b18eca52acf547d72fc83c3ca8c` | Temperature 0 and thinking off (set by the tool); the `all-examples` prompt raises the context window to 8,192 tokens. Measured on an NVIDIA RTX 5080 (16 GB) |
 | deid | 1.1, from PhysioNet | A baseline; you download and run it yourself ([evaluation](docs/evaluation/README.md#comparing-with-deid)) |
 | Philter | philter-ucsf 1.0.3 | A baseline; `tools/baselines/philter` builds its image ([evaluation](docs/evaluation/README.md#comparing-with-philter)) |
+| Model baselines | `tools/baselines/models` (`deidsharp/baseline-models:1`) | The Stanford/Penn de-identifier, OpenAI Privacy Filter and GLiNER multi-PII, weights pinned by commit, packages by hash; an NVIDIA GPU (CUDA 13.0: Turing or later, driver 580 or later), no network ([evaluation](docs/evaluation/README.md#comparing-with-model-baselines)). F45 also needs `ollama pull ministral-3:14b` (digest `4760c35aeb9d…`) |
 
 ## Corpora
 
@@ -138,7 +139,32 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic
   --compare-with deid,deid-generic,deid-nohosp,philter
 ```
 
-F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`. F43's numbers come from `--split tune --gazetteer with,without` on the nursing notes and the discharge summaries, and `--gazetteer with,without` on ASQ-PHI.
+### The run of record
+
+D6's run, once per corpus, publishing each. The model baselines read an export of the reporting half (ASQ-PHI's, of all of it), as [the evaluation README](docs/evaluation/README.md#comparing-with-model-baselines) describes; deid and Philter's files are those above:
+
+```bash
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physionet-deid \
+  --text <id.text> --gold <id-phi.phrase> --split report --export <work>/physionet-report
+for m in stanford-deid privacy-filter gliner-pii; do
+  docker run --rm --gpus all --network none -v <work>/physionet-report:/data/in:ro -v <work>/models-physionet:/data/out \
+    deidsharp/baseline-models:1 $m /data/in /data/out/$m.tsv
+done
+
+RECORD=(--clinical http://127.0.0.1:5003/ --clinical-places on --gazetteer with,without \
+  --llm gemma4:26b-a4b --llm-prompts all-examples --llm-second-opinion on \
+  --publish docs/evaluation --note "<the sidecar build, CPU or GPU, and the baseline image's digest>")
+TOOLS=deid,deid-generic,deid-nohosp,philter,stanford-deid,privacy-filter,gliner-pii
+
+dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physionet-deid \
+  --text <id.text> --gold <id-phi.phrase> --split report "${RECORD[@]}" \
+  --predictions deid=<work>/deid-default/id.phi,deid-generic=<work>/deid-generic/id.phi,deid-nohosp=<work>/deid-nohosp/id.phi,philter=<work>/philter-physionet.tsv,stanford-deid=<work>/models-physionet/stanford-deid.tsv,privacy-filter=<work>/models-physionet/privacy-filter.tsv,gliner-pii=<work>/models-physionet/gliner-pii.tsv \
+  --compare-with $TOOLS
+```
+
+The discharge summaries take `--corpus mimic-iv-note --notes <notes> --split report` with the files of [MIMIC-IV-Note](#mimic-iv-note) and the models' spans on `<work>/mimic`; ASQ-PHI takes `--corpus asq-phi` with `deid-asq.tsv`, `philter-asq.tsv` and the models' spans on `<work>/asq`.
+
+F40's counts come from `--split tune --gold-review <work>/gold-review.txt`, which prints how many spans each rule typed, and its smoke test from `--split tune` with no detector options. F42's profile comes from `--split tune --clinical http://127.0.0.1:5003/ --llm gemma4:26b-a4b --llm-prompts all-examples --gazetteer with,without --variants repeated-names --miss-profile UntypedName`. F43's numbers come from `--split tune --gazetteer with,without` on the nursing notes and the discharge summaries, and `--gazetteer with,without` on ASQ-PHI. F44's come from the three models run on an export of each tuning half (`--split tune --export <folder>`) and of ASQ-PHI, scored with `--gazetteer with,without --predictions stanford-deid=…,privacy-filter=…,gliner-pii=…` and `--split tune`. F45's come from `--llm gemma4:26b-a4b,ministral-3:14b --llm-prompts instructions,all-examples --gazetteer without`, with `--split tune` on the two real corpora.
 
 For an earlier finding, start from these commands and set the flags its settings line names: `--split tune` for the tuning half, `--llm` with the models it compares, `--llm-prompts` with its prompts, `--variants repeated-names` for F7, `--llm-second-opinion self` for F31. The console prints counts and rates only, never note text.
 
@@ -148,4 +174,4 @@ F1 to F35 name the commit each was measured at. Those commits belong to the deve
 
 ## What to expect
 
-Stacks without a language model are deterministic on one sidecar build and repeat to the span. Stacks with one vary by a few spans between runs (M8, F38), well inside the intervals. A different Ollama version or a newer upload under the same model tag can move them further; record both when you report a rerun.
+Stacks without a language model are deterministic on one sidecar build and repeat to the span. Stacks with one vary by a few spans between runs (M8, F38), well inside the intervals. A different Ollama version or a newer upload under the same model tag can move them further; record both when you report a rerun (`--publish` records them in `results.json`).
