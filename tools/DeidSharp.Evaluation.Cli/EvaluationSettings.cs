@@ -30,6 +30,7 @@ namespace DeidSharp.Evaluation.Cli;
 /// <param name="CompareWith">Prediction files every stack is also compared with, paired: the names given to <paramref name="Predictions"/>.</param>
 /// <param name="Output">Where to write the corpus instead of measuring anything (<see cref="CorpusOutputs"/>), if anywhere.</param>
 /// <param name="MissProfileLabel">The corpus label whose misses to count by feature (<see cref="MissProfile"/>), if any.</param>
+/// <param name="OutOfScopeNeutral">Leave out the predictions that touch only gold outside the scope (<see cref="Scoring.OutOfScopeNeutral"/>).</param>
 internal sealed record EvaluationSettings(
     ICorpus Corpus,
     EvaluationScope Scope,
@@ -52,7 +53,8 @@ internal sealed record EvaluationSettings(
     bool ClinicalPlaces,
     IReadOnlyList<string> CompareWith,
     ICorpusOutput? Output,
-    string? MissProfileLabel)
+    string? MissProfileLabel,
+    bool OutOfScopeNeutral = false)
 {
     private static readonly Uri DefaultLlmEndpoint = new("http://127.0.0.1:11434/");
 
@@ -81,6 +83,8 @@ internal sealed record EvaluationSettings(
                                      an experiment, so it can't be published
           --predictions <n=file,...> also score other tools' spans from files ("document<TAB>start<TAB>end[<TAB>category]")
           --compare-with <n,...>     also compare every stack with these prediction files, paired: the change and its 95% CI
+          --out-of-scope neutral     leave out the predictions that touch only gold the scope doesn't count (a bare year), so
+                                     they count neither for nor against a stack; a sensitivity check, so it can't be published
           --variants <a,b>           also measure each stack with these changes: repeated-names; can't be published
           --llm <model,...>          also measure each stack with an LLM layer: an Ollama model, e.g. qwen3.5:9b; published with
                                      the model's digest and Ollama's version
@@ -188,6 +192,14 @@ internal sealed record EvaluationSettings(
             throw new UsageException($"--{MissProfile.Option} takes one corpus label, such as UntypedName.");
         }
 
+        var outOfScopeNeutral = commandLine.Optional("out-of-scope") switch
+        {
+            null => false,
+            "neutral" when scope == EvaluationScope.All => throw new UsageException("--out-of-scope neutral needs --scope safe-harbor: under all, every gold span counts."),
+            "neutral" => publish is null ? true : throw new UsageException("--out-of-scope neutral is a sensitivity check, so it can't be published."),
+            _ => throw new UsageException("--out-of-scope takes neutral."),
+        };
+
         var note = commandLine.Optional("note");
         if (note is not null && (string.IsNullOrWhiteSpace(note) || note.Any(char.IsControl)))
         {
@@ -195,7 +207,7 @@ internal sealed record EvaluationSettings(
         }
 
         var settings = new EvaluationSettings(
-            corpus, scope, split, Endpoint(commandLine, "presidio"), Endpoint(commandLine, "clinical"), misses, falsePositives, publish, note, dropped, predictions, variants, models, llmEndpoint, prompts, gazetteer, secondOpinions, ablation, clinicalPlaces, compareWith, null, missProfile);
+            corpus, scope, split, Endpoint(commandLine, "presidio"), Endpoint(commandLine, "clinical"), misses, falsePositives, publish, note, dropped, predictions, variants, models, llmEndpoint, prompts, gazetteer, secondOpinions, ablation, clinicalPlaces, compareWith, null, missProfile, outOfScopeNeutral);
         commandLine.EnsureAllRead();
         return settings;
     }

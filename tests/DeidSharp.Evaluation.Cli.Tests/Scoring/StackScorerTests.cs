@@ -54,6 +54,38 @@ public class StackScorerTests
     }
 
     [Fact]
+    public async Task Out_of_scope_neutral_leaves_out_only_the_predictions_on_gold_outside_the_scope()
+    {
+        // "2019" touches only the out-of-scope year; "saw" no gold at all; "Hart" the scope's own gold.
+        var stack = new OutOfScopeNeutral(
+            new NamedStack("scripted", new ScriptedDetector(("Hart", PhiCategory.Name), ("saw", PhiCategory.Name), ("2019", PhiCategory.Date))),
+            Corpus.Labels,
+            EvaluationScope.SafeHarbor);
+
+        var result = await StackScorer.ScoreAsync(stack, Corpus, [Note], EvaluationScope.SafeHarbor, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal("scripted", result.Stack);
+        Assert.Equal(["saw"], result.FalsePositives.Select(f => Note.Text[f.Span.Start..f.Span.End]));
+        Assert.Equal(0.5, result.Report.Overall.Precision, precision: 10);
+        Assert.Equal(0.5, result.Report.Overall.Recall);
+    }
+
+    [Fact]
+    public async Task Out_of_scope_neutral_keeps_a_prediction_that_also_covers_gold_in_scope()
+    {
+        // One prediction from "Rosa" through "2019": it finds the patient, so it stays.
+        var stack = new OutOfScopeNeutral(
+            new NamedStack("scripted", new ScriptedDetector(("Rosa in 2019", PhiCategory.Name))),
+            Corpus.Labels,
+            EvaluationScope.SafeHarbor);
+
+        var result = await StackScorer.ScoreAsync(stack, Corpus, [Note], EvaluationScope.SafeHarbor, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(1.0, result.Report.Overall.Precision);
+        Assert.Equal(0.5, result.Report.Overall.Recall);
+    }
+
+    [Fact]
     public async Task A_partly_covered_span_counts_as_found_as_the_evaluator_counts_it()
     {
         var result = await ScoreAsync(EvaluationScope.SafeHarbor, ("Har", PhiCategory.Name), ("Ros", PhiCategory.Name));

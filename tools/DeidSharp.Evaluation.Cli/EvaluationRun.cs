@@ -55,7 +55,10 @@ internal static class EvaluationRun
 
         var bootstrap = new Bootstrap(documents.Select(d => d.SplitGroup).Distinct(StringComparer.Ordinal).Count());
         var results = new List<StackResult>();
-        foreach (var stack in stacks.Stacks.Concat<IScoredStack>(files))
+        // The sensitivity check wraps every stack and tool alike, so their comparisons stay paired.
+        var scoredStacks = stacks.Stacks.Concat<IScoredStack>(files)
+            .Select(s => settings.OutOfScopeNeutral ? new OutOfScopeNeutral(s, settings.Corpus.Labels, settings.Scope) : s);
+        foreach (var stack in scoredStacks)
         {
             await status.WriteLineAsync(Formats.Invariant($"Scoring {stack.Name} on {documents.Count:N0} documents"));
             var started = Stopwatch.GetTimestamp();
@@ -79,6 +82,12 @@ internal static class EvaluationRun
             .Select(r => new Comparison(tool, r.Stack, bootstrap.Gain(scored[tool], r))))];
 
         ConsoleReport.Write(output, settings.Corpus, settings.Scope, settings.Split, documents.Count, results, comparisons);
+        if (settings.OutOfScopeNeutral)
+        {
+            await output.WriteLineAsync();
+            await output.WriteLineAsync("Left out the predictions that touch only gold outside the scope (--out-of-scope neutral).");
+        }
+
         if (settings.DroppedSources.Count > 0)
         {
             await output.WriteLineAsync();

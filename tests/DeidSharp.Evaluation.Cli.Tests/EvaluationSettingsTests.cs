@@ -26,6 +26,16 @@ public class EvaluationSettingsTests
         Assert.Equal(new Uri("http://127.0.0.1:5003/"), settings.Clinical);
     }
 
+    [Fact]
+    public void Out_of_scope_neutral_is_a_check_that_is_never_published()
+    {
+        Assert.True(EvaluationSettings.Parse(["--corpus", "asq-phi", "--out-of-scope", "neutral"]).OutOfScopeNeutral);
+        Assert.False(EvaluationSettings.Parse(["--corpus", "asq-phi"]).OutOfScopeNeutral);
+        Assert.Contains("can't be published", Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--out-of-scope", "neutral", "--publish", RepositoryFiles.Path("docs", "evaluation")])).Message, StringComparison.Ordinal);
+        Assert.Contains("needs --scope safe-harbor", Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--scope", "all", "--out-of-scope", "neutral"])).Message, StringComparison.Ordinal);
+        Assert.Throws<UsageException>(() => EvaluationSettings.Parse(["--corpus", "asq-phi", "--out-of-scope", "on"]));
+    }
+
     [Theory]
     [InlineData(new[] { "--corpus", "i2b2" }, "--corpus must be one of")]
     [InlineData(new[] { "--corpus", "physionet-deid", "--gold", "id-phi.phrase" }, "--text is required")]
