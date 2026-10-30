@@ -45,7 +45,7 @@ internal static class EvaluationRun
                 ResultsPublisher.Load(settings.PublishDirectory).Find(settings.Corpus.Id, EvaluationScopes.Id(settings.Scope), CorpusSplits.Id(settings.Split))) is { Count: > 0 } missing)
         {
             throw new UsageException(
-                $"--publish replaces the corpus's published results, so the run must measure the stacks the README shows and the ones already published; this one wouldn't measure: {string.Join(", ", missing)}.");
+                $"--publish replaces the corpus's published results, so the run must measure the headline stacks, the README's and those already published; this one wouldn't measure: {string.Join(", ", missing)}.");
         }
 
         await stacks.EnsureReachableAsync(cancellationToken);
