@@ -6,32 +6,32 @@ The badge shows recall on the held-out half of the nursing notes, rounded down: 
 
 ## Results at a glance
 
-The reporting half of the nursing notes: 1,307 ICU notes, 889 PHI spans, that no choice was tuned on. Measured at `v1.0.0`; each stack with a language model ran three times with identical results ([findings](findings.md), F37 and F38).
+The reporting half of the nursing notes: 1,307 ICU notes, 889 PHI spans, that no choice was tuned on. Measured at version 1.1.0 under a protocol fixed beforehand (D6), with every tool scored by the same scorer in one run per corpus; it superseded a first pass whose model baselines ran on a CPU build ([findings](findings.md), D6's amendment and F46).
 
 | Stack | Recall (95% CI) | Missed | Character recall | Precision | Other text removed |
 |---|---:|---:|---:|---:|---:|
 | Recall first: deterministic + clinical + LLM | 98.88% (97.91–99.58) | 10 | 99.00% | 54.31% | 0.57% |
-| Balanced: the same + second opinion | 98.20% (96.86–99.24) | 16 | 98.84% | 70.80% | 0.26% |
-| Balanced, one call: deterministic + clinical places + LLM | 97.41% (95.79–98.64) | 23 | 98.21% | 72.15% | 0.24% |
-| Precision first: deterministic + LLM | 96.40% (94.83–97.84) | 32 | 97.51% | 83.26% | 0.15% |
-| The LLM alone | 96.40% (94.83–97.84) | 32 | 97.51% | 88.91% | 0.09% |
-| No LLM: deterministic + clinical | 88.30% (84.71–91.11) | 104 | 86.38% | 42.97% | 0.85% |
+| Balanced: the same + second opinion | 98.20% (96.86–99.24) | 16 | 98.84% | 70.53% | 0.26% |
+| Balanced, one call: deterministic + clinical places + LLM | 97.53% (95.95–98.74) | 22 | 98.29% | 72.03% | 0.24% |
+| Precision first: deterministic + LLM | 96.51% (94.92–97.93) | 31 | 97.59% | 83.18% | 0.15% |
+| No LLM: deterministic + clinical | 88.30% (84.71–91.11) | 104 | 86.38% | 43.02% | 0.85% |
 | deid, with the lists built for this corpus | 97.30% (95.73–98.61) | 24 | 97.73% | 72.57% | 0.18% |
 | deid without its corpus aids | 96.06% (94.16–97.57) | 35 | 96.41% | 72.39% | 0.17% |
+| Stanford/Penn de-identifier | 96.06% (94.56–97.27) | 35 | 96.29% | 63.56% | 0.33% |
 | Philter | 91.45% (88.99–93.71) | 76 | 88.00% | 6.71% | 7.81% |
 
-The LLM is `gemma4:26b-a4b` through Ollama, with `LlmPrompt.WithPoolExamples`. "Deterministic" is known identifiers and patterns, plus the gazetteer in the stack without an LLM only (D3). Paired with deid on the same resamples:
+The LLM is `gemma4:26b-a4b` through Ollama, with `LlmPrompt.WithPoolExamples`. "Deterministic" is known identifiers and patterns, plus the gazetteer in the stack without an LLM only (D3). The Stanford/Penn de-identifier is the strongest of the three published models compared (with OpenAI Privacy Filter and GLiNER multi-PII, F44). Paired on the same resamples:
 
-- **No configuration finds significantly more PHI than deid with every list built for this corpus.** The recall-first stack misses 10 spans against deid's 24, but its paired interval (+1.57 points, 0.00 to +3.27) starts at zero.
-- **Against deid without its corpus aids**, the recall-first and balanced stacks find more (+2.81 and +2.14 points, both intervals above zero), and the balanced stack ties its precision.
-- **The precision-first stack and the LLM alone tie deid's recall** at 10.7 and 16.3 points more precision.
+- **Against Stanford/Penn**, as stated beforehand: the recall-first stack finds more (+2.81 points, +1.38 to +4.37) at 9.3 points less precision, and the precision-first stack ties its recall (+0.45, −1.45 to +2.54) at 19.6 points more precision.
+- **No configuration finds significantly more PHI than deid with every list built for this corpus.** The recall-first stack misses 10 spans against deid's 24, but its paired interval (+1.57 points, 0.00 to +3.27) starts at zero. Against deid without its corpus aids, the recall-first and balanced stacks find more (+2.81 and +2.14).
+- **The precision-first stack ties deid's recall** at 10.6 points more precision.
 - **Without a language model**, DeidSharp trails deid by 9 points of recall.
 
-On ASQ-PHI (1,051 synthetic clinical queries, a second check with no held-out half), every stack with the clinical model or the LLM removes 99.6% to 99.7% of the PHI, at 95% to 99.6% precision (F39).
+On the discharge summaries' reporting half (494 MIMIC-IV-Note discharge summaries from another decade, with surrogate PHI), every recommended stack with the LLM finds 94.0% to 95.3% of the PHI, more than deid in any configuration (91.5% to 92.1%) at its precision or better, and 20.2 to 21.5 points more than Stanford/Penn (73.8%), which misses most of the untyped names; much of the lead over deid is the generator's made-up hospitals and cities, which deid's lists rarely match. Philter touches more spans (99.4%) at 23 to 27 points less precision (F41, F46).
 
-On the discharge summaries' reporting half (494 MIMIC-IV-Note discharge summaries from another decade, with surrogate PHI), measured once under a protocol fixed beforehand (D4), every stack with the LLM finds more PHI than deid in any configuration (93.3% to 95.3% against 91.5% to 92.1%), at deid's precision or better, though much of that lead is the generator's made-up hospitals and cities, which deid's lists rarely match. Philter touches more spans (99.4%) at 23 to 27 points less precision, so F37's lead over Philter does not carry over to this corpus (F41).
+On ASQ-PHI (1,051 synthetic clinical queries, a second check with no held-out half), every recommended stack removes 99.6% to 99.7% of the PHI, at 95% to 99.6% precision, as does Stanford/Penn (99.7% at 97.7%) (F39, F46).
 
-The tool publishes the stacks with a language model too, pinned by the model's digest and Ollama's version as the sidecars are by their images. The generated tables under [Results](#results) were measured before it could, so they hold only the stacks without one; the language-model numbers above are the console output logged in the findings.
+The generated tables under [Results](#results) hold every stack and tool of that run, the stacks with a language model pinned by the model's digest and Ollama's version as the sidecars are by their images.
 
 ## Tuning and reporting halves
 
@@ -74,86 +74,147 @@ The clinical sidecar's model (`obi/deid_roberta_i2b2`) was trained on the i2b2 2
 
 ### ASQ-PHI (synthetic clinical queries)
 
-1,051 documents · 2,976 gold spans · scope `safe-harbor` · split `all` · DeidSharp 1.0.0 (`ee4f226`) · 2026-10-19 · clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362
+1,051 documents · 2,976 gold spans · scope `safe-harbor` · split `all` · DeidSharp 1.1.0 (`2059384`) · 2026-10-30 · LLM gemma4:26b-a4b (`001e5dafc3c7`) on Ollama 0.40.11 · clinical sidecar on CPU without spaCy NER, URL and license recognizers (f828f91086f5); model baselines from deidsharp/baseline-models:1 (1c5fa7724ddb) on an NVIDIA RTX 5080
 
 | Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
 |---|---:|---:|---:|---:|---:|---:|
 | deterministic | 86.62% (85.46–87.79) | 70.69% | 97.68% | 83.20% | 0.41% | 398 |
-| deterministic + presidio | 92.27% (91.37–93.18) | 78.00% | 73.45% | 76.12% | 10.02% | 230 |
+| deterministic + llm gemma4:26b-a4b (all-examples) | 99.63% (99.39–99.84) | 97.68% | 97.89% | 98.30% | 0.47% | 11 |
+| deterministic + llm gemma4:26b-a4b (all-examples) + second opinion | 99.63% (99.39–99.84) | 97.68% | 99.08% | 98.58% | 0.29% | 11 |
 | deterministic + clinical | 99.73% (99.53–99.91) | 96.38% | 95.29% | 97.69% | 0.87% | 8 |
-| deterministic + presidio + clinical | 99.96% (99.89–100.00) | 96.71% | 91.77% | 96.51% | 1.84% | 1 |
+| deterministic + clinical + llm gemma4:26b-a4b (all-examples) | 99.73% (99.53–99.91) | 97.86% | 95.19% | 97.74% | 0.87% | 8 |
+| deterministic + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | 99.66% (99.45–99.87) | 97.83% | 98.69% | 98.49% | 0.37% | 10 |
+| deterministic + clinical places | 94.22% (93.38–94.98) | 91.20% | 97.55% | 93.33% | 0.50% | 172 |
+| deterministic + clinical places + llm gemma4:26b-a4b (all-examples) | 99.66% (99.45–99.87) | 97.79% | 97.58% | 98.26% | 0.52% | 10 |
+| deterministic + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | 99.66% (99.45–99.87) | 97.79% | 98.72% | 98.52% | 0.34% | 10 |
+| deterministic without gazetteer | 47.58% (46.61–48.55) | 45.07% | 99.71% | 65.73% | 0.05% | 1,560 |
+| deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) | 99.63% (99.39–99.84) | 97.68% | 99.57% | 98.68% | 0.14% | 11 |
+| deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) + second opinion | 99.63% (99.39–99.84) | 97.68% | 99.57% | 98.68% | 0.14% | 11 |
+| deterministic without gazetteer + clinical | 99.73% (99.53–99.91) | 95.95% | 96.81% | 98.03% | 0.57% | 8 |
+| deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) | 99.73% (99.53–99.91) | 97.86% | 96.64% | 98.08% | 0.57% | 8 |
+| deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | 99.66% (99.45–99.87) | 97.83% | 99.11% | 98.58% | 0.25% | 10 |
+| deterministic without gazetteer + clinical places | 74.29% (73.44–75.13) | 78.81% | 98.96% | 87.07% | 0.21% | 765 |
+| deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) | 99.66% (99.45–99.87) | 97.79% | 99.11% | 98.60% | 0.22% | 10 |
+| deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | 99.66% (99.45–99.87) | 97.79% | 99.11% | 98.60% | 0.22% | 10 |
+| deid | 85.85% (84.82–86.99) | 68.44% | 94.68% | 80.58% | 1.52% | 421 |
+| philter | 96.74% (96.12–97.35) | 70.67% | 93.55% | 89.19% | 2.18% | 97 |
+| stanford-deid | 99.66% (99.44–99.87) | 98.22% | 97.70% | 98.32% | 0.56% | 10 |
+| privacy-filter | 70.19% (68.95–71.40) | 64.57% | 96.65% | 80.20% | 1.60% | 887 |
+| gliner-pii | 99.22% (98.89–99.53) | 99.00% | 70.73% | 81.42% | 13.26% | 23 |
 
 <details><summary>Recall by corpus label</summary>
 
-| Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
-|---|---:|---:|---:|---:|---:|
-| GEOGRAPHIC_LOCATION | 829 | 73.46% | 78.89% | 100.00% | 100.00% |
-| NAME | 814 | 87.83% | 100.00% | 100.00% | 100.00% |
-| DATE | 806 | 98.51% | 99.87% | 99.13% | 100.00% |
-| MEDICAL_RECORD_NUMBER | 305 | 90.49% | 92.13% | 100.00% | 100.00% |
-| HEALTH_PLAN_BENEFICIARY_NUMBER | 91 | 65.93% | 73.62% | 100.00% | 100.00% |
-| PHONE_NUMBER | 45 | 100.00% | 100.00% | 100.00% | 100.00% |
-| SOCIAL_SECURITY_NUMBER | 33 | 100.00% | 100.00% | 100.00% | 100.00% |
-| EMAIL_ADDRESS | 31 | 96.77% | 96.77% | 96.77% | 96.77% |
-| UNIQUE_IDENTIFIER | 14 | 57.14% | 64.28% | 100.00% | 100.00% |
-| ACCOUNT_NUMBER | 4 | 100.00% | 100.00% | 100.00% | 100.00% |
-| FAX_NUMBER | 2 | 100.00% | 100.00% | 100.00% | 100.00% |
-| CERTIFICATE_LICENSE_NUMBER | 1 | 100.00% | 100.00% | 100.00% | 100.00% |
-| IP_ADDRESS | 1 | 100.00% | 100.00% | 100.00% | 100.00% |
+| Label | Gold spans | deterministic | deterministic + llm gemma4:26b-a4b (all-examples) | deterministic + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic + clinical | deterministic + clinical + llm gemma4:26b-a4b (all-examples) | deterministic + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic + clinical places | deterministic + clinical places + llm gemma4:26b-a4b (all-examples) | deterministic + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer | deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer + clinical | deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer + clinical places | deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | deid | philter | stanford-deid | privacy-filter | gliner-pii |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| GEOGRAPHIC_LOCATION | 829 | 73.46% | 99.87% | 99.87% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 4.94% | 99.87% | 99.87% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 82.38% | 90.83% | 99.75% | 13.63% | 98.91% |
+| NAME | 814 | 87.83% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 87.96% | 100.00% | 100.00% | 14.86% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 15.11% | 100.00% | 100.00% | 99.14% | 99.63% | 100.00% | 94.96% | 100.00% |
+| DATE | 806 | 98.51% | 98.88% | 98.88% | 99.13% | 99.13% | 98.88% | 98.51% | 98.88% | 98.88% | 98.51% | 98.88% | 98.88% | 99.13% | 99.13% | 98.88% | 98.51% | 98.88% | 98.88% | 98.63% | 98.88% | 99.13% | 95.53% | 99.87% |
+| MEDICAL_RECORD_NUMBER | 305 | 90.49% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 92.13% | 100.00% | 100.00% | 90.49% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 92.13% | 100.00% | 100.00% | 47.21% | 97.70% | 100.00% | 75.08% | 98.68% |
+| HEALTH_PLAN_BENEFICIARY_NUMBER | 91 | 65.93% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 65.93% | 100.00% | 100.00% | 65.93% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 65.93% | 100.00% | 100.00% | 13.18% | 98.90% | 100.00% | 89.01% | 94.50% |
+| PHONE_NUMBER | 45 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 97.77% | 100.00% |
+| SOCIAL_SECURITY_NUMBER | 33 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 96.96% | 100.00% |
+| EMAIL_ADDRESS | 31 | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 96.77% | 100.00% |
+| UNIQUE_IDENTIFIER | 14 | 57.14% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 57.14% | 100.00% | 100.00% | 57.14% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 57.14% | 100.00% | 100.00% | 21.42% | 100.00% | 100.00% | 71.42% | 71.42% |
+| ACCOUNT_NUMBER | 4 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 25.00% | 100.00% | 100.00% | 100.00% | 100.00% |
+| FAX_NUMBER | 2 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 50.00% | 100.00% |
+| CERTIFICATE_LICENSE_NUMBER | 1 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 0.00% | 100.00% | 100.00% | 100.00% | 100.00% |
+| IP_ADDRESS | 1 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 0.00% | 100.00% | 100.00% | 100.00% | 100.00% |
 
 </details>
 
 ### PhysioNet Deidentified Medical Text 1.0
 
-1,307 documents · 889 gold spans · scope `safe-harbor` · split `report` · DeidSharp 1.0.0 (`ee4f226`) · 2026-10-19 · clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362
+1,307 documents · 889 gold spans · scope `safe-harbor` · split `report` · DeidSharp 1.1.0 (`2059384`) · 2026-10-30 · LLM gemma4:26b-a4b (`001e5dafc3c7`) on Ollama 0.40.11 · clinical sidecar on CPU without spaCy NER, URL and license recognizers (f828f91086f5); model baselines from deidsharp/baseline-models:1 (1c5fa7724ddb) on an NVIDIA RTX 5080
 
 | Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
 |---|---:|---:|---:|---:|---:|---:|
 | deterministic | 42.06% (37.23–46.29) | 48.40% | 43.77% | 36.98% | 0.41% | 515 |
-| deterministic + presidio | 66.36% (60.99–71.11) | 69.68% | 6.16% | 10.79% | 5.54% | 299 |
-| deterministic + clinical | 88.30% (84.70–91.12) | 86.37% | 42.96% | 51.15% | 0.85% | 104 |
-| deterministic + presidio + clinical | 90.32% (87.09–93.00) | 88.02% | 8.11% | 14.66% | 5.70% | 86 |
+| deterministic + llm gemma4:26b-a4b (all-examples) | 96.96% (95.42–98.24) | 98.03% | 59.22% | 69.20% | 0.49% | 27 |
+| deterministic + llm gemma4:26b-a4b (all-examples) + second opinion | 96.85% (95.23–98.11) | 97.93% | 74.05% | 81.24% | 0.24% | 28 |
+| deterministic + clinical | 88.30% (84.70–91.12) | 86.37% | 43.01% | 51.15% | 0.85% | 104 |
+| deterministic + clinical + llm gemma4:26b-a4b (all-examples) | 98.87% (97.90–99.59) | 98.99% | 43.18% | 53.54% | 0.91% | 10 |
+| deterministic + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | 98.20% (96.86–99.24) | 98.83% | 62.79% | 75.54% | 0.38% | 16 |
+| deterministic + clinical places | 50.50% (45.50–55.09) | 56.14% | 40.36% | 39.30% | 0.52% | 440 |
+| deterministic + clinical places + llm gemma4:26b-a4b (all-examples) | 97.63% (96.10–98.84) | 98.39% | 53.49% | 66.44% | 0.58% | 21 |
+| deterministic + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | 97.52% (95.94–98.75) | 98.29% | 65.15% | 77.27% | 0.33% | 22 |
+| deterministic without gazetteer | 24.40% (20.53–28.39) | 29.96% | 80.48% | 36.49% | 0.07% | 672 |
+| deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) | 96.51% (94.91–97.93) | 97.59% | 83.18% | 86.01% | 0.15% | 31 |
+| deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) + second opinion | 96.51% (94.91–97.93) | 97.59% | 83.18% | 86.01% | 0.15% | 31 |
+| deterministic without gazetteer + clinical | 86.16% (82.43–89.06) | 84.19% | 54.97% | 60.12% | 0.52% | 123 |
+| deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) | 98.87% (97.90–99.59) | 98.99% | 54.31% | 62.91% | 0.57% | 10 |
+| deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | 98.20% (96.86–99.24) | 98.83% | 70.52% | 80.77% | 0.27% | 16 |
+| deterministic without gazetteer + clinical places | 39.48% (34.42–44.52) | 44.95% | 60.44% | 44.50% | 0.18% | 538 |
+| deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) | 97.52% (95.94–98.75) | 98.29% | 72.03% | 81.74% | 0.24% | 22 |
+| deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | 97.52% (95.94–98.75) | 98.29% | 72.03% | 81.74% | 0.24% | 22 |
+| deid | 97.30% (95.73–98.62) | 97.73% | 72.57% | 82.26% | 0.18% | 24 |
+| deid-generic | 96.06% (94.15–97.57) | 96.40% | 72.38% | 82.74% | 0.18% | 35 |
+| deid-nohosp | 84.70% (80.11–88.88) | 83.16% | 70.37% | 78.33% | 0.17% | 136 |
+| philter | 91.45% (88.98–93.71) | 88.00% | 6.70% | 12.50% | 7.82% | 76 |
+| stanford-deid | 96.06% (94.56–97.27) | 96.28% | 63.56% | 73.89% | 0.33% | 35 |
+| privacy-filter | 32.84% (26.16–38.80) | 36.34% | 59.15% | 34.09% | 0.19% | 597 |
+| gliner-pii | 76.82% (71.35–81.32) | 76.60% | 11.07% | 22.02% | 2.49% | 206 |
 
 <details><summary>Recall by corpus label</summary>
 
-| Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
-|---|---:|---:|---:|---:|---:|
-| HCPName | 292 | 60.61% | 86.30% | 89.04% | 93.49% |
-| Date | 254 | 12.59% | 45.27% | 91.73% | 92.51% |
-| Location | 177 | 36.72% | 47.45% | 76.83% | 77.96% |
-| RelativeProxyName | 92 | 54.34% | 80.43% | 90.21% | 91.30% |
-| PTName | 37 | 78.37% | 100.00% | 100.00% | 100.00% |
-| Phone | 35 | 60.00% | 80.00% | 100.00% | 100.00% |
-| Other | 1 | 0.00% | 0.00% | 100.00% | 100.00% |
-| PTNameInitial | 1 | 0.00% | 0.00% | 0.00% | 0.00% |
+| Label | Gold spans | deterministic | deterministic + llm gemma4:26b-a4b (all-examples) | deterministic + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic + clinical | deterministic + clinical + llm gemma4:26b-a4b (all-examples) | deterministic + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic + clinical places | deterministic + clinical places + llm gemma4:26b-a4b (all-examples) | deterministic + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer | deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer + clinical | deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer + clinical places | deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | deid | deid-generic | deid-nohosp | philter | stanford-deid | privacy-filter | gliner-pii |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| HCPName | 292 | 60.61% | 97.26% | 97.26% | 89.04% | 98.63% | 97.26% | 61.98% | 97.26% | 97.26% | 41.43% | 97.26% | 97.26% | 85.95% | 98.63% | 97.26% | 43.15% | 97.26% | 97.26% | 100.00% | 97.94% | 97.94% | 96.91% | 97.26% | 53.08% | 90.41% |
+| Date | 254 | 12.59% | 98.81% | 98.81% | 91.73% | 99.60% | 98.81% | 12.59% | 98.81% | 98.81% | 12.59% | 98.81% | 98.81% | 91.73% | 99.60% | 98.81% | 12.59% | 98.81% | 98.81% | 94.88% | 94.88% | 94.88% | 95.66% | 96.06% | 9.84% | 65.35% |
+| Location | 177 | 36.72% | 94.91% | 94.91% | 76.83% | 98.30% | 98.30% | 76.83% | 98.30% | 98.30% | 1.69% | 93.22% | 93.22% | 74.57% | 98.30% | 98.30% | 74.57% | 98.30% | 98.30% | 96.61% | 94.35% | 37.28% | 74.01% | 95.48% | 5.08% | 63.27% |
+| RelativeProxyName | 92 | 54.34% | 94.56% | 93.47% | 90.21% | 98.91% | 98.91% | 54.34% | 94.56% | 93.47% | 17.39% | 93.47% | 93.47% | 83.69% | 98.91% | 98.91% | 17.39% | 93.47% | 93.47% | 95.65% | 95.65% | 95.65% | 93.47% | 91.30% | 58.69% | 91.30% |
+| PTName | 37 | 78.37% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 78.37% | 100.00% | 100.00% | 64.86% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 64.86% | 100.00% | 100.00% | 100.00% | 97.29% | 97.29% | 100.00% | 100.00% | 91.89% | 100.00% |
+| Phone | 35 | 60.00% | 97.14% | 97.14% | 100.00% | 100.00% | 100.00% | 60.00% | 97.14% | 97.14% | 60.00% | 97.14% | 97.14% | 100.00% | 100.00% | 100.00% | 60.00% | 97.14% | 97.14% | 100.00% | 100.00% | 100.00% | 91.42% | 97.14% | 42.85% | 54.28% |
+| Other | 1 | 0.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 0.00% | 100.00% | 100.00% | 0.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 0.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 0.00% | 0.00% |
+| PTNameInitial | 1 | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 0.00% | 100.00% | 0.00% | 100.00% |
 
 </details>
 
 ### MIMIC-IV-Note 2.2 discharge summaries with surrogate PHI (generator 3)
 
-494 documents · 29,023 gold spans · scope `safe-harbor` · split `report` · DeidSharp 1.0.0 (`7ada415`) · 2026-10-28 · clinical sidecar on CPU without spaCy NER, URL and license recognizers; stock Presidio 2.2.362; measured before its commit, 7ada415, which holds exactly the code measured (the tree hashes in findings F41)
+494 documents · 29,023 gold spans · scope `safe-harbor` · split `report` · DeidSharp 1.1.0 (`2059384`) · 2026-10-30 · LLM gemma4:26b-a4b (`001e5dafc3c7`) on Ollama 0.40.11 · clinical sidecar on CPU without spaCy NER, URL and license recognizers (f828f91086f5); model baselines from deidsharp/baseline-models:1 (1c5fa7724ddb) on an NVIDIA RTX 5080
 
 | Stack | Recall (95% CI) | Character recall | Precision | Word F1 | Non-PHI removed | Missed |
 |---|---:|---:|---:|---:|---:|---:|
 | deterministic | 87.07% (86.53–87.62) | 82.48% | 98.19% | 91.08% | 0.24% | 3,752 |
-| deterministic + presidio | 92.95% (92.61–93.31) | 87.81% | 65.10% | 71.57% | 3.31% | 2,045 |
+| deterministic + llm gemma4:26b-a4b (all-examples) | 97.47% (97.26–97.68) | 98.26% | 97.93% | 91.91% | 0.80% | 733 |
+| deterministic + llm gemma4:26b-a4b (all-examples) + second opinion | 96.08% (95.82–96.34) | 97.38% | 98.89% | 91.83% | 0.76% | 1,136 |
 | deterministic + clinical | 91.57% (91.16–91.99) | 94.21% | 94.75% | 93.94% | 0.42% | 2,446 |
-| deterministic + presidio + clinical | 95.05% (94.75–95.33) | 96.53% | 64.27% | 74.06% | 3.40% | 1,436 |
+| deterministic + clinical + llm gemma4:26b-a4b (all-examples) | 97.81% (97.62–98.01) | 98.67% | 94.74% | 90.59% | 0.96% | 634 |
+| deterministic + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | 96.71% (96.46–96.96) | 97.97% | 96.26% | 90.92% | 0.89% | 952 |
+| deterministic + clinical places | 88.26% (87.76–88.79) | 92.09% | 95.58% | 93.58% | 0.34% | 3,407 |
+| deterministic + clinical places + llm gemma4:26b-a4b (all-examples) | 97.58% (97.37–97.78) | 98.51% | 95.59% | 91.31% | 0.89% | 702 |
+| deterministic + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | 96.29% (96.02–96.54) | 97.70% | 96.48% | 91.26% | 0.85% | 1,074 |
+| deterministic without gazetteer | 48.89% (47.75–50.00) | 53.20% | 99.56% | 77.93% | 0.06% | 14,831 |
+| deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) | 93.99% (93.62–94.38) | 96.00% | 99.28% | 92.29% | 0.62% | 1,742 |
+| deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) + second opinion | 93.99% (93.62–94.38) | 96.00% | 99.28% | 92.29% | 0.62% | 1,742 |
+| deterministic without gazetteer + clinical | 71.63% (70.68–72.56) | 80.75% | 95.18% | 89.63% | 0.24% | 8,232 |
+| deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) | 95.27% (94.95–95.60) | 97.08% | 95.93% | 91.19% | 0.79% | 1,371 |
+| deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | 94.91% (94.58–95.24) | 96.85% | 96.70% | 91.52% | 0.75% | 1,476 |
+| deterministic without gazetteer + clinical places | 60.40% (59.23–61.49) | 72.44% | 95.77% | 86.21% | 0.16% | 11,493 |
+| deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) | 94.54% (94.18–94.91) | 96.61% | 96.81% | 91.81% | 0.71% | 1,582 |
+| deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | 94.54% (94.18–94.91) | 96.61% | 96.81% | 91.81% | 0.71% | 1,582 |
+| deid | 92.07% (91.66–92.47) | 84.32% | 95.78% | 92.73% | 0.28% | 2,299 |
+| deid-generic | 91.73% (91.29–92.13) | 84.12% | 95.80% | 92.64% | 0.28% | 2,399 |
+| deid-nohosp | 91.49% (91.07–91.91) | 83.10% | 95.77% | 92.28% | 0.28% | 2,468 |
+| philter | 99.41% (99.30–99.52) | 83.34% | 72.45% | 82.28% | 2.45% | 171 |
+| stanford-deid | 73.78% (72.81–74.75) | 82.10% | 98.32% | 89.90% | 0.25% | 7,608 |
+| privacy-filter | 28.80% (27.71–29.85) | 29.77% | 96.36% | 44.54% | 0.24% | 20,664 |
+| gliner-pii | 61.70% (60.82–62.55) | 66.53% | 56.71% | 60.06% | 2.53% | 11,115 |
 
 <details><summary>Recall by corpus label</summary>
 
-| Label | Gold spans | deterministic | deterministic + presidio | deterministic + clinical | deterministic + presidio + clinical |
-|---|---:|---:|---:|---:|---:|
-| UntypedName | 12,632 | 73.29% | 85.76% | 80.69% | 88.67% |
-| Date | 9,115 | 96.10% | 97.55% | 99.96% | 99.97% |
-| StaffName | 2,049 | 100.00% | 100.00% | 100.00% | 100.00% |
-| Hospital | 1,300 | 98.92% | 98.92% | 100.00% | 100.00% |
-| Phone | 1,166 | 100.00% | 100.00% | 100.00% | 100.00% |
-| PatientName | 1,149 | 100.00% | 100.00% | 100.00% | 100.00% |
-| City | 556 | 98.92% | 98.92% | 99.28% | 99.28% |
-| RelativeName | 538 | 100.00% | 100.00% | 100.00% | 100.00% |
-| RecordNumber | 489 | 100.00% | 100.00% | 100.00% | 100.00% |
-| Age | 29 | 86.20% | 86.20% | 100.00% | 100.00% |
+| Label | Gold spans | deterministic | deterministic + llm gemma4:26b-a4b (all-examples) | deterministic + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic + clinical | deterministic + clinical + llm gemma4:26b-a4b (all-examples) | deterministic + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic + clinical places | deterministic + clinical places + llm gemma4:26b-a4b (all-examples) | deterministic + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer | deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer + clinical | deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + clinical + llm gemma4:26b-a4b (all-examples) + second opinion | deterministic without gazetteer + clinical places | deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) | deterministic without gazetteer + clinical places + llm gemma4:26b-a4b (all-examples) + second opinion | deid | deid-generic | deid-nohosp | philter | stanford-deid | privacy-filter | gliner-pii |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| UntypedName | 12,632 | 73.29% | 94.29% | 91.10% | 80.69% | 95.02% | 92.54% | 75.90% | 94.53% | 91.59% | 1.32% | 86.58% | 86.58% | 35.05% | 89.19% | 88.42% | 13.32% | 87.60% | 87.60% | 86.21% | 85.44% | 85.44% | 99.18% | 40.72% | 13.67% | 59.61% |
+| Date | 9,115 | 96.10% | 99.91% | 99.91% | 99.96% | 99.97% | 99.93% | 96.10% | 99.91% | 99.91% | 96.10% | 99.91% | 99.91% | 99.96% | 99.97% | 99.91% | 96.10% | 99.91% | 99.91% | 99.93% | 99.93% | 99.93% | 99.92% | 99.97% | 27.13% | 42.32% |
+| StaffName | 2,049 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 93.16% | 99.90% | 99.90% | 100.00% | 100.00% | 99.95% | 93.21% | 99.90% | 99.90% | 99.95% | 99.95% | 99.95% | 100.00% | 99.95% | 71.64% | 99.75% |
+| Hospital | 1,300 | 98.92% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 0.00% | 97.92% | 97.92% | 99.92% | 100.00% | 100.00% | 99.92% | 100.00% | 100.00% | 73.46% | 73.46% | 68.46% | 98.00% | 99.92% | 0.07% | 99.84% |
+| Phone | 1,166 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 84.21% | 99.39% |
+| PatientName | 1,149 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 99.65% | 100.00% | 100.00% | 99.91% | 100.00% | 100.00% | 99.65% | 100.00% | 100.00% | 99.12% | 99.04% | 99.04% | 100.00% | 99.30% | 91.73% | 90.86% |
+| City | 556 | 98.92% | 99.46% | 99.46% | 99.28% | 99.46% | 99.46% | 99.28% | 99.46% | 99.46% | 1.43% | 98.38% | 98.38% | 95.86% | 99.28% | 99.28% | 95.32% | 99.28% | 99.28% | 66.54% | 66.36% | 65.64% | 96.76% | 92.80% | 1.61% | 74.82% |
+| RelativeName | 538 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 97.21% | 99.81% | 99.81% | 100.00% | 100.00% | 99.81% | 97.21% | 99.81% | 99.81% | 98.88% | 98.88% | 98.88% | 99.25% | 92.56% | 64.31% | 98.51% |
+| RecordNumber | 489 | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 100.00% | 61.14% | 1.63% |
+| Age | 29 | 86.20% | 96.55% | 96.55% | 100.00% | 100.00% | 96.55% | 86.20% | 96.55% | 96.55% | 86.20% | 96.55% | 96.55% | 100.00% | 100.00% | 100.00% | 86.20% | 96.55% | 96.55% | 86.20% | 86.20% | 86.20% | 55.17% | 0.00% | 0.00% | 72.41% |
 
 </details>
 

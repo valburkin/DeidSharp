@@ -62,9 +62,9 @@ What to expect, measured on real clinical notes (ICU nursing notes) that none of
 | Deterministic: known identifiers + patterns | `DeidSharp` | Nothing | 24.4% | 80.5% | 0.06% |
 | Deterministic + gazetteer | + `Gazetteer` | Nothing | 42.1% | 43.8% | 0.41% |
 | No language model: deterministic + gazetteer + clinical sidecar | + `Gazetteer`, `Presidio` | Docker | 88.3% | 43.0% | 0.85% |
-| **Precision first**: deterministic + language model | + `Llm` | A GPU (16 GB) | 96.4% | 83.3% | 0.15% |
-| **Balanced, one call**: deterministic + the sidecar's places + language model | + `Presidio`, `Llm` | Docker and a GPU | 97.4% | 72.2% | 0.24% |
-| **Balanced**: recall first + the model's second opinion | + `Presidio`, `Llm` | Docker and a GPU | 98.2% | 70.8% | 0.26% |
+| **Precision first**: deterministic + language model | + `Llm` | A GPU (16 GB) | 96.5% | 83.2% | 0.15% |
+| **Balanced, one call**: deterministic + the sidecar's places + language model | + `Presidio`, `Llm` | Docker and a GPU | 97.5% | 72.0% | 0.24% |
+| **Balanced**: recall first + the model's second opinion | + `Presidio`, `Llm` | Docker and a GPU | 98.2% | 70.5% | 0.26% |
 | **Recall first**: deterministic + clinical sidecar + language model | + `Presidio`, `Llm` | Docker and a GPU | 98.9% | 54.3% | 0.57% |
 
 The measurements gave each stack the note's text only, with no structured record, so the known-identifier detector had nothing to look for. With the record's identifiers (or FHIR, which extracts them), expect more than these numbers, most of all from the deterministic stacks.
@@ -834,7 +834,7 @@ Technically yes, through any `IChatClient` that supports a JSON-schema response 
 
 ### How accurate is it?
 
-On real clinical notes, 96.4% to 98.9% of identifiers removed with a local language model, and 88.3% with the clinical sidecar and no model ([Choosing a detector stack](#choosing-a-detector-stack)). Your data will differ: measure it. How these numbers were produced is in [docs/evaluation](evaluation/README.md).
+On real clinical notes, 96.5% to 98.9% of identifiers removed with a local language model, and 88.3% with the clinical sidecar and no model ([Choosing a detector stack](#choosing-a-detector-stack)). Your data will differ: measure it. How these numbers were produced is in [docs/evaluation](evaluation/README.md).
 
 ### Why did a drug or a clinical term become [NAME]?
 

@@ -24,9 +24,9 @@ Four stacks with an LLM layer were measured on clinical notes none of them was t
 | Stack | Recall | Precision | Text that isn't PHI removed | Needs |
 |---|---:|---:|---:|---|
 | Recall first: clinical NER, known identifiers, patterns, LLM | 98.9% | 54.3% | 0.57% | Clinical sidecar and a GPU for the model |
-| Balanced: the same, with `LlmSecondOpinion` around it | 98.2% | 70.8% | 0.26% | The same |
-| Balanced, one model call: the clinical sidecar's places only (`CategoryFilter`), known identifiers, patterns, LLM | 97.4% | 72.2% | 0.24% | The same |
-| Precision first: known identifiers, patterns, LLM | 96.4% | 83.3% | 0.15% | A GPU for the model |
+| Balanced: the same, with `LlmSecondOpinion` around it | 98.2% | 70.5% | 0.26% | The same |
+| Balanced, one model call: the clinical sidecar's places only (`CategoryFilter`), known identifiers, patterns, LLM | 97.5% | 72.0% | 0.24% | The same |
+| Precision first: known identifiers, patterns, LLM | 96.5% | 83.2% | 0.15% | A GPU for the model |
 
 Keep the patterns and the known-identifier detector in every stack, even next to a model: they don't vary between runs or model versions, and they find the record's own identifiers.
 

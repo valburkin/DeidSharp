@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "label": "PHI recall (nursing notes)",
-  "message": "88.3% · deterministic + clinical · v1.0.0",
+  "message": "98.8% with a local LLM · 88.3% without · v1.1.0",
   "color": "blue"
 }

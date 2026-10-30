@@ -1,8 +1,8 @@
 # Reproducing the evaluation
 
-How to rerun the measurements of record, [findings](docs/evaluation/findings.md) F36 onward and the [results table](docs/evaluation/README.md#results), from the `v1.0.0` tag on your own machine; findings F40 onward (the discharge summaries, and F43's strict match) need later code (see [Commits](#commits)). Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
+How to rerun the measurements of record on your own machine: [findings](docs/evaluation/findings.md) F36 to F39 from the `v1.0.0` tag, and F40 onward, the run of record behind the [results table](docs/evaluation/README.md#results) (F46) included, from later commits (see [Commits](#commits)). Each finding names its date, corpus, half and settings in the italic line under its heading; this page gives the environment and the commands those settings plug into.
 
-The published table (`results.json`) holds every stack and tool of the last run that `--publish` accepted for each corpus. Until D6's run of record it holds the measurements of F36 to F41 without a language model; D6's runs add the recommended stacks with one (the model pinned by its digest and Ollama's version) and the other tools compared with them. Experiments are never published; their numbers, and those of the stacks with a language model before D6, are the console output logged in the findings.
+The published table (`results.json`) holds every stack and tool of the last run that `--publish` accepted for each corpus. It holds D6's run of record (F46): the stacks with and without a language model (the model pinned by its digest and Ollama's version) and every tool compared with them. Experiments are never published; their numbers, and those of the stacks with a language model before D6, are the console output logged in the findings.
 
 ## What you need
 
@@ -37,7 +37,7 @@ docker compose up -d --build presidio clinical   # 127.0.0.1:5002 and 127.0.0.1:
 ollama pull gemma4:26b-a4b                       # only for --llm
 ```
 
-### The published table
+### The stacks without a language model (v1.0.0's published table)
 
 ```bash
 dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physionet-deid \
@@ -88,7 +88,7 @@ dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physi
   --compare-with deid,deid-generic,deid-nohosp,philter
 ```
 
-The published table's stacks against the baselines (no language model, so one run):
+The stacks without a language model against the baselines (one run, since nothing in them varies):
 
 ```bash
 dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus physionet-deid \
@@ -120,7 +120,7 @@ docker run --rm --network none -v <work>/mimic/text:/data/in:ro -v <work>/philte
 dotnet run tools/baselines/to-predictions.cs -- philter <work>/mimic <work>/philter-mimic <work>/philter-mimic.tsv
 ```
 
-Then the published table's stacks (add `--publish docs/evaluation` to publish them), the same with the baselines, and the language-model stacks with them:
+Then F41's three steps: the stacks without a language model, the same with the baselines, and the language-model stacks with them:
 
 ```bash
 dotnet run --project tools/DeidSharp.Evaluation.Cli -c Release -- --corpus mimic-iv-note --notes <notes> \
@@ -170,7 +170,7 @@ For an earlier finding, start from these commands and set the flags its settings
 
 ## Commits
 
-F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 onward reran the configurations that matter at `ee4f226`, the commit the published table names. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on the discharge summaries, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code. F42 ran on a `tools` tree that no commit holds; the commit that carries F42 differs from it only in when the word list is read and in comments, so rerun F42 from that commit.
+F1 to F35 name the commit each was measured at. Those commits belong to the development history from before this repository was published, so they aren't in it; every finding's settings line still gives what a rerun needs. F36 to F39 reran the configurations that matter at `ee4f226`, the commit v1.0.0's published table named. `v1.0.0` is that commit plus the packaging of the libraries for NuGet (README links, symbol packages, a CI pack step) and no change to code that runs, as `git diff ee4f226 v1.0.0` shows, so a rerun from the tag gives the same numbers. F40 and F41, on the discharge summaries, were measured on code that came after the tag, identified by the Git tree hashes of `src/`, `tools/` and `sidecar/` that F41 gives: any commit where `git rev-parse <commit>:src`, `:tools` and `:sidecar` print those hashes runs the same code. F42 ran on a `tools` tree that no commit holds; the commit that carries F42 differs from it only in when the word list is read and in comments, so rerun F42 from that commit. F46, the run of record, ran at `2059384`, which `results.json` names; its settings line gives the tree hashes.
 
 ## What to expect
 

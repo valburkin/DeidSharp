@@ -8,7 +8,7 @@ namespace DeidSharp.IntegrationTests;
 
 /// <summary>
 /// The NER stacks on ASQ-PHI. The floors are the numbers measured when they were set
-/// (docs/evaluation/results.json), rounded down: a new Presidio image, sidecar package or
+/// (v1.0.0's docs/evaluation/results.json), rounded down: a new Presidio image, sidecar package or
 /// model that loses recall fails here. Raise a floor when a change gains recall, never
 /// lower one without saying why.
 /// </summary>

@@ -1,8 +1,8 @@
 # Findings
 
-The chronological log of every measurement behind DeidSharp's detectors, newest last, including the ideas that didn't work. Each entry gives the evidence (numbers, how they were measured, the commit) and what it led to. The results of record are F36 onward, measured at the release; the earlier entries show how the configurations they measure were reached. Entries are not rewritten: a finding that turns out wrong gets a new entry that says so.
+The chronological log of every measurement behind DeidSharp's detectors, newest last, including the ideas that didn't work. Each entry gives the evidence (numbers, how they were measured, the commit) and what it led to. The results of record are F46, D6's run of record, and F36 to F41 before it; the earlier entries show how the configurations they measure were reached. Entries are not rewritten: a finding that turns out wrong gets a new entry that says so.
 
-Counts and rates only. Nothing here quotes a note. **The nursing notes** are PhysioNet's Deidentified Medical Text and **the discharge summaries** the `mimic-iv-note` corpus built from MIMIC-IV-Note ([corpora](README.md#corpora)). Findings are made on the tuning halves of the nursing notes and the discharge summaries (`--split tune`) and on ASQ-PHI ([how the numbers are counted](README.md#how-the-numbers-are-counted)). ASQ-PHI has no held-out half, so its numbers are a second check, not a held-out result. The nursing notes' reporting half was measured four times while the work went on (F13, F23, F30, F35), each time for configurations already fixed on the tuning half, and once more at the release (F37); the discharge summaries' reporting half once (F41). "Clinical" is the clinical sidecar; "deterministic" is DeidSharp's own detectors. The work went in three stages: the sidecar and the deterministic detectors (F1 to F14), a local language model as a detector (F15 to F23), and its precision (F24 to F35).
+Counts and rates only. Nothing here quotes a note. **The nursing notes** are PhysioNet's Deidentified Medical Text and **the discharge summaries** the `mimic-iv-note` corpus built from MIMIC-IV-Note ([corpora](README.md#corpora)). Findings are made on the tuning halves of the nursing notes and the discharge summaries (`--split tune`) and on ASQ-PHI ([how the numbers are counted](README.md#how-the-numbers-are-counted)). ASQ-PHI has no held-out half, so its numbers are a second check, not a held-out result. The nursing notes' reporting half was measured four times while the work went on (F13, F23, F30, F35), each time for configurations already fixed on the tuning half, and once more at the release (F37); the discharge summaries' reporting half once (F41); both once more, with ASQ-PHI, in the run of record (F46), after a first pass on ASQ-PHI and the nursing notes that it superseded (D6's amendment). "Clinical" is the clinical sidecar; "deterministic" is DeidSharp's own detectors. The work went in three stages: the sidecar and the deterministic detectors (F1 to F14), a local language model as a detector (F15 to F23), and its precision (F24 to F35).
 
 The commits named before F36 belong to the development history from before this repository was published ([REPRODUCING.md](../../REPRODUCING.md#commits)). The code, the prompts and the fictional example notes were written with an AI coding assistant (Claude Code, following [CLAUDE.md](../../CLAUDE.md)). It never saw the text of the nursing notes or the discharge summaries: it ran the evaluation tool, whose output is counts and rates, and the maintainer described misses with made-up examples.
 
@@ -767,6 +767,70 @@ This answers two questions about F37's result: whether it depends on Gemma, and 
 - **Size and family together.** ministral-3:14b is a dense 14B model, in the class of gemma4:12b rather than the 26B mixture of experts; with the forty examples it found 93.36% on the nursing notes, close to the 93.48% of gemma4:12b with the first examples and the rule filters (F18), next to the deterministic layer of the time. A third family at the 26B model's size was not measured.
 
 **Meaning:** the configuration of record doesn't owe its recall to Gemma or to the examples written from the nursing notes: another family finds about as much, and a prompt with no examples finds as much or more, on both corpora. What the examples and the model's family decide is precision. Nothing here changes a stack: the zero-shot prompt's extra recall on the discharge summaries is under a point, at a cost in precision, and was measured on one corpus's tuning half.
+
+## F46. The run of record: D6's four statements hold, and F37, F39 and F41 repeat
+
+*2026-10-30, **the nursing notes' reporting half** (1,307 notes, 889 gold spans), **the discharge summaries' reporting half** (494 summaries, surrogate generator 3, 29,023 gold spans) and **ASQ-PHI** (1,051 queries, 2,976 gold spans), Safe Harbor scope; D6 as amended, each corpus run once, on commit `2059384` (version 1.1.0; Git tree hashes `src` `3bce79ed15e2e164003e0a53fd75bdd19ee7b2e8`, `tools` `f78ae9d473e22460c2cc45d506c1b28cd113ed9f`, `sidecar` `7a64cc0add19a7ad6751032bb9cb3b4180bed153`). gemma4:26b-a4b (digest `001e5dafc3c7`) on Ollama 0.40.11; the CPU clinical sidecar (image `f828f91086f5`); the model baselines from `deidsharp/baseline-models:1` (image `sha256:1c5fa7724ddb`, F44) on an NVIDIA RTX 5080, run on `--export`s of the reporting halves and of ASQ-PHI. `--clinical-places on --gazetteer with,without --llm gemma4:26b-a4b --llm-prompts all-examples --llm-second-opinion on`, every baseline in `--predictions` and `--compare-with`, `--publish docs/evaluation`; 1,000 resamples by patient (by query on ASQ-PHI). The [published results](README.md#results) are this run's.*
+
+"Deterministic" in the stacks with the LLM is without the gazetteer (D3); the stack without one keeps it.
+
+| Corpus | Stack | Recall (95% CI) | Missed | Character recall | Precision (95% CI) | Word F1 | Strict F1 | Non-PHI removed |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Nursing notes, reporting half | Recall first: deterministic + clinical + LLM | 98.88% (97.91–99.58) | 10 | 99.00% | 54.31% (49.45–59.60) | 62.92% | 46.70% | 0.57% |
+| | Balanced: the same + second opinion | 98.20% (96.86–99.24) | 16 | 98.84% | 70.53% (66.77–74.42) | 80.78% | 53.88% | 0.26% |
+| | Balanced, one call: deterministic + clinical places + LLM | 97.53% (95.95–98.74) | 22 | 98.29% | 72.03% (68.33–75.80) | 81.75% | 55.03% | 0.24% |
+| | Precision first: deterministic + LLM | 96.51% (94.92–97.93) | 31 | 97.59% | 83.18% (79.52–86.49) | 86.02% | 59.33% | 0.15% |
+| | Without an LLM: deterministic + clinical | 88.30% (84.71–91.11) | 104 | 86.38% | 43.02% (38.53–47.64) | 51.15% | 40.29% | 0.85% |
+| | deid, default configuration | 97.30% (95.73–98.61) | 24 | 97.73% | 72.57% (67.77–76.77) | 82.27% | 68.57% | 0.18% |
+| | deid without its corpus aids | 96.06% (94.16–97.57) | 35 | 96.41% | 72.39% (67.40–76.72) | 82.74% | 71.26% | 0.17% |
+| | deid without those and its hospital list | 84.70% (80.11–88.87) | 136 | 83.17% | 70.37% (65.07–75.06) | 78.34% | 68.62% | 0.17% |
+| | Philter | 91.45% (88.99–93.71) | 76 | 88.00% | 6.71% (5.77–7.63) | 12.51% | 6.18% | 7.81% |
+| | Stanford/Penn | 96.06% (94.56–97.27) | 35 | 96.29% | 63.56% (59.66–67.48) | 73.90% | 35.90% | 0.33% |
+| | OpenAI Privacy Filter | 32.85% (26.16–38.80) | 597 | 36.35% | 59.16% (52.06–66.39) | 34.09% | 9.13% | 0.18% |
+| | GLiNER multi-PII | 76.83% (71.35–81.31) | 206 | 76.61% | 11.08% (9.73–12.67) | 22.03% | 7.56% | 2.48% |
+| Discharge summaries, reporting half | Recall first | 95.28% (94.95–95.59) | 1,371 | 97.08% | 95.94% (95.61–96.27) | 91.20% | 75.77% | 0.78% |
+| | Balanced | 94.91% (94.59–95.23) | 1,476 | 96.86% | 96.70% (96.39–97.02) | 91.53% | 75.93% | 0.74% |
+| | Balanced, one call | 94.55% (94.18–94.91) | 1,582 | 96.61% | 96.82% (96.51–97.12) | 91.82% | 79.12% | 0.70% |
+| | Precision first | 94.00% (93.63–94.38) | 1,742 | 96.00% | 99.29% (99.17–99.41) | 92.29% | 81.64% | 0.61% |
+| | Without an LLM | 91.57% (91.17–91.98) | 2,446 | 94.21% | 94.76% (94.40–95.13) | 93.95% | 78.87% | 0.42% |
+| | deid, default configuration | 92.08% (91.67–92.47) | 2,299 | 84.32% | 95.78% (95.43–96.13) | 92.74% | 75.55% | 0.28% |
+| | deid without its corpus aids | 91.73% (91.30–92.12) | 2,399 | 84.13% | 95.81% (95.45–96.14) | 92.65% | 75.36% | 0.28% |
+| | deid without those and its hospital list | 91.50% (91.08–91.90) | 2,468 | 83.11% | 95.77% (95.41–96.11) | 92.29% | 75.66% | 0.28% |
+| | Philter | 99.41% (99.31–99.52) | 171 | 83.34% | 72.45% (71.84–73.10) | 82.29% | 29.29% | 2.45% |
+| | Stanford/Penn | 73.79% (72.82–74.74) | 7,608 | 82.11% | 98.33% (98.10–98.56) | 89.90% | 68.78% | 0.25% |
+| | OpenAI Privacy Filter | 28.80% (27.71–29.85) | 20,664 | 29.78% | 96.36% (95.89–96.88) | 44.55% | 34.14% | 0.24% |
+| | GLiNER multi-PII | 61.70% (60.83–62.54) | 11,115 | 66.53% | 56.72% (55.47–58.14) | 60.06% | 42.24% | 2.53% |
+| ASQ-PHI | Recall first | 99.73% (99.53–99.90) | 8 | 97.87% | 96.65% (95.92–97.28) | 98.08% | 90.59% | 0.57% |
+| | Balanced | 99.66% (99.46–99.86) | 10 | 97.83% | 99.12% (98.73–99.43) | 98.58% | 91.79% | 0.24% |
+| | Balanced, one call | 99.66% (99.46–99.86) | 10 | 97.79% | 99.12% (98.73–99.43) | 98.61% | 91.79% | 0.22% |
+| | Precision first | 99.63% (99.40–99.83) | 11 | 97.68% | 99.57% (99.33–99.78) | 98.68% | 91.78% | 0.14% |
+| | Without an LLM | 99.73% (99.53–99.90) | 8 | 96.38% | 95.30% (94.45–96.08) | 97.69% | 73.56% | 0.86% |
+| | deid, default configuration | 85.85% (84.82–86.98) | 421 | 68.45% | 94.69% (93.76–95.50) | 80.59% | 33.50% | 1.52% |
+| | Philter | 96.74% (96.13–97.34) | 97 | 70.68% | 93.55% (92.80–94.30) | 89.19% | 3.47% | 2.18% |
+| | Stanford/Penn | 99.66% (99.45–99.87) | 10 | 98.23% | 97.71% (97.15–98.20) | 98.32% | 86.70% | 0.56% |
+| | OpenAI Privacy Filter | 70.19% (68.95–71.39) | 887 | 64.57% | 96.66% (95.83–97.42) | 80.21% | 58.91% | 1.60% |
+| | GLiNER multi-PII | 99.23% (98.90–99.52) | 23 | 99.00% | 70.74% (69.41–72.02) | 81.43% | 72.74% | 13.26% |
+
+**D6's statements**, each paired with the Stanford/Penn de-identifier (the change in points, with its 95% interval; `--compare-with`):
+
+| Reporting half | Statement | Paired change | Held |
+|---|---|---:|---|
+| Nursing notes | (1) The recall-first stack finds more | recall +2.81 (+1.38 to +4.37) | Yes |
+| | (2) The precision-first stack loses at most 2 points of recall | recall +0.45 (−1.45 to +2.54) | Yes |
+| | and has more precision | precision +19.62 (+14.40 to +24.14) | Yes |
+| Discharge summaries | (1) The recall-first stack finds more | recall +21.49 (+20.53 to +22.44) | Yes |
+| | (2) The precision-first stack loses at most 2 points of recall | recall +20.21 (+19.23 to +21.20) | Yes |
+| | and has more precision | precision +0.96 (+0.73 to +1.19) | Yes |
+
+All four hold. The recall-first stack pays for its recall in precision, which D6 stated nothing about: 9.25 points under Stanford/Penn's on the nursing notes (−12.58 to −5.45) and 2.39 on the discharge summaries (−2.81 to −1.98). The first pass (D6's amendment) gave the same intervals on the nursing notes to the hundredth, as it should: Stanford/Penn's scores are the same on the CPU and the GPU (F44), and the model's answers repeat from run to run (F38). So no statement reads differently in the run of record.
+
+- **The reproduction check.** On the discharge summaries every stack and baseline repeats F41 exactly, column for column. On ASQ-PHI, F39's stacks, deid and Philter repeat its recall, missed spans and precision exactly; two character recalls and one word F1 move by 0.01, so the model's spans moved slightly. On the nursing notes the recall-first and balanced stacks, the stack without an LLM, deid and Philter repeat F37's recall exactly; the one-call and precision-first stacks each find one span more (22 and 31 missed, against 23 and 32), and the stacks' precision moves by −0.27 to +0.05 points. Within "a few spans", as D6 expected. F37 ran on Ollama 0.40.6, and the precision-first stack, which has no clinical model, can only have changed through the model's answers (M8). For the stacks with the clinical model the counts can't tell the model's answers from the sidecar's whitespace fix (D5); the fix drops false alarms, so it would raise precision, and the balanced stacks' small drops (0.27 and 0.12 points) more likely come from the model. The scorer's word measures haven't changed since F37. F37's, F39's and F41's claims read as they did: against deid with its corpus lists on the nursing notes, the recall-first stack's lead (+1.57, 0.00 to +3.27) still starts at zero, and the precision-first stack still ties its recall (−0.79, −2.80 to +1.27) at 10.6 points more precision (+6.79 to +14.87).
+- **Stanford/Penn behaves as on the tuning halves (F44).** On the nursing notes it ties deid's recall (−1.24, −3.22 to +0.66) at 9 points less precision. On the discharge summaries it finds 73.79%, and 40.73% of the untyped names (12,632 spans, 44% of the gold), against 89.19% for the recall-first stack and 86.59% for the precision-first one; it has the highest precision of the baselines there (98.33%), 0.96 points under the precision-first stack's. On ASQ-PHI, where nothing was stated beforehand, it ties every stack with the LLM on recall (the recall-first stack's +0.07, 0.00 to +0.17), and the precision-first stack ties it at 1.86 points more precision (+1.39 to +2.39).
+- **OpenAI Privacy Filter and GLiNER multi-PII trail the four stacks with the LLM** on both reporting halves, by 19.7 to 66.5 points of recall, every interval above zero; GLiNER's recall on ASQ-PHI (99.23%) comes with 13% of the other text removed.
+- **The strict match keeps F43's pattern.** On the nursing notes deid, whose annotation conventions the gold standard follows, has the highest strict F1 (68.57% to 71.26%, against 46.70% to 59.33% for the stacks with the LLM and 35.90% for Stanford/Penn); on the discharge summaries the precision-first stack has it (81.64%), and on ASQ-PHI the stacks with the LLM (90.59% to 91.79%, Stanford/Penn 86.70%). The overlap stays the headline.
+- **Runtime.** 24 minutes for ASQ-PHI, 24 for the nursing notes' reporting half and 2 hours 14 minutes for the discharge summaries', where the model took 7.5 s per summary.
+
+**Meaning:** under a protocol fixed before the run, D6's two stacks with a language model meet its statements against the strongest published model baseline on both reporting halves: the recall-first stack finds more PHI, at less precision (9.3 and 2.4 points), and the precision-first stack ties its recall on the nursing notes and exceeds it by 20 points on the discharge summaries, with more precision on both. The recall-first stack's margin on the nursing notes is small (2.8 points), and on the discharge summaries most of the gap is the untyped names, where it was weak on the tuning half too. The earlier results of record repeat, within a span on the nursing notes. Out of the scope of these statements are real notes from another hospital (both reporting halves are MIMIC, one with surrogates whose names come from the gazetteer's lists, F40) and models other than gemma4:26b-a4b (F45 measured one more family on the tuning halves).
 
 ## Methodological notes
 
