@@ -5,6 +5,7 @@ type: software
 authors:
   - family-names: Burkin
     given-names: Valentin
+    orcid: "https://orcid.org/0009-0001-9497-9496"
 version: 1.0.0
 date-released: 2026-10-19
 license: MIT
