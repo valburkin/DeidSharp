@@ -4,9 +4,9 @@
     "net10.0": {
       "CsCheck": {
         "type": "Direct",
-        "requested": "[4.9.1, )",
-        "resolved": "4.9.1",
-        "contentHash": "rEmuFiG19sF8U4Ef/S79cu9HW4pUGraoCTkmYs0z7SvsGqGAVO3wCjxQPS0KQvPa1g2/w1wBbnAP6cDZKBFEcA=="
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "8ZsMaq9jLGohuIKi8Eb6KdNEamwpFi67FaY6l+DMKXalb/hyFFyY1A/6vAo3rHDlwhsW5xTE6zgVfpPaqVe1ww=="
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
@@ -322,27 +322,27 @@
       "deidsharp.fhir": {
         "type": "Project",
         "dependencies": {
-          "DeidSharp": "[1.0.0, )",
+          "DeidSharp": "[1.1.0, )",
           "Hl7.Fhir.R4": "[6.8.0, )"
         }
       },
       "deidsharp.gazetteer": {
         "type": "Project",
         "dependencies": {
-          "DeidSharp": "[1.0.0, )"
+          "DeidSharp": "[1.1.0, )"
         }
       },
       "deidsharp.llm": {
         "type": "Project",
         "dependencies": {
-          "DeidSharp": "[1.0.0, )",
+          "DeidSharp": "[1.1.0, )",
           "Microsoft.Extensions.AI.Abstractions": "[10.11.0, )"
         }
       },
       "deidsharp.presidio": {
         "type": "Project",
         "dependencies": {
-          "DeidSharp": "[1.0.0, )",
+          "DeidSharp": "[1.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.13, )",
           "Microsoft.Extensions.Options": "[10.0.13, )"
         }
