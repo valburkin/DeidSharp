@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Hl7.Fhir.R4" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <!-- FHIR has a resource named Task; in this project "Task" means the .NET one. -->
