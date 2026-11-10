@@ -34,18 +34,18 @@ public partial class AnchorIndexTests
 
     private static readonly Gen<string> Text =
         Gen.Int[0, Fragments.Length - 1].Select(i => Fragments[i]).Array[0, 14]
-            .Select(Gen.OneOfConst(" ", "", ", ", "-"), (fragments, separator) => string.Join(separator, fragments));
+            .Select(Gen.OneOf(" ", "", ", ", "-"), (fragments, separator) => string.Join(separator, fragments));
 
     private static readonly Gen<(PhiCategory Category, string Value)> Identifier = Gen.OneOf(
-        Gen.OneOfConst("Kelly Smith", "Ann van Do", "\u01C5ana Oak", "\u00B5ark", "José Smith-Main", "Mr. St Kelly", "\u10D0\u10DC\u10D0 Smith", "\u0264ana Smith")
+        Gen.OneOf("Kelly Smith", "Ann van Do", "\u01C5ana Oak", "\u00B5ark", "José Smith-Main", "Mr. St Kelly", "\u10D0\u10DC\u10D0 Smith", "\u0264ana Smith")
             .Select(v => (PhiCategory.Name, v)),
-        Gen.OneOfConst("617-555-0142", "+1 (617) 555 0142").Select(v => (PhiCategory.Phone, v)),
-        Gen.OneOfConst("A1B2", "MRN-1931", "a1 b2").Select(v => (PhiCategory.MedicalRecordNumber, v)),
-        Gen.OneOfConst("1931-03-04", "1931-03-31", "1931-09-04", "not a date").Select(v => (PhiCategory.Date, v)),
-        Gen.OneOfConst("3 Main Street", "Saint Oak", "742 Evergreen Terrace").Select(v => (PhiCategory.StreetAddress, v)),
-        Gen.OneOfConst("Main", "Saint Kelly").Select(v => (PhiCategory.Location, v)),
-        Gen.OneOfConst("St. Brendan Hospital").Select(v => (PhiCategory.Organization, v)),
-        Gen.OneOfConst("rosa@example.org").Select(v => (PhiCategory.Email, v)));
+        Gen.OneOf("617-555-0142", "+1 (617) 555 0142").Select(v => (PhiCategory.Phone, v)),
+        Gen.OneOf("A1B2", "MRN-1931", "a1 b2").Select(v => (PhiCategory.MedicalRecordNumber, v)),
+        Gen.OneOf("1931-03-04", "1931-03-31", "1931-09-04", "not a date").Select(v => (PhiCategory.Date, v)),
+        Gen.OneOf("3 Main Street", "Saint Oak", "742 Evergreen Terrace").Select(v => (PhiCategory.StreetAddress, v)),
+        Gen.OneOf("Main", "Saint Kelly").Select(v => (PhiCategory.Location, v)),
+        Gen.OneOf("St. Brendan Hospital").Select(v => (PhiCategory.Organization, v)),
+        Gen.OneOf("rosa@example.org").Select(v => (PhiCategory.Email, v)));
 
     [Fact]
     public void Skipping_searches_never_changes_what_is_found()

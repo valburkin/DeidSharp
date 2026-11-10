@@ -80,7 +80,7 @@
       "deidsharp.fhir": {
         "type": "Project",
         "dependencies": {
-          "DeidSharp": "[1.0.0, )",
+          "DeidSharp": "[1.1.0, )",
           "Hl7.Fhir.R4": "[6.8.0, )"
         }
       },
@@ -95,7 +95,7 @@
       },
       "Microsoft.Extensions.Options": {
         "type": "CentralTransitive",
-        "requested": "[10.0.13, )",
+        "requested": "[10.0.14, )",
         "resolved": "10.0.9",
         "contentHash": "hyNdX4c2UwkRkzb9byw0H2DQkRzwBM3mzY2sCM9egwzTyg8dvQJmp5noQHGEaaCORQrNK3DD2gREBsc2DlXS4A==",
         "dependencies": {

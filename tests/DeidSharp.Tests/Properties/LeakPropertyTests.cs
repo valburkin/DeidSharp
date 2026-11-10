@@ -32,7 +32,7 @@ public class LeakPropertyTests
 
     private static readonly Gen<string> Word = Gen.Char['a', 'z'].Array[2, 9].Select(c => char.ToUpperInvariant(c[0]) + new string(c, 1, c.Length - 1));
 
-    private static readonly Gen<string> Separator = Gen.OneOfConst("-", " ", ".", "");
+    private static readonly Gen<string> Separator = Gen.OneOf("-", " ", ".", "");
 
     // Identifiers as they are recorded, with the category they are known under.
     private static readonly Gen<(PhiCategory Category, string Value)> Identifier = Gen.OneOf(
@@ -41,7 +41,7 @@ public class LeakPropertyTests
         Gen.Long[1000, 99_999_999].Select(v => (PhiCategory.MedicalRecordNumber, v.ToString(CultureInfo.InvariantCulture))),
         Gen.Int[1, 899].Select(Gen.Int[1, 99], Gen.Int[1, 9999], (a, b, c) => (PhiCategory.Ssn, $"{a:D3}-{b:D2}-{c:D4}")),
         Word.Select(Word, (a, b) => (PhiCategory.Email, $"{a.ToLowerInvariant()}.{b.ToLowerInvariant()}@example.net")),
-        Gen.Int[1, 9999].Select(Word, Gen.OneOfConst("Street", "Road", "Lane", "Avenue"), (n, w, s) => (PhiCategory.StreetAddress, $"{n} {w} {s}")));
+        Gen.Int[1, 9999].Select(Word, Gen.OneOf("Street", "Road", "Lane", "Avenue"), (n, w, s) => (PhiCategory.StreetAddress, $"{n} {w} {s}")));
 
     private static readonly Gen<DateOnly> Date = Gen.Int[1900, 2030].Select(Gen.Int[1, 12], Gen.Int[1, 28], (y, m, d) => new DateOnly(y, m, d));
 
@@ -134,7 +134,7 @@ public class LeakPropertyTests
     [Fact]
     public void Replacement_never_leaves_a_broken_surrogate_pair()
     {
-        var unicode = Gen.OneOfConst("a", "é", "\U0001F600", "中", "é", " ", "\U0001F468‍\U0001F469").Array[1, 20].Select(string.Concat);
+        var unicode = Gen.OneOf("a", "é", "\U0001F600", "中", "é", " ", "\U0001F468‍\U0001F469").Array[1, 20].Select(string.Concat);
         unicode.Select(Gen.Int[0, 100], Gen.Int[1, 6]).Sample((text, startSeed, length) =>
         {
             var start = startSeed % text.Length;
