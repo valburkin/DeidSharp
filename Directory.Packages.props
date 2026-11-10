@@ -14,9 +14,9 @@
   <!-- DeidSharp.Presidio -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.11.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.13" />
-    <PackageVersion Include="OllamaSharp" Version="5.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
+    <PackageVersion Include="OllamaSharp" Version="5.5.2" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.14" />
   </ItemGroup>
 
   <!-- Tests -->
