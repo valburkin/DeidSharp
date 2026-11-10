@@ -6,8 +6,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/valburkin/DeidSharp/blob/main/LICENSE)
 [![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-D97757?logo=claude&logoColor=white)](https://github.com/valburkin/DeidSharp#how-this-was-built)\
 [![PHI recall](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalburkin%2FDeidSharp%2Fmain%2Fdocs%2Fevaluation%2Fbadge.json)](https://github.com/valburkin/DeidSharp#research)
-[![Reproducible](https://img.shields.io/badge/results-how%20to%20reproduce-informational)](https://github.com/valburkin/DeidSharp/blob/main/REPRODUCING.md)
+[![Reproducible](https://img.shields.io/badge/results-how%20to%20reproduce-informational)](https://github.com/valburkin/DeidSharp/blob/main/REPRODUCING.md)\
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23823965.svg)](https://doi.org/10.5281/zenodo.23823965)
+[![arXiv](https://img.shields.io/badge/arXiv-2611.12709-b31b1b.svg)](https://arxiv.org/abs/2611.12709)
 
 De-identification of health data for .NET. DeidSharp removes the identifiers from free text and FHIR R4 resources under HIPAA's Safe Harbor method, or replaces them with keyed pseudonyms. It stacks detectors (the record's own identifiers, patterns, name lists, a clinical NER model, a local language model), checks its own output before returning it, and fails closed when anything goes wrong.
 
@@ -113,6 +114,8 @@ How each of the 18 Safe Harbor identifiers is handled is in [docs/safe-harbor.md
 - [Changelog](https://github.com/valburkin/DeidSharp/blob/main/CHANGELOG.md)
 
 ## Research
+
+The paper describes the design and the evaluation: [*A local language model layered with rule-based and neural detectors for clinical text de-identification: an open-source toolkit and evaluation*](https://arxiv.org/abs/2611.12709) (arXiv:2611.12709).
 
 DeidSharp's detectors were measured on real clinical notes, and every measurement is logged. Recall is the share of the PHI found; precision, the share of what was removed that was PHI. The recommended stacks, on the held-out halves of two corpora that no choice was tuned on, with ASQ-PHI as a second check:
 

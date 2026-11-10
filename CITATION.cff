@@ -18,3 +18,19 @@ keywords:
   - clinical text
   - FHIR
   - large language models
+preferred-citation:
+  type: article
+  title: "A local language model layered with rule-based and neural detectors for clinical text de-identification: an open-source toolkit and evaluation"
+  authors:
+    - family-names: Burkin
+      given-names: Valentin
+      orcid: "https://orcid.org/0009-0001-9497-9496"
+  year: 2026
+  month: 11
+  doi: 10.48550/arXiv.2611.12709
+  url: "https://arxiv.org/abs/2611.12709"
+  journal: arXiv
+  identifiers:
+    - type: other
+      value: "arXiv:2611.12709"
+      description: The arXiv identifier
