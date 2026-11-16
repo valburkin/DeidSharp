@@ -1,0 +1,116 @@
+# Patches known vulnerabilities in the Python locks Dependabot can't regenerate (the
+# sidecar's images and the model baselines', compiled with uv across two indexes) and
+# proposes the result as a pull request, so a published advisory arrives as a fix to
+# review rather than a failing build. Daily, so a fix arrives once it is five days old.
+# An advisory no patch can move (no fixed release yet, or a package pinned exactly in an
+# image's inputs) is kept in one open issue instead, closed when none is left. CI's audit
+# on every push and pull request stays the gate (sidecar/tools/patch_locks.py).
+name: Python lock security updates
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  patch:
+    name: Patch vulnerable packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      # Push the branch, and open or update its pull request and the issue.
+      contents: write
+      pull-requests: write
+      issues: write
+      # Run CI on the branch: a push with this token starts no workflow, a dispatch does.
+      actions: write
+    env:
+      BRANCH: security/python-locks
+      BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: sidecar/tools/requirements.txt
+      - run: python -m pip install --requirement sidecar/tools/requirements.txt
+      - run: python sidecar/tools/patch_locks.py --summary "$RUNNER_TEMP/summary.md" --attention "$RUNNER_TEMP/attention.md"
+      - name: Keep the issue of packages that need a person
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: "Python locks: vulnerable packages no patch can move"
+        run: |
+          set -euo pipefail
+          issue=$(gh issue list --state open --json number,title --jq '.[] | select(.title == env.TITLE) | .number' | head -n 1)
+          if [ -s "$RUNNER_TEMP/attention.md" ]; then
+            {
+              echo "pip-audit flags these packages, and the daily patch (.github/workflows/python-locks.yml) can't move them."
+              echo "Update the image's inputs and regenerate its locks (sidecar/README.md, \"Dependencies\"), or wait for a fixed release."
+              echo "This issue is updated daily and closed once none is left."
+              echo
+              cat "$RUNNER_TEMP/attention.md"
+            } > "$RUNNER_TEMP/issue.md"
+            if [ -z "$issue" ]; then
+              gh issue create --title "$TITLE" --body-file "$RUNNER_TEMP/issue.md"
+            else
+              gh issue edit "$issue" --body-file "$RUNNER_TEMP/issue.md"
+            fi
+          elif [ -n "$issue" ]; then
+            gh issue close "$issue" --comment "No package in the Python locks needs a person any longer."
+          fi
+      - name: Open or update the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          if git diff --quiet; then
+            echo "No lock moved."
+            exit 0
+          fi
+          gh auth setup-git
+          open=$(gh pr list --head "$BRANCH" --state open --json number --jq length)
+          if git fetch --quiet --depth 1 origin "$BRANCH" 2> /dev/null; then
+            # A commit someone added (a CHANGELOG line, a fix) is never force-pushed over.
+            if [ "$(git log -1 --format=%ae FETCH_HEAD)" != "$BOT_EMAIL" ]; then
+              echo "::warning::$BRANCH holds a commit by someone else, so it is left as it is."
+              exit 0
+            fi
+            # The same pins are already proposed. uv's header records the day's cutoff, so it is ignored.
+            if [ "$open" != 0 ] && git diff --name-only -z | xargs -0 git diff --quiet -I '^#    uv pip compile ' FETCH_HEAD --; then
+              echo "Already proposed in an open pull request."
+              exit 0
+            fi
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "$BOT_EMAIL"
+          git switch --create "$BRANCH"
+          # No hook from the working tree runs while the token is in the environment.
+          git -c core.hooksPath=/dev/null commit --all --quiet --message "Patch the vulnerable packages in the Python locks"
+          git push --force --quiet origin "HEAD:refs/heads/$BRANCH"
+          {
+            echo "pip-audit flagged these packages in the Python locks. Only they were asked to move, each to a release at least five days old; uv moves a dependency too when a new release needs it, and every pin that changed is listed."
+            echo
+            cat "$RUNNER_TEMP/summary.md"
+            echo
+            echo "Before merging:"
+            echo
+            echo "- [ ] If a package that can change detection moved (presidio-analyzer, transformers, spacy, torch…), build the sidecar and run the clinical integration tests (docs/testing.md)."
+            echo "- [ ] Add a line under Security in CHANGELOG.md."
+            echo
+            echo "CI runs on this branch by dispatch, and its checks show here. A commit you add to this branch is kept: the daily run no longer updates it."
+          } > "$RUNNER_TEMP/body.md"
+          if [ "$open" = 0 ]; then
+            gh pr create --base main --head "$BRANCH" --title "Patch the vulnerable packages in the Python locks" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/body.md"
+          fi
+          gh workflow run ci.yml --ref "$BRANCH"

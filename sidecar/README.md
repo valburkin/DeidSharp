@@ -49,7 +49,7 @@ The image installs exactly what the lock lists, each package checked against its
 | `torch-cuda.txt` | The GPU image's override: PyTorch's CUDA build in place of the CPU one |
 | `requirements-cuda.txt` | The GPU image's lock: the same packages at the same versions, with CUDA PyTorch and the CUDA libraries it needs (`tests/test_locks.py` keeps the two in step) |
 
-The image is built for linux/amd64 (the lock holds x86_64 wheels; the compose file sets the platform, so Apple Silicon builds it under emulation). Dependabot does not update this lock; CI audits it for known vulnerabilities on every run and weekly, and a finding is the signal to regenerate it. After editing `requirements.in`, regenerate the lock with [uv](https://docs.astral.sh/uv/), leaving out releases from the last five days, then rebuild and run the clinical integration tests (`../docs/testing.md`):
+The image is built for linux/amd64 (the lock holds x86_64 wheels; the compose file sets the platform, so Apple Silicon builds it under emulation). Dependabot does not update this lock; CI audits it for known vulnerabilities on every run, and a daily workflow (`.github/workflows/python-locks.yml`, running `tools/patch_locks.py`) proposes a pull request that moves only the flagged packages, as described below. After editing `requirements.in`, regenerate the lock with [uv](https://docs.astral.sh/uv/), leaving out releases from the last five days, then rebuild and run the clinical integration tests (`../docs/testing.md`):
 
 ```bash
 cd sidecar

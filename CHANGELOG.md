@@ -4,6 +4,10 @@ All notable changes to DeidSharp are listed here. The format follows [Keep a Cha
 
 ## [Unreleased]
 
+### Security
+
+- The clinical sidecar's images take opentelemetry-api 1.45.2, which fixes a known vulnerability.
+
 ## [1.1.0] - 2026-10-30
 
 ### Added

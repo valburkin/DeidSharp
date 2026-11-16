@@ -9,10 +9,11 @@ on:
     # A release tag also checks that docs/evaluation holds the published measurements.
     tags: ["v*"]
   pull_request:
-  # Weekly, so a vulnerability published against a pinned package fails the build
-  # even when nothing in the repository changed.
-  schedule:
-    - cron: "0 6 * * 1"
+  # Also started by the workflows that push to a pull request's branch (Dependabot's lock
+  # files, the Python locks' security updates), since their pushes start no workflow.
+  # A vulnerability published against a pinned package arrives as a pull request from
+  # Dependabot or python-locks.yml (or, with no fix to move to, as an issue), not as a
+  # failing scheduled build (docs/testing.md, "Continuous integration").
   workflow_dispatch:
 
 permissions:

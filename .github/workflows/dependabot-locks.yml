@@ -1,0 +1,65 @@
+# Dependabot's NuGet pull requests update Directory.Packages.props and the lock files of
+# the projects that reference a package directly, but not those of the projects that get
+# it through a project reference, so CI's locked restore fails on them. This refreshes
+# every lock file on such a pull request, pushes the result to its branch and runs CI on it.
+# Once it has pushed, Dependabot no longer rebases that pull request: when main moves under
+# it, comment "@dependabot recreate", and this runs again on the new one.
+name: Dependabot lock files
+
+on:
+  pull_request:
+    paths:
+      - Directory.Packages.props
+      - "**/*.csproj"
+      - "**/packages.lock.json"
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    name: Refresh the lock files
+    # Dependabot's own NuGet branches in this repository only.
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && startsWith(github.head_ref, 'dependabot/nuget/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # Push the refreshed lock files to the pull request's branch.
+      contents: write
+      # Run CI on them: a push with this token starts no workflow, a dispatch does.
+      actions: write
+    env:
+      BRANCH: ${{ github.head_ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      # Not locked: this writes the lock files from the project files.
+      - run: dotnet restore DeidSharp.slnx --force-evaluate
+      - name: Push the lock files and run CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git add -- ':(glob)**/packages.lock.json'
+          if git diff --cached --quiet; then
+            echo "The lock files are current."
+            exit 0
+          fi
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # No hook from the working tree runs while the token is in the environment.
+          git -c core.hooksPath=/dev/null commit --quiet --message "Refresh the lock files"
+          git push --quiet origin "HEAD:refs/heads/$BRANCH"
+          gh workflow run ci.yml --ref "$BRANCH"

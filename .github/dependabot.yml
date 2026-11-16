@@ -1,7 +1,9 @@
 # Weekly updates for every pinned dependency, each at least five days old, so a release
-# pulled soon after publishing never arrives. Minor and patch releases of the build and
-# test tools arrive as one pull request; anything that can change detection arrives on
-# its own, to be read and tested first (docs/testing.md, "Continuous integration").
+# pulled soon after publishing never arrives; security updates come as soon as an advisory
+# is published. Minor and patch releases of the build and test tools arrive as one pull
+# request; anything that can change detection arrives on its own, to be read and tested
+# first (docs/testing.md, "Continuous integration"). dependabot-locks.yml refreshes the
+# lock files of the NuGet pull requests.
 version: 2
 updates:
   - package-ecosystem: nuget
@@ -34,7 +36,7 @@ updates:
 
   # The sidecar's check tools. Its runtime lock is compiled with uv across two indexes,
   # which Dependabot cannot regenerate: it is updated by hand (sidecar/README.md,
-  # "Dependencies"), and CI audits it for known vulnerabilities on every run and weekly.
+  # "Dependencies"), and its vulnerable packages by python-locks.yml.
   - package-ecosystem: pip
     directory: /sidecar/tools
     schedule:
@@ -44,6 +46,18 @@ updates:
     groups:
       sidecar-check-tools:
         patterns: ["*"]
+
+  # The uv locks of the sidecar's and the model baselines' images. Ignoring every package
+  # keeps Dependabot's security updates away too: it can't rebuild a uv lock, and
+  # python-locks.yml patches their vulnerabilities instead.
+  - package-ecosystem: pip
+    directories:
+      - /sidecar
+      - /tools/baselines/models
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "*"
 
   - package-ecosystem: docker
     directories:
