@@ -1,33 +1,51 @@
-# Weekly updates for every pinned dependency, each at least five days old, so a release
-# pulled soon after publishing never arrives; security updates come as soon as an advisory
-# is published. Minor and patch releases of the build and test tools arrive as one pull
-# request; anything that can change detection arrives on its own, to be read and tested
-# first (docs/testing.md, "Continuous integration"). dependabot-locks.yml refreshes the
-# lock files of the NuGet pull requests.
+# Monthly updates for pinned dependencies, each at least five days old, so a release pulled
+# soon after publishing never arrives; security updates come as soon as an advisory is
+# published, whatever the schedule. What is moved by hand is ignored below. Minor and patch
+# releases of the build and test tools arrive as one pull request; anything that can change
+# detection arrives on its own, to be read and tested first (docs/testing.md, "Continuous
+# integration"). dependabot-locks.yml refreshes the lock files of the NuGet pull requests.
 version: 2
 updates:
   - package-ecosystem: nuget
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     cooldown:
       default-days: 5
     groups:
       nuget-minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # The libraries' own dependencies are the minimum versions every user of the packages
+      # must install, so raising one is a deliberate change, listed in the CHANGELOG and made
+      # by hand; merging a security update for one needs that CHANGELOG line too. Naming the
+      # update types keeps security updates for them: an ignore that names only the package
+      # would stop those as well. The list mirrors the PackageReferences of src/*/*.csproj.
+      - dependency-name: Hl7.Fhir.R4
+        update-types: [version-update:semver-major, version-update:semver-minor, version-update:semver-patch]
+      - dependency-name: Microsoft.Extensions.AI.Abstractions
+        update-types: [version-update:semver-major, version-update:semver-minor, version-update:semver-patch]
+      - dependency-name: Microsoft.Extensions.Http
+        update-types: [version-update:semver-major, version-update:semver-minor, version-update:semver-patch]
+      - dependency-name: Microsoft.Extensions.Options
+        update-types: [version-update:semver-major, version-update:semver-minor, version-update:semver-patch]
 
-  # The SDK in global.json.
+  # The SDK in global.json. It stays on the line of the target framework (net10.0, an LTS
+  # release); a new major SDK is a deliberate change, made by hand.
   - package-ecosystem: dotnet-sdk
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     cooldown:
       default-days: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     cooldown:
       default-days: 5
     groups:
@@ -40,22 +58,25 @@ updates:
   - package-ecosystem: pip
     directory: /sidecar/tools
     schedule:
-      interval: weekly
+      interval: monthly
     cooldown:
       default-days: 5
     groups:
       sidecar-check-tools:
         patterns: ["*"]
 
-  # The uv locks of the sidecar's and the model baselines' images. Ignoring every package
-  # keeps Dependabot's security updates away too: it can't rebuild a uv lock, and
-  # python-locks.yml patches their vulnerabilities instead.
+  # Locks Dependabot leaves alone, security updates included: ignoring every package keeps
+  # those away too. The uv locks of the sidecar's and the model baselines' images can't be
+  # rebuilt by Dependabot, and python-locks.yml patches their vulnerabilities instead.
+  # Philter's image reproduces the baseline as published: it is run with no network, and its
+  # lock moves only when the baseline is measured again, so it may carry known advisories.
   - package-ecosystem: pip
     directories:
       - /sidecar
       - /tools/baselines/models
+      - /tools/baselines/philter
     schedule:
-      interval: weekly
+      interval: monthly
     ignore:
       - dependency-name: "*"
 
@@ -63,7 +84,7 @@ updates:
     directories:
       - /sidecar
     schedule:
-      interval: weekly
+      interval: monthly
     cooldown:
       default-days: 5
     ignore:
@@ -75,6 +96,6 @@ updates:
   - package-ecosystem: docker-compose
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     cooldown:
       default-days: 5
