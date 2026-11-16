@@ -4,6 +4,6 @@
 #   python -m pip install -r sidecar/tools/requirements.txt
 #   ruff check sidecar && python -m pytest sidecar/tests
 pip-audit==2.10.1
-pytest==9.1.1
-ruff==0.17.1
-uv==0.13.6
+pytest==9.2.0
+ruff==0.17.4
+uv==0.13.7
